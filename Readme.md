@@ -22,7 +22,7 @@ Mandatory arguments:
 
 Optional arguments:
 * -mt (integer):
-  * Maximum time to run the algorithm. The specified parameter is the number of seconds.
+  * The specified integer is the maximum number of seconds to run the algorithm.
 
 ### Benchmark
 
@@ -40,7 +40,7 @@ Mandatory arguments:
 
 Optional arguments:
 * -mt (integer):
-  * Maximum time to run the algorithm. The specified parameter is the number of seconds.
+  * The specified integer is the maximum number of seconds to run the algorithm.
 
 ## Implemented algorithms
 
