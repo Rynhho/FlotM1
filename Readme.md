@@ -13,34 +13,21 @@ Run launches a solving algorithm.
 It has to be launched as following:
 
 ```bash
-java Run [mandatory: algorithm] [optional: -mt (integer)]
+java NWF [arguments]
 ```
 
-Mandatory arguments:
-* algorithm is a string on the following list:
+Where the arguments are one of the following:
+* -c (input instance file) (input solution file): Check if the solution file is a realisable solution for the instance file problem.
+* -r (algorithm) (input instance file) (output solution file): Runs an algorithm with the specified instance file and outputs the solution file.
+* -b (input instance file): Benchmarks ALL implemented algorithms.
+
+Information about some arguments:
+* **algorithm** is a string on the following list:
   * Todo
 
-Optional arguments:
-* -mt (integer):
-  * The specified integer is the maximum number of seconds to run the algorithm.
-
-### Benchmark
-
-Benchmark launches a benchmark on the chosen algorithm.
-
-It has to be launched as following:
-
-```bash
-java Benchmark [mandatory: algorithm] [optional: -mt (integer)]
-```
-
-Mandatory arguments:
-* algorithm is a string on the following list:
-  * Todo
-
-Optional arguments:
-* -mt (integer):
-  * The specified integer is the maximum number of seconds to run the algorithm.
+Adding to that, we have some optional arguments:
+* -mt (integer, default=3600)):
+  * Optional arguments in -r mode. The specified integer is the maximum number of seconds to run the algorithm.
 
 ## Implemented algorithms
 
