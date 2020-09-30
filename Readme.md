@@ -2,7 +2,7 @@
 
 ## How to run
 
-The applications is to be launched via a command line interface as following.
+The applications is to be launched via a command line interface as specified below. There are currently no projects for a GUI.
 
 ```bash
 java NWF [arguments]
