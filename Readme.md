@@ -2,32 +2,23 @@
 
 ## How to run
 
-The applications are to be launched via a command line interface.
-
-The available applications are detailed below.
-
-### Run
-
-Run launches a solving algorithm.
-
-It has to be launched as following:
+The applications is to be launched via a command line interface as following.
 
 ```bash
 java NWF [arguments]
 ```
 
-Where the arguments are one of the following:
-* -c (input instance file) (input solution file): Check if the solution file is a realisable solution for the instance file problem.
-* -r (algorithm) (input instance file) (output solution file): Runs an algorithm with the specified instance file and outputs the solution file.
-* -b (input instance file): Benchmarks ALL implemented algorithms.
+Where arguments is one of the following:
+* **-c (input instance file) (input solution file)**: Check if the solution file is a realisable solution for the instance file problem.
+* **-r (algorithm) (input instance file) (output solution file)**: Runs an algorithm with the specified instance file and outputs the solution file.
+* **-b (input instance file)**: Benchmarks ALL implemented algorithms.
 
 Information about some arguments:
 * **algorithm** is a string on the following list:
   * Todo
 
 Adding to that, we have some optional arguments:
-* -mt (integer, default=3600)):
-  * Optional arguments in -r mode. The specified integer is the maximum number of seconds to run the algorithm.
+* **-mt (integer, default=3600))**: Optional arguments in -r mode. The specified integer is the maximum number of seconds to run the algorithm.
 
 ## Implemented algorithms
 
