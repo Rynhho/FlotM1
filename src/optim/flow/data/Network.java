@@ -1,102 +1,155 @@
-package optim
+package data;
 
+import java.util.ArrayList;
+import java.util.List;
 public class Network {
 	
-	double [][] capacity_matrix;
-	double [][] cost_matrix;
-	double[] consumption_vertex;
-	int vertex_nb, edges_nb;
-	double capacity_max, cost_max, consumption_max;
-
-	public Network(double [][] capacity_matrix, double [][] cost_matrix, double [] consumption_vertex) {
-		this.capacity_matrix = capacity_matrix;
-		this.cost_matrix = cost_matrix;
-		this.consumption_vertex = consumption_vertex;
+	private double [][] capacityMatrix;
+	private double [][] costMatrix;
+	private double[] consumptionVertex;
+	private int nbVertex, nbEdges;
+	private double capacityMax, costMax, consumptionMax;
+	private List<EdgeIndex> arcIndexes;
+	
+	public double[][] getCapacityMatrix() {
+		return capacityMatrix;
+	}
+	public double[][] getCostMatrix() {
+		return costMatrix;
+	}
+	public double[] getConsumptionVertex() {
+		return consumptionVertex;
+	}
+	public int getNbVertex() {
+		return nbVertex;
+	}
+	public int getNbEdges() {
+		return nbEdges;
+	}
+	public double getCapacityMax() {
+		return capacityMax;
+	}
+	public double getCostMax() {
+		return costMax;
+	}
+	public double getConsumptionMax() {
+		return consumptionMax;
+	}
+	public List<EdgeIndex> getArcIndexes() {
+		return arcIndexes;
+	}
+	public Network(double [][] capacityMatrix, double [][] costMatrix, double [] consumptionVertex) {
+		this.capacityMatrix = capacityMatrix;
+		this.costMatrix = costMatrix;
+		this.consumptionVertex = consumptionVertex;
 		VerifyIntegrity();
-		this.vertex_nb = capacity_matrix.length;
-		this.edges_nb = getEdgesFromCapacity();
+		
+		this.nbVertex = capacityMatrix.length;
+		this.nbEdges = getEdgesFromCapacity();
+		getArcIndexes();
 		AutoSetMaxValues();
 		
 	}
-	
+	private List<EdgeIndex> setArcIndexes(){
+		List<EdgeIndex> arcIndexes = new ArrayList<EdgeIndex>();
+		for (int i = 0; i < this.capacityMatrix.length; i++) {
+			for (int j = 0; j < this.capacityMatrix[i].length; j++) {
+				if(this.capacityMatrix[i][j] != 0) {
+					arcIndexes.add(new EdgeIndex(i, j));
+				}
+			}
+		}
+		
+	}
 	private void AutoSetMaxValues() {
-		this.capacity_max = this.capacity_matrix[0][0];
-		this.cost_max = this.cost_matrix[0][0];
-		this.consumption_max = this.consumption_vertex[0];
-		for (int i = 0; i < this.vertex_nb; i++) {
+		this.capacityMax = this.capacityMatrix[0][0];
+		this.costMax = this.costMatrix[0][0];
+		this.consumptionMax = this.consumptionVertex[0];
+		for (int i = 0; i < this.nbVertex; i++) {
 			
-			if(this.consumption_vertex[i] > this.consumption_max)
-				this.consumption_max = this.consumption_vertex[i];
+			if(this.consumptionVertex[i] > this.consumptionMax)
+				this.consumptionMax = this.consumptionVertex[i];
 			
-			for (int j = 0; j < this.vertex_nb; j++) {
+			for (int j = 0; j < this.nbVertex; j++) {
 				
-				if(this.capacity_matrix[i][j] > this.capacity_max)
-					this.capacity_max = this.capacity_matrix[i][j];
+				if(this.capacityMatrix[i][j] > this.capacityMax)
+					this.capacityMax = this.capacityMatrix[i][j];
 				
-				if(this.cost_matrix[i][j] > this.cost_max)
-					this.cost_max = this.cost_matrix[i][j];
+				if(this.costMatrix[i][j] > this.costMax)
+					this.costMax = this.costMatrix[i][j];
 			}
 		}
 	}
 
-	public Network(int vertex_nb, int edges_nb, double capacity_max, double cost_max, double consumption_max) {
-		this.vertex_nb = vertex_nb;
-		this.edges_nb = edges_nb;
-		this.capacity_max = capacity_max;
-		this.cost_max = cost_max;
-		this.consumption_max = consumption_max;
+	public Network(int nbVertex, int nbEdges, double capacityMax, double costMax, double consumptionMax) {
+		this.nbVertex = nbVertex;
+		this.nbEdges = nbEdges;
+		this.capacityMax = capacityMax;
+		this.costMax = costMax;
+		this.consumptionMax = consumptionMax;
 		
-		this.consumption_vertex = new double[vertex_nb];
-		for (int i = 0; i < this.vertex_nb; i++) {
-			this.consumption_vertex[i] = Math.random()*2*consumption_max - consumption_max;
+		setRandomConsumptionVertex();
+		setRandomCapacityAndCostMatrix();
+		setArcIndexes();
+	}
+	
+	private double[] setRandomConsumptionVertex() {
+		this.consumptionVertex = new double[nbVertex];
+		for (int i = 0; i < this.nbVertex; i++) {
+			this.consumptionVertex[i] = Math.random()*2*consumptionMax - consumptionMax;
 		}
-
-		this.capacity_matrix = new double[vertex_nb][vertex_nb];
-		this.cost_matrix = new double[vertex_nb][vertex_nb];
+	}
+	
+	private double[] setRandomCapacityAndCostMatrix() {
+		this.capacityMatrix = new double[nbVertex][nbVertex];
+		this.costMatrix = new double[nbVertex][nbVertex];
 		int x,y;
-		for (int i = 0; i < edges_nb; i++) {
-			x = (int)Math.round(Math.random()*(vertex_nb-1));
-			y = (int)Math.round(Math.random()*(vertex_nb-1));
-			while(capacity_matrix[x][y] != 0.0) {
-				x = (int)Math.round(Math.random()*(vertex_nb-1));
-				y = (int)Math.round(Math.random()*(vertex_nb-1));	
-			}
-			this.capacity_matrix[x][y] = Math.random()*capacity_max;
-			this.cost_matrix[x][y] = Math.random()*2*cost_max - cost_max;
+		
+		for (int i = 0; i < nbEdges; i++) {
+			do{
+				x = (int)Math.round(Math.random()*(nbVertex-1));
+				y = (int)Math.round(Math.random()*(nbVertex-1));	
+			}while(capacityMatrix[x][y] != 0.0 && noLoopArc(x,y));
+			
+			this.capacityMatrix[x][y] = Math.random()*capacityMax;
+			this.costMatrix[x][y] = Math.random()*2*costMax - costMax;
 			
 		}
-		
 	}
+	
+	private boolean noLoopArc(int x,int y) {
+			return x!=y;
+		}
 	
 	public String toString() {
-		String network = "capacity_matrix | cost_matrix\n";
-		for (int i = 0; i < this.vertex_nb; i++) {
+		String network = "capacityMatrix | costMatrix\n";
+		for (int i = 0; i < this.nbVertex; i++) {
 			network += "[";
-			for (int j = 0; j < this.vertex_nb; j++) {
-				network += String.format("%.2f",this.capacity_matrix[i][j]) + ", ";
+			for (int j = 0; j < this.nbVertex; j++) {
+				network += String.format("%.2f",this.capacityMatrix[i][j]) + ", ";
 			}
 			network = network.substring(0, network.length()-2) + "]   [";
-			for (int j = 0; j < this.vertex_nb; j++) {
-				network += String.format("%.2f",this.cost_matrix[i][j]) + ", ";
+			for (int j = 0; j < this.nbVertex; j++) {
+				network += String.format("%.2f",this.costMatrix[i][j]) + ", ";
 			}
 			network = network.substring(0, network.length()-2) + "]\n";
 		}
 		network += "\nconsumption vector\n[";
-		for (int i = 0; i < this.vertex_nb; i++) {
-			network += String.format("%.2f",this.consumption_vertex[i]) + ", "; 
+		for (int i = 0; i < this.nbVertex; i++) {
+			network += String.format("%.2f",this.consumptionVertex[i]) + ", "; 
 		}
 		return network.substring(0, network.length()-2) + "]\n";
 	}
 	
 	private int getEdgesFromCapacity() {
-		int edges_nb = 0;
-		for (int i = 0; i < this.vertex_nb; i++) {
-			for (int j = 0; j < this.vertex_nb; j++) {
-				if(capacity_matrix[i][j] != 0)
-					edges_nb+=1;
+		int nbEdges = 0;
+		for (int i = 0; i < this.nbVertex; i++) {
+			for (int j = 0; j < this.nbVertex; j++) {
+				if(capacityMatrix[i][j] != 0)
+					nbEdges+=1;
 			}
 		}
-		return edges_nb;
+		return nbEdges;
 	}
 	
 	public boolean VerifyIntegrity() {
@@ -105,9 +158,9 @@ public class Network {
 	}
 	private boolean VerifyCost() {
 		// Edge with no capacity can't have a cost. 
-		for (int i = 0; i < this.cost_matrix.length; i++) {
-			for (int j = 0; j < this.cost_matrix[i].length; j++) {
-				if( this.capacity_matrix[i][j] == 0 &&  this.cost_matrix[i][j] != 0) {
+		for (int i = 0; i < this.costMatrix.length; i++) {
+			for (int j = 0; j < this.costMatrix[i].length; j++) {
+				if( this.capacityMatrix[i][j] == 0 &&  this.costMatrix[i][j] != 0) {
 					return false;					
 				}
 			}
@@ -116,14 +169,14 @@ public class Network {
 	}
 
 	private boolean VerifySize() {
-		int size = this.capacity_matrix.length;
-		if(size != this.cost_matrix.length ||
-				size != this.consumption_vertex.length){
+		int size = this.capacityMatrix.length;
+		if(size != this.costMatrix.length ||
+				size != this.consumptionVertex.length){
 			return false;
 		}
-		for (int i = 0; i < this.capacity_matrix.length; i++) {
-			if(size != this.capacity_matrix[i].length || 
-					size != this.cost_matrix[i].length){
+		for (int i = 0; i < this.capacityMatrix.length; i++) {
+			if(size != this.capacityMatrix[i].length || 
+					size != this.costMatrix[i].length){
 				return false;
 			}
 		}
