@@ -1,3 +1,4 @@
+package data;
 
 public class EdgeIndex {
 	private int from, to;
