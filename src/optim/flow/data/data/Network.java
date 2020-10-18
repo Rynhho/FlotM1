@@ -165,23 +165,21 @@ public class Network {
 		return true;
 	}
 	
-	public boolean Checker(double[][] solution) {
-		// assume solution has no problem ( eg: its size )
-		for (int i = 0; i < solution.length; i++) {
-			for (int j = 0; j < solution.length; j++) {
-				if(solution[i][j] > this.capacityMatrix[i][j])
+	public boolean Checker(Solution sol) {
+		if(sol.getNbVertex() != this.nbVertex) {
+			System.out.println("wrong size in Checker");
+			return false;
+		}
+		
+		for (int i = 0; i < sol.getNbVertex(); i++) {
+			
+			if(sol.getValueOut(i) < sol.getValueIn(i) + this.consumptionVertex[i])
+				return false;
+			
+			for (int j = 0; j < sol.getNbVertex(); j++) {
+				if(sol.getEdgesFlowsAt(i, j) > this.capacityMatrix[i][j])
 					return false;
 			}
-		}
-		for (int i = 0; i < solution.length; i++) {
-			double in = 0;
-			double out = 0;
-			for (int j = 0; j < solution.length; j++) {
-				in += solution[i][j];
-				out += solution[j][i];
-			}
-			if(out>in + this.consumptionVertex[i])
-				return false;
 		}
 		return true;
 	}
