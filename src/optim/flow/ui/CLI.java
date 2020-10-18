@@ -1,4 +1,4 @@
-public class NWF {
+public class CLI {
     public static void main(String[] args) {
 
     }
