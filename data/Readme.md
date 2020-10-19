@@ -12,7 +12,7 @@ Their format is:
 }
 [Number of edges]
 [For every arc] {
-[Vertice 1] [Vertice 2] [Capacity] [Costs]
+[Vertex 1] [Vertex 2] [Capacity] [Costs]
 }
 ```
 
@@ -23,6 +23,6 @@ Solutions have a ".sol" extension.
 Their format is:
 ```txt
 [For every edge] {    
-[Flow passing by the edge]
+[Vertex 1] [Vertex 2] [Flow passing by the edge]
 }
 ```
