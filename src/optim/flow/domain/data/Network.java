@@ -1,237 +1,318 @@
-package data;
+package optim.flow.domain.data;
 
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-/*
- * 1: camelCase for both variables and functions.
- * 2: List<edgesVerticesIDs>
- * 3: nb_variables instead of variable_nb. I find it clearer. same for max, min, etc
- * 4: Be careful of typos.
- * 5: ArrayList<> instead of []. It's safer and has more functionalities for the (almost) same speed.
- * 6. push après tout ça.
- */
+// Todo: camelCase for both variables and functions.
+// Todo: Be careful of typos.
 public class Network {
-	
-	double [][] capacityMatrix;
-	double [][] costMatrix;
-	double[] consumptionVertex;
-	int nbVertex, nbEdges;
-	double maxCapacity, maxCost, maxConsumption;
+	private final int nbVertices;
+	private final int nbEdges;
 
-	public Network(double [][] capacityMatrix, double [][] costMatrix, double [] consumptionVertex) {
-		this.capacityMatrix = capacityMatrix;
-		this.costMatrix = costMatrix;
-		this.consumptionVertex = consumptionVertex;
-		VerifyIntegrity();
-		this.nbVertex = capacityMatrix.length;
-		this.nbEdges = getEdgesFromCapacity();
-		AutoSetMaxValuesFromMatrices();
-		
-	}
-	
-	private void AutoSetMaxValuesFromMatrices() {
-		this.maxCapacity = this.capacityMatrix[0][0];
-		this.maxCost = this.costMatrix[0][0];
-		this.maxConsumption = this.consumptionVertex[0];
-		
-		for (int i = 0; i < this.nbVertex; i++) {
-			this.maxConsumption = Math.max(this.maxConsumption, this.consumptionVertex[i]);
-			
-			for (int j = 0; j < this.nbVertex; j++) {
-				this.maxCapacity = Math.max(this.maxCapacity, this.capacityMatrix[i][j]);
-				this.maxCost = Math.max(this.maxCost, this.costMatrix[i][j]);
-			}
-		}
-	}
+	private final double[][] capacityMatrix;
+	private final double[][] costMatrix;
 
-	public Network(int nbVertex, int nbEdges, double maxCapacity, double maxCost, double maxConsumption) {
-		this.nbVertex = nbVertex;
+	private final double[] verticesDemand;
+
+	private final double maxCapacity;
+	private final double maxCost;
+	private final double maxDemand;
+
+	/**
+	 * Constructs a network with the parameters characteristics. The underlying data
+	 * is generated randomly.
+	 * 
+	 * @param nbVertices
+	 * @param nbEdges
+	 * @param maxCapacity
+	 * @param maxCost
+	 * @param maxDemand
+	 */
+	public Network(int nbVertices, int nbEdges, double maxCapacity, double maxCost, double maxDemand) {
+		this.nbVertices = nbVertices;
 		this.nbEdges = nbEdges;
+
 		this.maxCapacity = maxCapacity;
 		this.maxCost = maxCost;
-		this.maxConsumption = maxConsumption;
-		VerifyBaseVariableIntegrity();
-		
-		setRandomConsumptionVertex();
-		setRandomCapacityAndCostMatrix();		
-	}
-	
-	private void VerifyBaseVariableIntegrity() {
-		if(this.nbVertex <= 0)
-			System.out.println("Error: Vertex Number <= 0");
-		if(this.nbEdges <= 0)
-			System.out.println("Error: Edges Number <= 0");
-		if(this.maxCapacity <= 0)
-			System.out.println("Error: Maximum Capacity <= 0");
-		if(this.maxCost <= 0)
-			System.out.println("Error: Maximum Cost <= 0");
-		if(this.maxConsumption <= 0)
-			System.out.println("Error: Maximum Consumption <= 0");
-		if(this.nbEdges > this.nbVertex*this.nbVertex )
-			System.out.println("Error: Edges Number > Vertex_Number^2");
-		
+		this.maxDemand = maxDemand;
+
+		this.capacityMatrix = new double[nbVertices][nbVertices];
+		this.costMatrix = new double[nbVertices][nbVertices];
+		this.verticesDemand = new double[nbVertices];
+
+		setRandomData();
 	}
 
-	private void setRandomConsumptionVertex(){
-		this.consumptionVertex = new double[nbVertex];
-		for (int i = 0; i < this.nbVertex; i++) {
-			this.consumptionVertex[i] = Math.random()*2*this.maxConsumption - this.maxConsumption;
+	/**
+	 * Creates a flow network from its corresponding data matrices.
+	 * 
+	 * @param capacityMatrix Capacity matrix
+	 * @param costMatrix     Cost matrix
+	 * @param verticesDemand Vertices demand
+	 */
+	public Network(double[][] capacityMatrix, double[][] costMatrix, double[] verticesDemand) {
+		this.capacityMatrix = capacityMatrix;
+		this.costMatrix = costMatrix;
+		this.verticesDemand = verticesDemand;
+
+		this.nbVertices = capacityMatrix.length;
+		this.nbEdges = getNbEdgesFromCapacity();
+
+		double maxCapacity = this.capacityMatrix[0][0];
+		double maxCost = this.costMatrix[0][0];
+		double maxDemand = this.verticesDemand[0];
+
+		for (int i = 0; i < this.nbVertices; i++) {
+			maxDemand = Math.max(maxDemand, this.verticesDemand[i]);
+
+			for (int j = 0; j < this.nbVertices; j++) {
+				maxCapacity = Math.max(maxCapacity, this.capacityMatrix[i][j]);
+				maxCost = Math.max(maxCost, this.costMatrix[i][j]);
+			}
 		}
+
+		this.maxCapacity = maxCapacity;
+		this.maxCost = maxCost;
+		this.maxDemand = maxDemand;
 	}
-	
-	private void setRandomCapacityAndCostMatrix(){
-		this.capacityMatrix = new double[nbVertex][nbVertex];
-		this.costMatrix = new double[nbVertex][nbVertex];
+
+	/**
+	 * Checks if the network is valid or not.
+	 * 
+	 * @return true if the network is valid, false otherwise.
+	 */
+	public boolean checkValidity() {
+		return verifyPositivity() && verifyMatricesDimensions() && verifyZeroCapacityEdges() && verifyVerticesDemands();
+	}
+
+	/**
+	 * Verifies if the network caracteristics are valid.
+	 * 
+	 * @return true if they are, else false.
+	 */
+	private boolean verifyPositivity() {
+		if (this.nbVertices <= 0) {
+			System.out.println("Error: Vertex Number <= 0");
+			return false;
+		}
+		if (this.nbEdges <= 0) {
+			System.out.println("Error: Edges Number <= 0");
+			return false;
+		}
+		if (this.maxCapacity <= 0) {
+			System.out.println("Error: Maximum Capacity <= 0");
+			return false;
+		}
+		if (this.maxCost <= 0) {
+			System.out.println("Error: Maximum Cost <= 0");
+			return false;
+		}
+		if (this.maxDemand <= 0) {
+			System.out.println("Error: Maximum Consumption <= 0");
+			return false;
+		}
+		if (this.nbEdges > this.nbVertices * this.nbVertices) {
+			System.out.println("Error: Edges Number > Vertex_Number^2");
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Verify data matrices dimensions.
+	 * 
+	 * @return true if it's valid, else false.
+	 */
+	private boolean verifyMatricesDimensions() {
+		int nbVertex = this.capacityMatrix.length;
+
+		if (nbVertex != this.costMatrix.length) {
+			System.out.println("Error: Capacity and cost matrices don't have the same dimensions.\n");
+			return false;
+		}
+
+		if (nbVertex != this.verticesDemand.length) {
+			System.out.println("Error: Capacity matrix and Demand vector don't have the same length.\n");
+			return false;
+		}
+
+		for (int i = 0; i < nbVertex; ++i) {
+			if (nbVertex != this.capacityMatrix[i].length) {
+				System.out.println("Error: Capacity matrix isn't a square matrix.\n");
+				return false;
+			}
+
+			if (nbVertex != this.costMatrix[i].length) {
+				System.out.println("Error: Cost matrix isn't a square matrix.\n");
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Not unvaliding but having a cost on a zero-capacity edge should issue a
+	 * warning.
+	 * 
+	 * @return Always true
+	 */
+	private boolean verifyZeroCapacityEdges() {
+		for (int i = 0; i < this.costMatrix.length; ++i) {
+			for (int j = 0; j < this.costMatrix[i].length; ++j) {
+				if (this.capacityMatrix[i][j] == 0 && this.costMatrix[i][j] != 0)
+					System.out.println("Warning: Edge from " + i + " to " + j
+							+ " has zero capacity but non-zero cost, potentially increasing non-polynomials algorithms complexity.\n");
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Verify that all vertices costs are low enough for its entering edge's
+	 * capacities.
+	 * 
+	 * @return true if all demands are valid, else false.
+	 */
+	private boolean verifyVerticesDemands() {
+		for (int vertexID = 0; vertexID < verticesDemand.length; ++vertexID) {
+			int maxFlowIn = 0;
+			for (int i = 0; i < capacityMatrix.length; ++i) {
+				maxFlowIn += capacityMatrix[i][vertexID];
+			}
+
+			if (maxFlowIn < verticesDemand[vertexID]) {
+				System.out.println("Error: Vertex #" + vertexID
+						+ " cannot be satisfied. Its entering edges' capacities sum are lower than its demand.");
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Generate random data set based on the network's caracteristics.
+	 */
+	private void setRandomData() {
+		/* Demand vector */
+		for (int i = 0; i < this.nbVertices; i++) {
+			this.verticesDemand[i] = Math.random() * 2 * this.maxDemand - this.maxDemand;
+		}
+
+		/* Capacity and cost matrices */
 		for (int i = 0; i < nbEdges; i++) {
 			int[] Coordinates = getEmptyCapacityMatrixCell();
-			
-			this.capacityMatrix[Coordinates[0]][Coordinates[1]] = Math.random()*maxCapacity;
-			this.costMatrix[Coordinates[0]][Coordinates[1]] = Math.random()*2*maxCost - maxCost;
+
+			this.capacityMatrix[Coordinates[0]][Coordinates[1]] = Math.random() * maxCapacity;
+			this.costMatrix[Coordinates[0]][Coordinates[1]] = Math.random() * 2 * maxCost - maxCost;
 		}
 	}
-	
+
+	/**
+	 * @return A cell from the capacity matrix that's empty.
+	 */
 	private int[] getEmptyCapacityMatrixCell() {
-		int x,y;
+		int x, y;
 		do {
-			x = (int)Math.round(Math.random()*(nbVertex-1));
-			y = (int)Math.round(Math.random()*(nbVertex-1));	
-		}while(this.capacityMatrix[x][y] != 0.0);
-		return new int[]{x,y};
+			x = (int) Math.round(Math.random() * (nbVertices - 1));
+			y = (int) Math.round(Math.random() * (nbVertices - 1));
+		} while (this.capacityMatrix[x][y] != 0.0);
+		return new int[] { x, y };
 	}
-	
-	
-	public String toString() {
-		String network = "capacityMatrix | costMatrix\n";
-		for (int i = 0; i < this.nbVertex; i++) {
-			network += "[";
-			for (int j = 0; j < this.nbVertex; j++) {
-				network += String.format("%.2f",this.capacityMatrix[i][j]) + ", ";
-			}
-			network = network.substring(0, network.length()-2) + "]   [";
-			for (int j = 0; j < this.nbVertex; j++) {
-				network += String.format("%.2f",this.costMatrix[i][j]) + ", ";
-			}
-			network = network.substring(0, network.length()-2) + "]\n";
-		}
-		network += "\nconsumption vector\n[";
-		for (int i = 0; i < this.nbVertex; i++) {
-			network += String.format("%.2f",this.consumptionVertex[i]) + ", "; 
-		}
-		return network.substring(0, network.length()-2) + "]\n";
-	}
-	
-	// Todo: = networkEdges.length
-	private int getEdgesFromCapacity() {
+
+	/**
+	 * @return The number of edges based on capacity matrix.
+	 */
+	private int getNbEdgesFromCapacity() {
 		int nbEdges = 0;
-		for (int i = 0; i < this.nbVertex; i++) {
-			for (int j = 0; j < this.nbVertex; j++) {
-				if(capacityMatrix[i][j] != 0)
-					nbEdges+=1;
+		for (int i = 0; i < this.nbVertices; i++) {
+			for (int j = 0; j < this.nbVertices; j++) {
+				if (capacityMatrix[i][j] != 0)
+					nbEdges += 1;
 			}
 		}
 		return nbEdges;
 	}
-	
-	public boolean VerifyIntegrity() {
-		// turn it into throw error but idk how to do it
-		// Todo: Non lol rpz le cours d'ao. Il vaut mieux vérifier que quelque chose est faisable avec des if que throw des erreurs. Après on se retrouve avec des try catch de partout.
-		return VerifySize() && VerifyCost();		
-	}
-	
-	private boolean VerifyCost() {
-		for (int i = 0; i < this.costMatrix.length; i++) {
-			for (int j = 0; j < this.costMatrix[i].length; j++) {
-				if( this.capacityMatrix[i][j] == 0 &&  this.costMatrix[i][j] != 0)
-					return false;					
-			}
-		}
-		return true;
-	}
 
-	private boolean VerifySize() {
-		int size = this.capacityMatrix.length;
-		if(size != this.costMatrix.length ||
-				size != this.consumptionVertex.length){
-			return false;
-		}
-		for (int i = 0; i < this.capacityMatrix.length; i++) {
-			if(size != this.capacityMatrix[i].length || 
-					size != this.costMatrix[i].length){
-				return false;
-			}
-		}
-		return true;
-	}
-	
-	public boolean Checker(Solution sol) {
-		if(sol.getNbVertex() != this.nbVertex) {
-			System.out.println("wrong size in Checker");
-			return false;
-		}
-		
-		for (int i = 0; i < sol.getNbVertex(); i++) {
-			
-			if(sol.getValueOut(i) < sol.getValueIn(i) + this.consumptionVertex[i])
-				return false;
-			
-			for (int j = 0; j < sol.getNbVertex(); j++) {
-				if(sol.getEdgesFlowsAt(i, j) > this.capacityMatrix[i][j])
-					return false;
-			}
-		}
-		return true;
-	}
-	
-	public double SolutionCost(double[][] solution) {
-		double cost = 0;
-		for (int i = 0; i < solution.length; i++) {
-			for (int j = 0; j < solution.length; j++) {
-				cost += solution[i][j]*this.costMatrix[i][j];
-			}
-		}
-		return cost;
-	}
-	
 	public void save(String filename) {
-		
 		try {
-		File saveFile = new File(filename);
-		FileWriter myWriter = new FileWriter(filename);
-	    myWriter.write(this.saveString());
-	    myWriter.close();
+			FileWriter myWriter = new FileWriter(filename);
+			myWriter.write(this.toString());
+			myWriter.close();
 		} catch (IOException e) {
-		      System.out.println("An error occurred.");
-		      e.printStackTrace();
-		    }
-		
-	}
-	
-	public String saveString() {
-		String network = "number of vertex: "+ Integer.toString(this.nbVertex)
-		+"\nnumber of edges: " + Integer.toString(this.nbVertex) + "\ncapacityMatrix\n";
-		for (int i = 0; i < this.nbVertex; i++) {
-			network += "[";
-			for (int j = 0; j < this.nbVertex; j++) {
-				network += String.format("%.2f",this.capacityMatrix[i][j]) + ", ";
-			}
-			network = network.substring(0, network.length()-2) + "]\n";
+			System.out.println("An error occurred.");
+			e.printStackTrace();
 		}
-		network += "\ncostMatrix\n";
-		for (int i = 0; i < this.nbVertex; i++) {
-			network += "[";
-			for (int j = 0; j < this.nbVertex; j++) {
-				network += String.format("%.2f",this.costMatrix[i][j]) + ", ";
-			}
-			network = network.substring(0, network.length()-2) + "]\n";
-		}
-		network += "\nconsumption vector\n[";
-		for (int i = 0; i < this.nbVertex; i++) {
-			network += String.format("%.2f",this.consumptionVertex[i]) + ", "; 
-		}
-		return network.substring(0, network.length()-2) + "]\n";
-		
 	}
 
+	/**
+	 * Constructs a human readable string of the network. Can also be used to save
+	 * into a file.
+	 * 
+	 * @return The string to be displayed
+	 */
+	@Override
+	public String toString() {
+		String str = "Number of vertices: " + this.nbVertices + "\n";
+		str += "Number of edges: " + this.nbVertices + "\n";
+
+		str += "\nCapacity matrix:\n";
+		for (int i = 0; i < this.nbVertices; ++i) {
+			str += "[";
+			for (int j = 0; j < this.nbVertices; ++j) {
+				str += String.format("%.2f", this.capacityMatrix[i][j]) + ", ";
+			}
+			str = str.substring(0, str.length() - 2) + "]\n";
+		}
+
+		str += "\nCost matrix:\n";
+		for (int i = 0; i < this.nbVertices; ++i) {
+			str += "[";
+			for (int j = 0; j < this.nbVertices; ++j) {
+				str += String.format("%.2f", this.costMatrix[i][j]) + ", ";
+			}
+			str = str.substring(0, str.length() - 2) + "]\n";
+		}
+
+		str += "\nDemand vector:\n";
+		str += "[";
+		for (int i = 0; i < this.nbVertices; i++) {
+			str += String.format("%.2f", this.verticesDemand[i]) + ", ";
+		}
+		str = str.substring(0, str.length() - 2) + "]\n";
+
+		return str;
+	}
+
+	// public boolean Checker(Solution sol) {
+	// if (sol.getnbVertices() != this.nbVertices) {
+	// System.out.println("wrong size in Checker");
+	// return false;
+	// }
+
+	// for (int i = 0; i < sol.getnbVertices(); i++) {
+
+	// if (sol.getValueOut(i) < sol.getValueIn(i) + this.verticesDemand[i])
+	// return false;
+
+	// for (int j = 0; j < sol.getnbVertices(); j++) {
+	// if (sol.getEdgesFlowsAt(i, j) > this.capacityMatrix[i][j])
+	// return false;
+	// }
+	// }
+	// return true;
+	// }
+
+	// public double SolutionCost(double[][] solution) {
+	// double cost = 0;
+	// for (int i = 0; i < solution.length; i++) {
+	// for (int j = 0; j < solution.length; j++) {
+	// cost += solution[i][j] * this.costMatrix[i][j];
+	// }
+	// }
+	// return cost;
+	// }
 }

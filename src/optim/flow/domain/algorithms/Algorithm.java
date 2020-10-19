@@ -1,3 +1,8 @@
+package optim.flow.domain.algorithms;
+
+import optim.flow.domain.data.Network;
+import optim.flow.domain.data.Solution;
+
 /**
  * Class to be implemented by network flow solving algorithms.
  */
@@ -9,5 +14,5 @@ public interface Algorithm {
      * 
      * @return A realisable solution.
      */
-    Solution solve(Instance instance);
+    Solution solve(Network Network);
 }

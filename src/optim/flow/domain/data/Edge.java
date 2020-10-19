@@ -1,9 +1,9 @@
-package data;
+package optim.flow.domain.data;
 
-public class EdgeIndex {
+public class Edge {
 	private int from, to;
-	
-	public EdgeIndex(int from,int to) {
+
+	public Edge(int from, int to) {
 		this.from = from;
 		this.to = to;
 	}
