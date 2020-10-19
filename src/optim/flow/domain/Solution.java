@@ -1,4 +1,4 @@
-package optim.flow.domain.data;
+package optim.flow.domain;
 
 public class Solution {
 	private final int nbVertices;

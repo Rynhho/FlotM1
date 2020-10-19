@@ -1,10 +1,8 @@
-package optim.flow.domain.data;
+package optim.flow.domain;
 
 import java.io.FileWriter;
 import java.io.IOException;
 
-// Todo: camelCase for both variables and functions.
-// Todo: Be careful of typos.
 public class Network {
 	private final int nbVertices;
 	private final int nbEdges;
@@ -74,6 +72,72 @@ public class Network {
 		this.maxCapacity = maxCapacity;
 		this.maxCost = maxCost;
 		this.maxDemand = maxDemand;
+	}
+
+	/**
+	 * Verifies if an edge is valid or not. Note that if the edge doesn't exist but
+	 * the parameters are valid, then the edge is valid but with a cost of zero.
+	 * 
+	 * @param from Source vertex
+	 * @param to   Destination vertex
+	 * 
+	 * @return true if it's valid, else false.
+	 */
+	public boolean isEdgeValid(int from, int to) {
+		return from >= 0 && from < this.nbVertices && to >= 0 && from < this.nbVertices;
+	}
+
+	/**
+	 * Verifies if a vertex ID is within the network's vertices range.
+	 * 
+	 * @param vertexID The ID to verify.
+	 * 
+	 * @return true if the vertex is valid, else false.
+	 */
+	public boolean isVertexIDValid(int vertexID) {
+		return vertexID >= 0 && vertexID < this.nbVertices;
+	}
+
+	/**
+	 * @return The number of vertices in the network.
+	 */
+	public int getNbVertices() {
+		return this.nbVertices;
+	}
+
+	/**
+	 * @param vertexID The vertex ID.
+	 * @return The vertex demand.
+	 */
+	public double getVertexDemand(int vertexID) {
+		return this.verticesDemand[vertexID];
+	}
+
+	/**
+	 * @return The number of edges in the network.
+	 */
+	public int getNbEdges() {
+		return this.nbEdges;
+	}
+
+	/**
+	 * @param from Source vertex
+	 * @param to   Destination vertex
+	 * 
+	 * @return The capacity of the corresponding edge.
+	 */
+	public double getEdgeCapacity(int from, int to) {
+		return capacityMatrix[from][to];
+	}
+
+	/**
+	 * @param from Source vertex
+	 * @param to   Destination vertex
+	 * 
+	 * @return The cost of the corresponding edge.
+	 */
+	public double getEdgeCost(int from, int to) {
+		return costMatrix[from][to];
 	}
 
 	/**
@@ -235,23 +299,6 @@ public class Network {
 			}
 		}
 		return nbEdges;
-	}
-
-	/**
-	 * Verifies if an edge is valid or not. Note that if the edge doesn't exist but
-	 * the parameters are valid, then the edge is valid but with a cost of zero.
-	 * 
-	 * @param from Source vertex
-	 * @param to   Destination vertex
-	 * 
-	 * @return true if it's valid, else false.
-	 */
-	public boolean isEdgeValid(int from, int to) {
-		return from >= 0 && from < this.nbVertices && to >= 0 && from < this.nbVertices;
-	}
-
-	public boolean isVertexIDValid(int vertexID) {
-		return vertexID >= 0 && vertexID < this.nbVertices;
 	}
 
 	public void save(String filename) {

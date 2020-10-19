@@ -11,7 +11,7 @@ Their format is:
 [Demand]
 }
 [Number of edges]
-[For every arc] {
+[For every edge] {
 [Vertex 1] [Vertex 2] [Capacity] [Costs]
 }
 ```

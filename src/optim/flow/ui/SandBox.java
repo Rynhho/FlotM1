@@ -1,7 +1,8 @@
 package optim.flow.ui;
 
-import optim.flow.domain.data.Network;
-import optim.flow.domain.data.Parser;
+import optim.flow.domain.Network;
+
+import optim.flow.infra.Parser;
 
 public class SandBox {
 

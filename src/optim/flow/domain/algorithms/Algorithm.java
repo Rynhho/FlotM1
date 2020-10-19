@@ -1,7 +1,7 @@
 package optim.flow.domain.algorithms;
 
-import optim.flow.domain.data.Network;
-import optim.flow.domain.data.Solution;
+import optim.flow.domain.Network;
+import optim.flow.domain.Solution;
 
 /**
  * Class to be implemented by network flow solving algorithms.

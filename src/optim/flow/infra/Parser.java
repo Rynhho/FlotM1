@@ -1,10 +1,12 @@
-package optim.flow.domain.data;
+package optim.flow.infra;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import optim.flow.domain.Network;
 
 public final class Parser {
 	public Network loadFromFile(String filename) {
