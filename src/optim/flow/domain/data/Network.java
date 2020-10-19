@@ -237,6 +237,23 @@ public class Network {
 		return nbEdges;
 	}
 
+	/**
+	 * Verifies if an edge is valid or not. Note that if the edge doesn't exist but
+	 * the parameters are valid, then the edge is valid but with a cost of zero.
+	 * 
+	 * @param from Source vertex
+	 * @param to   Destination vertex
+	 * 
+	 * @return true if it's valid, else false.
+	 */
+	public boolean isEdgeValid(int from, int to) {
+		return from >= 0 && from < this.nbVertices && to >= 0 && from < this.nbVertices;
+	}
+
+	public boolean isVertexIDValid(int vertexID) {
+		return vertexID >= 0 && vertexID < this.nbVertices;
+	}
+
 	public void save(String filename) {
 		try {
 			FileWriter myWriter = new FileWriter(filename);
