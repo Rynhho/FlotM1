@@ -1,67 +1,83 @@
 package optim.flow.domain.data;
 
 public class Solution {
-	private double[][] edgesFlows;
-	private int nbVertex;
+	private final int nbVertices;
+	private final double[][] flowMatrix;
 
-	public Solution(int size) {
-		this.edgesFlows = new double[size][size];
-		this.nbVertex = size;
+	/**
+	 * Creates an empty solution.
+	 * 
+	 * @param nbVertices The number of vertices of the solution.
+	 */
+	public Solution(int nbVertices) {
+		this.nbVertices = nbVertices;
+		this.flowMatrix = new double[nbVertices][nbVertices];
 	}
 
-	public Solution(double[][] edgesFlows) {
-		this.edgesFlows = edgesFlows;
-		this.nbVertex = edgesFlows.length;
+	/**
+	 * Creates a solution from a flow matrix.
+	 * 
+	 * @param flowMatrix The flow matrix.
+	 */
+	public Solution(double[][] flowMatrix) {
+		this.nbVertices = flowMatrix.length;
+		this.flowMatrix = flowMatrix;
 	}
 
-	public double[][] getEdgesFlows() {
-		return this.edgesFlows;
+	/**
+	 * Returns size of the solution
+	 */
+	public int getNbVertices() {
+		return this.nbVertices;
 	}
 
-	public int getNbVertex() {
-		return this.nbVertex;
+	/**
+	 * Returns the flow of a certain edge. Please verify it's a valid edge
+	 * beforehand.
+	 * 
+	 * @param from Source vertex
+	 * @param to   Destination vertex
+	 * 
+	 * @return The flow of the edge
+	 */
+	public double getEdgeFlow(int from, int to) {
+		return this.flowMatrix[from][to];
 	}
 
-	public double getEdgesFlowsAt(int x, int y) {
-		if (x >= 0 && x < this.edgesFlows.length && y >= 0 && y < this.edgesFlows.length) {
-			return this.edgesFlows[x][y];
-		} else {
-			System.out.println("error in setEdgesFlowsAt: " + x + " " + y);
-			return -1;
+	/**
+	 * Sets the flow of a certain edge. Please verify it's a valid edge beforehand.
+	 * 
+	 * @param from Source vertex
+	 * @param to   Destination vertex
+	 * @param flow The flow to be set
+	 */
+	public void setEdgeFlow(int from, int to, double flow) {
+		this.flowMatrix[from][to] = flow;
+	}
+
+	/**
+	 * @param vertex The vertex
+	 * 
+	 * @return The flow going into the vertex
+	 */
+	public double getVertexFlowIn(int vertexID) {
+		double flowIn = 0;
+		for (int i = 0; i < this.nbVertices; ++i) {
+			flowIn += this.flowMatrix[i][vertexID];
 		}
-
+		return flowIn;
 	}
 
-	public void setEdgesFlowsAt(int x, int y, double val) {
-		if (x >= 0 && x < this.edgesFlows.length && y >= 0 && y < this.edgesFlows.length) {
-			this.edgesFlows[x][y] = val;
-		} else {
-			System.out.println("error in setEdgesFlowsAt: " + x + " " + y);
+	/**
+	 * @param vertex The vertex
+	 * 
+	 * @return The flow going out of the vertex
+	 */
+	public double getVertexFlowOut(int vertex) {
+		double flowOut = 0;
+		for (int j = 0; j < this.nbVertices; ++j) {
+			flowOut += this.flowMatrix[vertex][j];
 		}
-
-	}
-
-	public double getValueIn(int vertex) {
-		if (vertex >= 0 && vertex < this.edgesFlows.length) {
-			double value = 0;
-			for (int i = 0; i < this.edgesFlows.length; i++) {
-				value += this.edgesFlows[i][vertex];
-			}
-			return value;
-		}
-		System.out.println("error in getValueIn: " + vertex);
-		return -1;
-	}
-
-	public double getValueOut(int vertex) {
-		if (vertex >= 0 && vertex < this.edgesFlows.length) {
-			double value = 0;
-			for (int i = 0; i < this.edgesFlows.length; i++) {
-				value += this.edgesFlows[vertex][i];
-			}
-			return value;
-		}
-		System.out.println("error in getValueOut: " + vertex);
-		return -1;
+		return flowOut;
 	}
 }
