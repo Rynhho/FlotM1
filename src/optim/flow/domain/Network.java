@@ -299,6 +299,62 @@ public class Network {
 	}
 
 	/**
+	 * @param solution The solution to check
+	 * @return true if the solution is realisable, else false.
+	 */
+	public boolean verifySolutionValidity(Solution solution) {
+		if (this.nbVertices != solution.getNbVertices()) {
+			System.out.println("Unvalid solution: Instance and solution don't have the same number of vertices.\n");
+			return false;
+		}
+
+		boolean shouldReturn = false;
+		for (int i = 0; i < this.nbVertices; ++i) {
+			for (int j = 0; j < this.nbVertices; ++j) {
+				if (solution.getEdgeFlow(i, j) > this.capacityMatrix[i][j]) {
+					System.out.println(
+							"Unvalid solution: Flow from #" + i + " to #" + j + " exceeds the edge's capacity.\n");
+					shouldReturn = true;
+				}
+			}
+		}
+
+		if (shouldReturn) {
+			return false;
+		}
+
+		for (int vertexID = 0; vertexID < this.nbVertices; ++vertexID) {
+			if (solution.getVertexFlowIn(vertexID)
+					- solution.getVertexFlowOut(vertexID) < this.verticesDemand[vertexID]) {
+				System.out.println("Unvalid solution: Vertex #" + vertexID + "'s demand isn't satisfied.\n");
+				shouldReturn = true;
+			}
+		}
+
+		if (shouldReturn) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * @param solution The solution to calculate.
+	 * @return The solution's cost.
+	 */
+	public double calculateSolutionCost(Solution solution) {
+		double cost = 0;
+
+		for (int i = 0; i < solution.getNbVertices(); ++i) {
+			for (int j = 0; j < solution.getNbVertices(); ++j) {
+				cost += solution.getEdgeFlow(i, j) * this.costMatrix[i][j];
+			}
+		}
+
+		return cost;
+	}
+
+	/**
 	 * Constructs a human readable string of the network. Can also be used to save
 	 * into a file.
 	 * 
@@ -336,33 +392,4 @@ public class Network {
 
 		return str;
 	}
-
-	// public boolean Checker(Solution sol) {
-	// if (sol.getnbVertices() != this.nbVertices) {
-	// System.out.println("wrong size in Checker");
-	// return false;
-	// }
-
-	// for (int i = 0; i < sol.getnbVertices(); i++) {
-
-	// if (sol.getValueOut(i) < sol.getValueIn(i) + this.verticesDemand[i])
-	// return false;
-
-	// for (int j = 0; j < sol.getnbVertices(); j++) {
-	// if (sol.getEdgesFlowsAt(i, j) > this.capacityMatrix[i][j])
-	// return false;
-	// }
-	// }
-	// return true;
-	// }
-
-	// public double SolutionCost(double[][] solution) {
-	// double cost = 0;
-	// for (int i = 0; i < solution.length; i++) {
-	// for (int j = 0; j < solution.length; j++) {
-	// cost += solution[i][j] * this.costMatrix[i][j];
-	// }
-	// }
-	// return cost;
-	// }
 }
