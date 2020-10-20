@@ -2,9 +2,6 @@
 
 ## Instances
 
-Instances have a ".txt" extension.
-
-Their format is:
 ```txt
 [Number of vertices]
 [For every vertex] {
@@ -12,17 +9,17 @@ Their format is:
 }
 [Number of edges]
 [For every edge] {
-[Vertex 1] [Vertex 2] [Capacity] [Costs]
+[Source vertex] [Destination vertex] [Capacity] [Costs]
 }
 ```
 
 ## Solutions
 
-Solutions have a ".sol" extension.
-
-Their format is:
 ```txt
+[Number of vertices]
 [For every edge] {    
-[Vertex 1] [Vertex 2] [Flow passing by the edge]
+[Source vertex] [Destination vertex] [Flow passing by the edge]
 }
 ```
+
+It's important we store the number of vertices and edges to not go out of bounds.
