@@ -1,8 +1,6 @@
-### Second phase
-
 Luis:
-* Start report (LaTeX on overleaf)
-* Help others
+* Report (LaTeX on overleaf)
+* Benchmarks
 
 Lucas:
 * Checker
@@ -13,25 +11,6 @@ Sylvain:
 Lin:
 * Generator
 
-### Third phase
-
-Luis:
-* Nothing lol
-
-Everyone else:
+Everyone:
 * Implements algorithms
 * Write respective algorithm into report
-
-Lucas:
-
-Sylvain:
-
-Lin:
-
-### Fourth phase
-
-Luis:
-* Benchmarks
-
-Everyone else:
-* Nothing lol
