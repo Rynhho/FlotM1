@@ -1,8 +1,5 @@
 package optim.flow.domain;
 
-import java.io.FileWriter;
-import java.io.IOException;
-
 public class Network {
 	private final int nbVertices;
 	private final int nbEdges;
@@ -299,17 +296,6 @@ public class Network {
 			}
 		}
 		return nbEdges;
-	}
-
-	public void save(String filename) {
-		try {
-			FileWriter myWriter = new FileWriter(filename);
-			myWriter.write(this.toString());
-			myWriter.close();
-		} catch (IOException e) {
-			System.out.println("An error occurred.");
-			e.printStackTrace();
-		}
 	}
 
 	/**

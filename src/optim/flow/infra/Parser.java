@@ -2,6 +2,8 @@ package optim.flow.infra;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -9,6 +11,17 @@ import java.util.regex.Pattern;
 import optim.flow.domain.Network;
 
 public final class Parser {
+	public void saveToFile(Network network, String filename) {
+		try {
+			FileWriter myWriter = new FileWriter(filename);
+			myWriter.write(network.toString());
+			myWriter.close();
+		} catch (IOException e) {
+			System.out.println("An error occurred.");
+			e.printStackTrace();
+		}
+	}
+
 	public Network loadFromFile(String filename) {
 		try {
 			File myObj = new File(filename);

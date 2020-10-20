@@ -5,19 +5,23 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import optim.flow.domain.Network;
-import optim.flow.domain.NetworkRepo;
+import optim.flow.domain.Repository;
 
-public class NetworkRepoFile implements NetworkRepo {
+public class NetworkFileRepository implements Repository<Network> {
     final String extension;
+    final int floatPrecision;
 
-    public NetworkRepoFile(String extension) {
+    public NetworkFileRepository(String extension, int floatPrecision) {
         this.extension = extension;
+        this.floatPrecision = floatPrecision;
     }
 
     @Override
@@ -33,10 +37,14 @@ public class NetworkRepoFile implements NetworkRepo {
     @Override
     public void save(Network network, String ID) {
         final int nbVertices = network.getNbVertices();
+
         String str = new String();
         str += nbVertices + "\n";
-        for (int i = 0; i < network.getNbVertices(); ++i) {
-            str += network.getVertexDemand(i) + "\n";
+        for (int i = 0; i < nbVertices; ++i) {
+            BigDecimal demand = new BigDecimal(network.getVertexDemand(i));
+            demand = demand.setScale(this.floatPrecision, RoundingMode.HALF_EVEN);
+
+            str += demand + "\n";
         }
 
         str += network.getNbEdges() + "\n";
@@ -44,7 +52,12 @@ public class NetworkRepoFile implements NetworkRepo {
             for (int j = 0; j < nbVertices; ++j) {
                 /* Don't save zero-capacity edges */
                 if (network.getEdgeCapacity(i, j) != 0) {
-                    str += i + " " + j + " " + network.getEdgeCapacity(i, j) + " " + network.getEdgeCost(i, j) + "\n";
+                    BigDecimal capacity = new BigDecimal(network.getEdgeCapacity(i, j));
+                    capacity = capacity.setScale(this.floatPrecision, RoundingMode.HALF_EVEN);
+
+                    BigDecimal cost = new BigDecimal(network.getEdgeCost(i, j));
+                    cost = cost.setScale(this.floatPrecision, RoundingMode.HALF_EVEN);
+                    str += i + " " + j + " " + capacity + " " + cost + "\n";
                 }
             }
         }
@@ -87,8 +100,8 @@ public class NetworkRepoFile implements NetworkRepo {
                 int from = Integer.parseInt(words.get(0));
                 int to = Integer.parseInt(words.get(1));
 
-                capacityMatrix[from][to] = Integer.parseInt(words.get(2));
-                costMatrix[from][to] = Integer.parseInt(words.get(3));
+                capacityMatrix[from][to] += Integer.parseInt(words.get(2));
+                costMatrix[from][to] += Integer.parseInt(words.get(3));
             }
 
             network = new Network(capacityMatrix, costMatrix, verticesDemand);
