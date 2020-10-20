@@ -10,7 +10,7 @@ import optim.flow.infra.SolutionFileRepository;
 public class SandBox {
 
 	public static void main(String[] args) {
-		Repository<Network> networkRepo = new NetworkFileRepository(".txt", 2);
+		Repository<Network> networkRepo = new NetworkFileRepository(".txt");
 
 		Network smallNetwork = new Network(10, 75, 30, 30, 10);
 		System.out.println("Small network valid: " + smallNetwork.checkValidity());
@@ -25,7 +25,7 @@ public class SandBox {
 		Parser parser = new Parser();
 		parser.saveToFile(bigNetwork, "BigNetworkParser");
 
-		Repository<Solution> solutionRepo = new SolutionFileRepository(".sol", 2);
+		Repository<Solution> solutionRepo = new SolutionFileRepository(".sol");
 
 		double[][] capacityMatrix = { { 0, 0, 0, 2 }, { 0, 0, 3, 2 }, { 4, 0, 0, 0 }, { 0, 0, 0, 0 } };
 		double[][] costMatrix = { { 1, 1, 1, 1 }, { 1, 1, 1, 1 }, { 1, 1, 1, 1 }, { 1, 1, 1, 1 } };
@@ -39,6 +39,7 @@ public class SandBox {
 		Solution handSolution = new Solution(flowMatrix);
 
 		System.out.println(handNetwork);
+		System.out.println(handSolution);
 
 		solutionRepo.save(handSolution, "HandSolution");
 

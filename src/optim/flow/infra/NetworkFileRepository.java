@@ -17,11 +17,9 @@ import optim.flow.domain.Repository;
 
 public class NetworkFileRepository implements Repository<Network> {
     final String extension;
-    final int floatPrecision;
 
-    public NetworkFileRepository(String extension, int floatPrecision) {
+    public NetworkFileRepository(String extension) {
         this.extension = extension;
-        this.floatPrecision = floatPrecision;
     }
 
     @Override
@@ -41,10 +39,7 @@ public class NetworkFileRepository implements Repository<Network> {
         String str = new String();
         str += nbVertices + "\n";
         for (int i = 0; i < nbVertices; ++i) {
-            BigDecimal demand = new BigDecimal(network.getVertexDemand(i));
-            demand = demand.setScale(this.floatPrecision, RoundingMode.HALF_EVEN);
-
-            str += demand + "\n";
+            str += network.getVertexDemand(i) + "\n";
         }
 
         str += network.getNbEdges() + "\n";
@@ -52,12 +47,7 @@ public class NetworkFileRepository implements Repository<Network> {
             for (int j = 0; j < nbVertices; ++j) {
                 /* Don't save zero-capacity edges */
                 if (network.getEdgeCapacity(i, j) != 0) {
-                    BigDecimal capacity = new BigDecimal(network.getEdgeCapacity(i, j));
-                    capacity = capacity.setScale(this.floatPrecision, RoundingMode.HALF_EVEN);
-
-                    BigDecimal cost = new BigDecimal(network.getEdgeCost(i, j));
-                    cost = cost.setScale(this.floatPrecision, RoundingMode.HALF_EVEN);
-                    str += i + " " + j + " " + capacity + " " + cost + "\n";
+                    str += i + " " + j + " " + network.getEdgeCapacity(i, j) + " " + network.getEdgeCost(i, j) + "\n";
                 }
             }
         }

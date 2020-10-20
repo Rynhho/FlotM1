@@ -80,4 +80,22 @@ public class Solution {
 		}
 		return flowOut;
 	}
+
+	@Override
+	public String toString() {
+		String str = new String();
+
+		str += "Number of vertices: " + this.nbVertices + "\n";
+
+		str += "Flow matrix:\n";
+		for (int i = 0; i < this.nbVertices; ++i) {
+			str += "[";
+			for (int j = 0; j < this.nbVertices - 1; ++j) {
+				str += this.flowMatrix[i][j] + " ";
+			}
+			str += this.flowMatrix[i][this.nbVertices - 1];
+			str += "]\n";
+		}
+		return str;
+	}
 }

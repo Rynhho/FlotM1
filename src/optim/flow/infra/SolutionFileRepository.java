@@ -16,11 +16,9 @@ import optim.flow.domain.Solution;
 
 public class SolutionFileRepository implements Repository<Solution> {
     final String extension;
-    final int floatPrecision;
 
-    public SolutionFileRepository(String extension, int floatPrecision) {
+    public SolutionFileRepository(String extension) {
         this.extension = extension;
-        this.floatPrecision = floatPrecision;
     }
 
     @Override
@@ -45,10 +43,7 @@ public class SolutionFileRepository implements Repository<Solution> {
                 /* Don't save 0-flow edges */
                 double flow = solution.getEdgeFlow(i, j);
                 if (flow != 0.0) {
-                    BigDecimal bd = new BigDecimal(flow);
-                    bd = bd.setScale(this.floatPrecision, RoundingMode.HALF_EVEN);
-
-                    str += i + " " + j + " " + bd + "\n";
+                    str += i + " " + j + " " + flow + "\n";
                 }
             }
         }
