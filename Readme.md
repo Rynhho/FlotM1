@@ -5,13 +5,13 @@
 The applications is to be launched via a command line interface as specified below. There are currently no projects for a GUI.
 
 ```bash
-java NWF [arguments]
+java CLI [arguments]
 ```
 
 Where arguments is one of the following:
 * **-c (input instance file) (input solution file)**: Check if the solution file is a realisable solution for the instance file problem.
 * **-r (algorithm) (input instance file) (output solution file)**: Runs an algorithm with the specified instance file and outputs the solution file.
-* **-b (input instance file)**: Benchmarks ALL implemented algorithms.
+<!-- * **-b (input instance file)**: Benchmarks ALL implemented algorithms. -->
 
 Information about some arguments:
 * **algorithm** is a string on the following list:

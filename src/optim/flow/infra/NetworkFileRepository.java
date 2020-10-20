@@ -5,8 +5,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.Date;
@@ -16,16 +14,10 @@ import optim.flow.domain.Network;
 import optim.flow.domain.Repository;
 
 public class NetworkFileRepository implements Repository<Network> {
-    final String extension;
-
-    public NetworkFileRepository(String extension) {
-        this.extension = extension;
-    }
-
     @Override
     public String save(Network network) {
         final Date date = new Date();
-        final String ID = Long.toString(date.getTime());
+        final String ID = Long.toString(date.getTime()) + ".txt";
 
         save(network, ID);
 
@@ -53,7 +45,7 @@ public class NetworkFileRepository implements Repository<Network> {
         }
 
         try {
-            FileWriter fileWriter = new FileWriter(ID + this.extension);
+            FileWriter fileWriter = new FileWriter(ID);
             fileWriter.write(str);
             fileWriter.close();
         } catch (IOException e) {
@@ -63,12 +55,10 @@ public class NetworkFileRepository implements Repository<Network> {
 
     @Override
     public Network load(String ID) {
-        final String filename = ID + this.extension;
-
         Network network = null;
 
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(filename));
+            BufferedReader reader = new BufferedReader(new FileReader(ID));
 
             String line = reader.readLine();
             final int nbVertices = Integer.parseInt(line);

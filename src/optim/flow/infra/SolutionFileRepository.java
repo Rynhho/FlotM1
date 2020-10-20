@@ -4,8 +4,6 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.Date;
@@ -15,12 +13,6 @@ import optim.flow.domain.Repository;
 import optim.flow.domain.Solution;
 
 public class SolutionFileRepository implements Repository<Solution> {
-    final String extension;
-
-    public SolutionFileRepository(String extension) {
-        this.extension = extension;
-    }
-
     @Override
     public String save(Solution solution) {
         final Date date = new Date();
@@ -49,7 +41,7 @@ public class SolutionFileRepository implements Repository<Solution> {
         }
 
         try {
-            FileWriter fileWriter = new FileWriter(ID + this.extension);
+            FileWriter fileWriter = new FileWriter(ID);
             fileWriter.write(str);
             fileWriter.close();
         } catch (IOException e) {
@@ -59,9 +51,8 @@ public class SolutionFileRepository implements Repository<Solution> {
 
     @Override
     public Solution load(String ID) {
-        final String filename = ID + this.extension;
         try {
-            BufferedReader bufferedReader = new BufferedReader(new FileReader(filename));
+            BufferedReader bufferedReader = new BufferedReader(new FileReader(ID));
 
             /* Number of vertices */
             String line = bufferedReader.readLine();
