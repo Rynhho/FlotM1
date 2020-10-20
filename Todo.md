@@ -1,6 +1,7 @@
 Luis:
 * Report (LaTeX on overleaf)
 * Benchmarks
+* Add integer-only support
 
 Lucas:
 * Checker
