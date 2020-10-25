@@ -1,4 +1,4 @@
-package domain;
+package NeighborStruct;
 
 public class Arc {
 	private final int cost;
