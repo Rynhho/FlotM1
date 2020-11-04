@@ -1,4 +1,4 @@
-# Network flow solving algorithms
+# Minimum cost flow solving algorithms
 
 ## How to run
 
@@ -11,7 +11,6 @@ java CLI [arguments]
 Where arguments is one of the following:
 * **-c (input instance file) (input solution file)**: Check if the solution file is a realisable solution for the instance file problem.
 * **-r (algorithm) (input instance file) (output solution file)**: Runs an algorithm with the specified instance file and outputs the solution file.
-<!-- * **-b (input instance file)**: Benchmarks ALL implemented algorithms. -->
 
 Information about some arguments:
 * **algorithm** is a string on the following list:
@@ -22,3 +21,7 @@ Adding to that, we have some optional arguments:
 
 ## Implemented algorithms
 
+## Features (maybe) coming later
+
+- Specify a directory of instances to solve.
+- Sepcify a directory of instances to check.
