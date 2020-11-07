@@ -6,7 +6,7 @@
  */
 apply plugin: 'java'
 
-sourceSets{
+sourceSets {
     main{
         java {
             srcDirs=['src']
@@ -14,3 +14,16 @@ sourceSets{
     }
 }
 
+apply plugin: 'application'
+
+task(runCLI, type: JavaExec) {
+    main = "optim.flow.ui.CLI"
+    classpath = sourceSets.main.runtimeClasspath
+    standardInput = System.in
+}
+
+task(runSandBox, type: JavaExec) {
+    main = "optim.flow.ui.SandBox"
+    classpath = sourceSets.main.runtimeClasspath
+    standardInput = System.in
+}
