@@ -1,8 +1,8 @@
 package optim.flow.ui;
 
-import optim.flow.domain.Network;
-import optim.flow.domain.Repository;
-import optim.flow.domain.Solution;
+
+import optim.flow.domain.algorithms.*;
+import optim.flow.domain.*;
 import optim.flow.infra.NetworkFileRepository;
 import optim.flow.infra.SolutionFileRepository;
 
@@ -40,5 +40,8 @@ public class SandBox {
 
 		System.out.println("Hand solution valid for hand network: " + handNetwork.verifySolutionValidity(handSolution));
 		System.out.println("Hand solution cost: " + handNetwork.calculateSolutionCost(handSolution));
+
+		Cplex cplex = new Cplex();
+		Solution CplexSolution = cplex.solve(handNetwork);
 	}
 }
