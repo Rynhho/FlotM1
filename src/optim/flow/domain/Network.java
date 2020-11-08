@@ -37,13 +37,13 @@ public class Network {
 		this.maxDemand = maxDemand;
 
 		this.adjacencyList = new ArrayList<List<Edge>>(nbVertices);
-		for (int i = 0; i < this.adjacencyList.size(); ++i) {
-			this.adjacencyList.set(i, new ArrayList<Edge>());
+		for (int i = 0; i < nbVertices; ++i) {
+			this.adjacencyList.add(null);
 		}
 
 		this.verticesDemands = new double[nbVertices];
 
-		// generateRandomData();
+		generateRandomData();
 	}
 
 	/**
@@ -172,6 +172,17 @@ public class Network {
 		return this.maxDemand;
 	}
 
+	private void generateRandomData() {
+		for (int i = 0; i < this.adjacencyList.size(); ++i) {
+			this.adjacencyList.set(i, new ArrayList<Edge>(1));
+			this.adjacencyList.get(i).add(new Edge(i, i + 1, 1, 1));
+
+			this.verticesDemands[i] = 0;
+		}
+
+		this.verticesDemands[0] = 1;
+		this.verticesDemands[this.verticesDemands.length - 1] = 1;
+	}
 	// /**
 	// * Generate random data set based on the network's caracteristics.
 	// */

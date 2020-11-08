@@ -30,17 +30,19 @@ public class NetworkFileRepository implements Repository<Network> {
         final int nbVertices = network.getNbVertices();
 
         String str = new String();
-        str += nbVertices +" "+network.getNbEdges()+" "+ network.getMaxCapacity() +" "+network.getMaxCost()+" "+network.getMaxDemand() + "\n";
+        str += nbVertices + " " + network.getNbEdges() + " " + network.getMaxCapacity() + " " + network.getMaxCost()
+                + " " + network.getMaxDemand() + "\n";
         for (int i = 0; i < nbVertices; ++i) {
             str += network.getVertexDemand(i) + "\n";
         }
 
-        str += network.getNbEdges() + "\n";
-        for (int i = 0; i < nbVertices; ++i) {
-            for (int j = 0; j < nbVertices; ++j) {
-                /* Don't save zero-capacity edges */
-                if (network.getEdgeCapacity(i, j) != 0) {
-                    str += i + " " + j + " " + network.getEdgeCapacity(i, j) + " " + network.getEdgeCost(i, j) + "\n";
+        for (int source = 0; source < nbVertices; ++source) {
+            for (int destination = 0; destination < nbVertices; ++destination) {
+                if (network.hasEdgeBetween(source, destination)) {
+                    if (network.getEdgeCapacity(source, destination) != 0) {
+                        str += source + " " + destination + " " + network.getEdgeCapacity(source, destination) + " "
+                                + network.getEdgeCost(source, destination) + "\n";
+                    }
                 }
             }
         }
@@ -53,7 +55,7 @@ public class NetworkFileRepository implements Repository<Network> {
             e.printStackTrace();
         }
     }
-    
+
     @Override
     public Network load(String ID) {
         Network network = null;
@@ -64,31 +66,36 @@ public class NetworkFileRepository implements Repository<Network> {
             String line = reader.readLine();
             List<String> keyValues = new ArrayList<>(extractWords(line));
             final int nbVertices = Integer.parseInt(keyValues.get(0));
-            final int nbEdges= Integer.parseInt(keyValues.get(1));
+            final int nbEdges = Integer.parseInt(keyValues.get(1));
             // final int maxCapacity = Integer.parseInt(keyValues.get(2));
             // final int maxCost = Integer.parseInt(keyValues.get(3));
             // final int maxDemand = Integer.parseInt(keyValues.get(4));
-            
-            List<ArrayList<Edge>> edges = new ArrayList<ArrayList<Edge>>();
+
+            List<List<Edge>> edges = new ArrayList<List<Edge>>();
+
             final double[] verticesDemand = new double[nbVertices];
             for (int vertexID = 0; vertexID < nbVertices; ++vertexID) {
                 line = reader.readLine();
-                verticesDemand[vertexID] = Integer.parseInt(line);
+                verticesDemand[vertexID] = Double.parseDouble(line);
+
                 edges.add(new ArrayList<Edge>());
             }
+
             for (int edgeID = 0; edgeID < nbEdges; ++edgeID) {
                 line = reader.readLine();
                 List<String> words = new ArrayList<>(extractWords(line));
 
                 int from = Integer.parseInt(words.get(0));
                 int to = Integer.parseInt(words.get(1));
-                double capacity = Integer.parseInt(words.get(2));
-                double cost = Integer.parseInt(words.get(2));
+
+                double capacity = Double.parseDouble(words.get(2));
+                double cost = Double.parseDouble(words.get(2));
+
                 Edge edge = new Edge(from, to, cost, capacity);
                 edges.get(from).add(edge);
             }
 
-            network = new Network(verticesDemand, edges);
+            network = new Network(edges, verticesDemand);
 
             reader.close();
         } catch (FileNotFoundException e) {

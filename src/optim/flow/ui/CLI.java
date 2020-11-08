@@ -32,8 +32,9 @@ public class CLI {
                         return;
                     }
 
-                    if (network.verifySolutionValidity(solution)) {
-                        System.out.println("Solution valid.\n");
+                    if (network.isSolutionValid(solution)) {
+                        System.out.println(
+                                "Solution valid. Its cost is " + network.calculateSolutionCost(solution) + ".\n");
                     } else {
                         System.out.println("Solution unvalid.\n");
                     }

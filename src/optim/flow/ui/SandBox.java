@@ -10,35 +10,47 @@ public class SandBox {
 	public static void main(String[] args) {
 		Repository<Network> networkRepo = new NetworkFileRepository();
 
-		Network smallNetwork = new Network(10, 75, 30, 30, 10);
-		System.out.println("Small network valid: " + smallNetwork.checkValidity());
+		Network smallNetwork = new Network(10, 9, 30, 30, 10);
+		// System.out.println("Small network realisable: " +
+		// smallNetwork.isRealisable());
 
 		networkRepo.save(smallNetwork, "SmallNetwork");
 
-		Network bigNetwork = new Network(100, 5000, 30, 30, 10);
-		System.out.println("Big network valid: " + bigNetwork.checkValidity());
+		smallNetwork = networkRepo.load("SmallNetwork");
 
-		networkRepo.save(bigNetwork, "BigNetwork");
+		networkRepo.save(smallNetwork, "SmalleNetwork2");
 
-		Repository<Solution> solutionRepo = new SolutionFileRepository();
+		// Network bigNetwork = new Network(100, 5000, 30, 30, 10);
+		// // System.out.println("Big network realisable: " +
+		// bigNetwork.isRealisable());
 
-		double[][] capacityMatrix = { { 0, 0, 0, 2 }, { 0, 0, 3, 2 }, { 4, 0, 0, 0 }, { 0, 0, 0, 0 } };
-		double[][] costMatrix = { { 1, 1, 1, 1 }, { 1, 1, 1, 1 }, { 1, 1, 1, 1 }, { 1, 1, 1, 1 } };
-		double[] verticesDemand = { 0, -100, 2, 3 };
+		// networkRepo.save(bigNetwork, "data/BigNetwork");
 
-		Network handNetwork = new Network(capacityMatrix, costMatrix, verticesDemand);
-		networkRepo.save(handNetwork, "HandNetwork");
+		// Repository<Solution> solutionRepo = new SolutionFileRepository();
 
-		double[][] flowMatrix = { { 0, 0, 0, 1 }, { 0, 0, 3, 2 }, { 1, 0, 0, 0 }, { 0, 0, 0, 0 } };
+		// double[][] capacityMatrix = { { 0, 0, 0, 2 }, { 0, 0, 3, 2 }, { 4, 0, 0, 0 },
+		// { 0, 0, 0, 0 } };
+		// double[][] costMatrix = { { 1, 1, 1, 1 }, { 1, 1, 1, 1 }, { 1, 1, 1, 1 }, {
+		// 1, 1, 1, 1 } };
+		// double[] verticesDemand = { 0, -100, 2, 3 };
 
-		Solution handSolution = new Solution(flowMatrix);
+		// Network handNetwork = new Network(capacityMatrix, costMatrix,
+		// verticesDemand);
+		// networkRepo.save(handNetwork, "HandNetwork");
 
-		System.out.println(handNetwork);
-		System.out.println(handSolution);
+		// double[][] flowMatrix = { { 0, 0, 0, 1 }, { 0, 0, 3, 2 }, { 1, 0, 0, 0 }, {
+		// 0, 0, 0, 0 } };
 
-		solutionRepo.save(handSolution, "HandSolution");
+		// Solution handSolution = new Solution(flowMatrix);
 
-		System.out.println("Hand solution valid for hand network: " + handNetwork.verifySolutionValidity(handSolution));
-		System.out.println("Hand solution cost: " + handNetwork.calculateSolutionCost(handSolution));
+		// System.out.println(handNetwork);
+		// System.out.println(handSolution);
+
+		// solutionRepo.save(handSolution, "HandSolution");
+
+		// System.out.println("Hand solution valid for hand network: " +
+		// handNetwork.isSolutionValid(handSolution));
+		// System.out.println("Hand solution cost: " +
+		// handNetwork.calculateSolutionCost(handSolution));
 	}
 }
