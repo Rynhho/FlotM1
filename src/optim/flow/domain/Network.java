@@ -1,11 +1,14 @@
 package optim.flow.domain;
 
+import java.util.ArrayList;
+
 public class Network {
 	private final int nbVertices;
 	private final int nbEdges;
 
 	private final double[][] capacityMatrix;
 	private final double[][] costMatrix;
+	private ArrayList<Edge>[] adjacenceList;
 
 	private final double[] verticesDemand;
 
@@ -36,6 +39,18 @@ public class Network {
 		this.verticesDemand = new double[nbVertices];
 
 		setRandomData();
+
+		double capacity = 0;
+		adjacenceList = new ArrayList[nbVertices];
+		for (int i=0;i<nbVertices;i++){
+			adjacenceList[i]=new ArrayList<Edge>();
+			for (int j=0;j<nbVertices;j++){
+				capacity = this.capacityMatrix[i][j];
+				if (capacity>0){
+					adjacenceList[i].add(new Edge(capacity,this.costMatrix[i][j]));
+				}
+			}
+		}
 	}
 
 	/**
