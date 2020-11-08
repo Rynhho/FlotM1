@@ -29,6 +29,8 @@ public class Cplex implements Algorithm{
                 prod[i] = net.getVertexDemand(i);
             }
 
+
+            //Objective
             IloLinearNumExpr obj = cplex.linearNumExpr();
 			for (int i = 0; i < n; i++) {
                 for (int j = 0;j < n; j++){
@@ -40,6 +42,9 @@ public class Cplex implements Algorithm{
             }
             cplex.addMinimize(obj);
 
+
+
+            //Capacity Constraint
             for (int i=0; i<n; i++) {
 				for (int j=0; j<n; j++) {
                     if (net.hasEdgeBetween(i,j)){
@@ -50,6 +55,9 @@ public class Cplex implements Algorithm{
 				}
             }
             
+
+
+            //Demand constraint
             for (int i=0; i<n; i++){
                 IloLinearNumExpr ct = cplex.linearNumExpr();
                 for (int j=0;j<n;j++){
@@ -63,10 +71,9 @@ public class Cplex implements Algorithm{
             }
 
 
-            System.out.println("fait chier\n");
-
-
             cplex.setParam(IloCplex.IntParam.TimeLimit, 600);
+
+            //solve and create a Solution
             if (cplex.solve()) {
                 double[][] flowMatrix = new double[n][];
                 for (int i=0;i<n;i++){
@@ -82,7 +89,10 @@ public class Cplex implements Algorithm{
                 
 			}else {
 				System.out.println("error, cannot find solution\n");
-			}
+            }
+            
+
+
 			cplex.end();
 
             return sol;
