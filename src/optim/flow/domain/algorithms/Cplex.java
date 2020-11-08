@@ -33,31 +33,38 @@ public class Cplex implements Algorithm{
 			for (int i = 0; i < n; i++) {
                 for (int j = 0;j < n; j++){
                     //System.out.println(i + " and " + j +" on " + n + "\n");
-                    //if (net.hasEdgeBetween(i,j)){
-                    obj.addTerm(net.getEdgeCost(i, j), X[i][j]);
-                    //}
+                    if (net.hasEdgeBetween(i,j)){
+                        obj.addTerm(net.getEdgeCost(i, j), X[i][j]);
+                    }
                 }
             }
             cplex.addMinimize(obj);
 
             for (int i=0; i<n; i++) {
 				for (int j=0; j<n; j++) {
-                    //if (net.hasEdgeBetween(i,j)){
+                    if (net.hasEdgeBetween(i,j)){
                         IloLinearNumExpr ct = cplex.linearNumExpr();
                         ct.addTerm(1.0, X[i][j]);
                         cplex.addLe(ct, net.getEdgeCapacity(i,j));
-                    //}
+                    }
 				}
             }
             
             for (int i=0; i<n; i++){
                 IloLinearNumExpr ct = cplex.linearNumExpr();
                 for (int j=0;j<n;j++){
-                    ct.addTerm(-1.0,X[i][j]);
-                    ct.addTerm(1.0,X[j][i]);
+                    if (net.hasEdgeBetween(i,j) && i!=j){
+                        ct.addTerm(-1.0,X[i][j]);
+                    }if (net.hasEdgeBetween(j,i) && i!=j){
+                        ct.addTerm(1.0,X[j][i]);
+                    }
                 }
-                cplex.addEq(ct, -net.getVertexDemand(i));
+                cplex.addEq(ct, net.getVertexDemand(i));
             }
+
+
+            System.out.println("fait chier\n");
+
 
             cplex.setParam(IloCplex.IntParam.TimeLimit, 600);
             if (cplex.solve()) {
@@ -82,7 +89,8 @@ public class Cplex implements Algorithm{
         }
         catch (IloException e){
             System.out.println("something gone wrong with Cplex \n");
-            throw (new RuntimeException());
+            //throw (new RuntimeException());
+            return new Solution(12);
         }
     }
 }
