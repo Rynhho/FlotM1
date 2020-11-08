@@ -4,10 +4,8 @@ import java.util.ArrayList;
 
 public class Edge {
 
-	//cost per unit of the arc
 	private final double cost;
 	
-	// maximal capacity of the edge
 	private double capacity;
 	
 	public Edge(double cost,double capacity) {
@@ -18,11 +16,8 @@ public class Edge {
 	public double getCapacity() {
 		return capacity;
 	}
-
-
-	// return the cost of the edge
 	
-	public double getTotalCost() {
+	public double getCost() {
 		return cost;
 	}
 }
