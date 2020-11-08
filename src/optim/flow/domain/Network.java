@@ -1,20 +1,18 @@
 package optim.flow.domain;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Network {
 	private final int nbVertices;
 	private final int nbEdges;
 
-	private final double[][] capacityMatrix;
-	private final double[][] costMatrix;
-	private ArrayList<Edge>[] adjacenceList;
-
-	private final double[] verticesDemand;
-
 	private final double maxCapacity;
 	private final double maxCost;
 	private final double maxDemand;
+
+	private final List<List<Edge>> adjacencyList;
+	private final double[] verticesDemands;
 
 	/**
 	 * Constructs a network with the parameters characteristics. The underlying data
@@ -27,6 +25,10 @@ public class Network {
 	 * @param maxDemand
 	 */
 	public Network(int nbVertices, int nbEdges, double maxCapacity, double maxCost, double maxDemand) {
+		if (nbVertices <= 0 || nbEdges <= 0 || maxCapacity <= 0 || maxCost <= 0 || maxDemand <= 0) {
+			throw new IllegalArgumentException("Network parameters must be positive.\n");
+		}
+
 		this.nbVertices = nbVertices;
 		this.nbEdges = nbEdges;
 
@@ -34,52 +36,55 @@ public class Network {
 		this.maxCost = maxCost;
 		this.maxDemand = maxDemand;
 
-		this.capacityMatrix = new double[nbVertices][nbVertices];
-		this.costMatrix = new double[nbVertices][nbVertices];
-		this.verticesDemand = new double[nbVertices];
-
-		setRandomData();
-
-		double capacity = 0;
-		adjacenceList = new ArrayList[nbVertices];
-		for (int i=0;i<nbVertices;i++){
-			adjacenceList[i]=new ArrayList<Edge>();
-			for (int j=0;j<nbVertices;j++){
-				capacity = this.capacityMatrix[i][j];
-				if (capacity>0){
-					adjacenceList[i].add(new Edge(capacity,this.costMatrix[i][j]));
-				}
-			}
+		this.adjacencyList = new ArrayList<List<Edge>>(nbVertices);
+		for (int i = 0; i < this.adjacencyList.size(); ++i) {
+			this.adjacencyList.set(i, new ArrayList<Edge>());
 		}
+
+		this.verticesDemands = new double[nbVertices];
+
+		// generateRandomData();
 	}
 
 	/**
 	 * Creates a flow network from its corresponding data matrices.
 	 * 
-	 * @param capacityMatrix Capacity matrix
-	 * @param costMatrix     Cost matrix
-	 * @param verticesDemand Vertices demand
+	 * @param capacityMatrix  Capacity matrix
+	 * @param costMatrix      Cost matrix
+	 * @param verticesDemands Vertices demand
 	 */
-	public Network(double[][] capacityMatrix, double[][] costMatrix, double[] verticesDemand) {
-		this.capacityMatrix = capacityMatrix;
-		this.costMatrix = costMatrix;
-		this.verticesDemand = verticesDemand;
+	public Network(List<List<Edge>> adjacencyList, double[] verticesDemands) {
+		if (adjacencyList == null || verticesDemands == null) {
+			throw new IllegalArgumentException("Network parameters must not be null.\n");
+		}
 
-		this.nbVertices = capacityMatrix.length;
-		this.nbEdges = getNbEdgesFromCapacity();
+		if (adjacencyList.size() != verticesDemands.length) {
+			throw new IllegalArgumentException(
+					"Network adjacency list and vertices demands array must have the same dimension.\n");
+		}
 
-		double maxCapacity = this.capacityMatrix[0][0];
-		double maxCost = this.costMatrix[0][0];
-		double maxDemand = this.verticesDemand[0];
+		this.adjacencyList = adjacencyList;
+		this.verticesDemands = verticesDemands;
 
-		for (int i = 0; i < this.nbVertices; i++) {
-			maxDemand = Math.max(maxDemand, this.verticesDemand[i]);
+		this.nbVertices = this.adjacencyList.size();
 
-			for (int j = 0; j < this.nbVertices; j++) {
-				maxCapacity = Math.max(maxCapacity, this.capacityMatrix[i][j]);
-				maxCost = Math.max(maxCost, this.costMatrix[i][j]);
+		double maxCapacity = this.adjacencyList.get(0).get(0).getCapacity();
+		double maxCost = this.adjacencyList.get(0).get(0).getCost();
+		double maxDemand = this.verticesDemands[0];
+
+		int nbEdges = 0;
+		for (int i = 0; i < this.nbVertices; ++i) {
+			maxDemand = Math.max(maxDemand, this.verticesDemands[i]);
+
+			for (int j = 0; j < this.adjacencyList.get(i).size(); ++j) {
+				++nbEdges;
+
+				maxCapacity = Math.max(maxCapacity, this.adjacencyList.get(i).get(j).getCapacity());
+				maxCost = Math.max(maxCost, this.adjacencyList.get(i).get(j).getCost());
 			}
 		}
+
+		this.nbEdges = nbEdges;
 
 		this.maxCapacity = maxCapacity;
 		this.maxCost = maxCost;
@@ -87,16 +92,10 @@ public class Network {
 	}
 
 	/**
-	 * Verifies if an edge is valid or not. Note that if the edge doesn't exist but
-	 * the parameters are valid, then the edge is valid but with a cost of zero.
-	 * 
-	 * @param from Source vertex
-	 * @param to   Destination vertex
-	 * 
-	 * @return true if it's valid, else false.
+	 * @return The number of vertices in the network.
 	 */
-	public boolean isEdgeValid(int from, int to) {
-		return from >= 0 && from < this.nbVertices && to >= 0 && from < this.nbVertices;
+	public int getNbVertices() {
+		return this.nbVertices;
 	}
 
 	/**
@@ -111,18 +110,11 @@ public class Network {
 	}
 
 	/**
-	 * @return The number of vertices in the network.
-	 */
-	public int getNbVertices() {
-		return this.nbVertices;
-	}
-
-	/**
 	 * @param vertexID The vertex ID.
 	 * @return The vertex demand.
 	 */
 	public double getVertexDemand(int vertexID) {
-		return this.verticesDemand[vertexID];
+		return this.verticesDemands[vertexID];
 	}
 
 	/**
@@ -133,13 +125,27 @@ public class Network {
 	}
 
 	/**
+	 * @param source      Source vertex
+	 * @param destination Destination vertex
+	 * @return True if the edge between source and destination exists, false
+	 *         otherwise.
+	 */
+	public boolean hasEdgeBetween(int source, int destination) {
+		return this.adjacencyList.get(source).parallelStream().anyMatch(edge -> {
+			return edge.getDestionation() == destination;
+		});
+	}
+
+	/**
 	 * @param from Source vertex
 	 * @param to   Destination vertex
 	 * 
 	 * @return The capacity of the corresponding edge.
 	 */
-	public double getEdgeCapacity(int from, int to) {
-		return capacityMatrix[from][to];
+	public double getEdgeCapacity(int source, int destination) {
+		return this.adjacencyList.get(source).parallelStream().filter(edge -> {
+			return edge.getDestionation() == destination;
+		}).findFirst().get().getCapacity();
 	}
 
 	/**
@@ -148,188 +154,76 @@ public class Network {
 	 * 
 	 * @return The cost of the corresponding edge.
 	 */
-	public double getEdgeCost(int from, int to) {
-		return costMatrix[from][to];
+	public double getEdgeCost(int source, int destination) {
+		return this.adjacencyList.get(source).parallelStream().filter(edge -> {
+			return edge.getDestionation() == destination;
+		}).findFirst().get().getCost();
 	}
 
-	/**
-	 * Checks if the network is valid or not.
-	 * 
-	 * @return true if the network is valid, false otherwise.
-	 */
-	public boolean checkValidity() {
-		return verifyPositivity() && verifyMatricesDimensions() && verifyZeroCapacityEdges() && verifyVerticesDemands();
+	public double getMaxCapacity() {
+		return this.maxCapacity;
 	}
 
-	/**
-	 * Verifies if the network caracteristics are valid.
-	 * 
-	 * @return true if they are, else false.
-	 */
-	private boolean verifyPositivity() {
-		if (this.nbVertices <= 0) {
-			System.out.println("Error: Vertex Number <= 0");
-			return false;
-		}
-		if (this.nbEdges <= 0) {
-			System.out.println("Error: Edges Number <= 0");
-			return false;
-		}
-		if (this.maxCapacity <= 0) {
-			System.out.println("Error: Maximum Capacity <= 0");
-			return false;
-		}
-		if (this.maxCost <= 0) {
-			System.out.println("Error: Maximum Cost <= 0");
-			return false;
-		}
-		if (this.maxDemand <= 0) {
-			System.out.println("Error: Maximum Consumption <= 0");
-			return false;
-		}
-		if (this.nbEdges > this.nbVertices * this.nbVertices) {
-			System.out.println("Error: Edges Number > Vertex_Number^2");
-			return false;
-		}
-
-		return true;
+	public double getMaxCost() {
+		return this.maxCost;
 	}
 
-	/**
-	 * Verify data matrices dimensions.
-	 * 
-	 * @return true if it's valid, else false.
-	 */
-	private boolean verifyMatricesDimensions() {
-		int nbVertex = this.capacityMatrix.length;
-
-		if (nbVertex != this.costMatrix.length) {
-			System.out.println("Error: Capacity and cost matrices don't have the same dimensions.\n");
-			return false;
-		}
-
-		if (nbVertex != this.verticesDemand.length) {
-			System.out.println("Error: Capacity matrix and Demand vector don't have the same length.\n");
-			return false;
-		}
-
-		for (int i = 0; i < nbVertex; ++i) {
-			if (nbVertex != this.capacityMatrix[i].length) {
-				System.out.println("Error: Capacity matrix isn't a square matrix.\n");
-				return false;
-			}
-
-			if (nbVertex != this.costMatrix[i].length) {
-				System.out.println("Error: Cost matrix isn't a square matrix.\n");
-				return false;
-			}
-		}
-
-		return true;
+	public double getMaxDemand() {
+		return this.maxDemand;
 	}
 
-	/**
-	 * Not unvaliding but having a cost on a zero-capacity edge should issue a
-	 * warning.
-	 * 
-	 * @return Always true
-	 */
-	private boolean verifyZeroCapacityEdges() {
-		for (int i = 0; i < this.costMatrix.length; ++i) {
-			for (int j = 0; j < this.costMatrix[i].length; ++j) {
-				if (this.capacityMatrix[i][j] == 0 && this.costMatrix[i][j] != 0)
-					System.out.println("Warning: Edge from " + i + " to " + j
-							+ " has zero capacity but non-zero cost, potentially increasing non-polynomials algorithms complexity.\n");
-			}
-		}
+	// /**
+	// * Generate random data set based on the network's caracteristics.
+	// */
+	// private void setRandomData() {
+	// /* Demand vector */
+	// for (int i = 0; i < this.nbVertices; i++) {
+	// this.verticesDemands[i] = Math.random() * 2 * this.maxDemand -
+	// this.maxDemand;
+	// }
 
-		return true;
-	}
+	// /* Capacity and cost matrices */
+	// for (int i = 0; i < nbEdges; i++) {
+	// int[] Coordinates = getEmptyCapacityMatrixCell();
 
-	/**
-	 * Verify that all vertices costs are low enough for its entering edge's
-	 * capacities.
-	 * 
-	 * @return true if all demands are valid, else false.
-	 */
-	private boolean verifyVerticesDemands() {
-		for (int vertexID = 0; vertexID < verticesDemand.length; ++vertexID) {
-			int maxFlowIn = 0;
-			for (int i = 0; i < capacityMatrix.length; ++i) {
-				maxFlowIn += capacityMatrix[i][vertexID];
-			}
+	// this.capacityMatrix[Coordinates[0]][Coordinates[1]] = Math.random() *
+	// maxCapacity;
+	// this.costMatrix[Coordinates[0]][Coordinates[1]] = Math.random() * 2 * maxCost
+	// - maxCost;
+	// }
+	// }
 
-			if (maxFlowIn < verticesDemand[vertexID]) {
-				System.out.println("Error: Vertex #" + vertexID
-						+ " cannot be satisfied. Its entering edges' capacities sum are lower than its demand.");
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	/**
-	 * Generate random data set based on the network's caracteristics.
-	 */
-	private void setRandomData() {
-		/* Demand vector */
-		for (int i = 0; i < this.nbVertices; i++) {
-			this.verticesDemand[i] = Math.random() * 2 * this.maxDemand - this.maxDemand;
-		}
-
-		/* Capacity and cost matrices */
-		for (int i = 0; i < nbEdges; i++) {
-			int[] Coordinates = getEmptyCapacityMatrixCell();
-
-			this.capacityMatrix[Coordinates[0]][Coordinates[1]] = Math.random() * maxCapacity;
-			this.costMatrix[Coordinates[0]][Coordinates[1]] = Math.random() * 2 * maxCost - maxCost;
-		}
-	}
-
-	/**
-	 * @return A cell from the capacity matrix that's empty.
-	 */
-	private int[] getEmptyCapacityMatrixCell() {
-		int x, y;
-		do {
-			x = (int) Math.round(Math.random() * (nbVertices - 1));
-			y = (int) Math.round(Math.random() * (nbVertices - 1));
-		} while (this.capacityMatrix[x][y] != 0.0);
-		return new int[] { x, y };
-	}
-
-	/**
-	 * @return The number of edges based on capacity matrix.
-	 */
-	private int getNbEdgesFromCapacity() {
-		int nbEdges = 0;
-		for (int i = 0; i < this.nbVertices; i++) {
-			for (int j = 0; j < this.nbVertices; j++) {
-				if (capacityMatrix[i][j] != 0)
-					nbEdges += 1;
-			}
-		}
-		return nbEdges;
-	}
+	// /**
+	// * @return A cell from the capacity matrix that's empty.
+	// */
+	// private int[] getEmptyCapacityMatrixCell() {
+	// int x, y;
+	// do {
+	// x = (int) Math.round(Math.random() * (nbVertices - 1));
+	// y = (int) Math.round(Math.random() * (nbVertices - 1));
+	// } while (this.capacityMatrix[x][y] != 0.0);
+	// return new int[] { x, y };
+	// }
 
 	/**
 	 * @param solution The solution to check
 	 * @return true if the solution is realisable, else false.
 	 */
-	public boolean verifySolutionValidity(Solution solution) {
+	public boolean isSolutionValid(Solution solution) {
 		if (this.nbVertices != solution.getNbVertices()) {
-			System.out.println("Unvalid solution: Instance and solution don't have the same number of vertices.\n");
+			System.out.println("Unvalid solution: Instance and solution must have the same number of vertices.\n");
 			return false;
 		}
 
 		boolean shouldReturn = false;
-		for (int i = 0; i < this.nbVertices; ++i) {
-			for (int j = 0; j < this.nbVertices; ++j) {
-				if (solution.getEdgeFlow(i, j) > this.capacityMatrix[i][j]) {
-					System.out.println(
-							"Unvalid solution: Flow from #" + i + " to #" + j + " exceeds the edge's capacity.\n");
-					shouldReturn = true;
+		for (int source = 0; source < this.nbVertices; ++source) {
+			for (int destination = 0; destination < this.nbVertices; ++destination) {
+				if (this.hasEdgeBetween(source, destination)) {
+					if (solution.getEdgeFlow(source, destination) > this.getEdgeCapacity(source, destination)) {
+						System.out.println("Unvalid solution: Flow from #" + source + " to #" + destination
+								+ " exceeds the edge's capacity.\n");
+						shouldReturn = true;
+					}
 				}
 			}
 		}
@@ -338,10 +232,9 @@ public class Network {
 			return false;
 		}
 
-		for (int vertexID = 0; vertexID < this.nbVertices; ++vertexID) {
-			if (solution.getVertexFlowIn(vertexID)
-					- solution.getVertexFlowOut(vertexID) < this.verticesDemand[vertexID]) {
-				System.out.println("Unvalid solution: Vertex #" + vertexID + "'s demand isn't satisfied.\n");
+		for (int vertex = 0; vertex < this.nbVertices; ++vertex) {
+			if (solution.getVertexFlowIn(vertex) - solution.getVertexFlowOut(vertex) < this.verticesDemands[vertex]) {
+				System.out.println("Unvalid solution: Vertex #" + vertex + "'s demand isn't satisfied.\n");
 				shouldReturn = true;
 			}
 		}
@@ -360,9 +253,11 @@ public class Network {
 	public double calculateSolutionCost(Solution solution) {
 		double cost = 0;
 
-		for (int i = 0; i < solution.getNbVertices(); ++i) {
-			for (int j = 0; j < solution.getNbVertices(); ++j) {
-				cost += solution.getEdgeFlow(i, j) * this.costMatrix[i][j];
+		for (int source = 0; source < solution.getNbVertices(); ++source) {
+			for (int destination = 0; destination < solution.getNbVertices(); ++destination) {
+				if (this.hasEdgeBetween(source, destination)) {
+					cost += solution.getEdgeFlow(source, destination) * this.getEdgeCost(source, destination);
+				}
 			}
 		}
 
@@ -381,19 +276,19 @@ public class Network {
 		str += "Number of edges: " + this.nbVertices + "\n";
 
 		str += "\nCapacity matrix:\n";
-		for (int i = 0; i < this.nbVertices; ++i) {
+		for (int source = 0; source < this.nbVertices; ++source) {
 			str += "[";
-			for (int j = 0; j < this.nbVertices; ++j) {
-				str += String.format("%.2f", this.capacityMatrix[i][j]) + ", ";
+			for (int destination = 0; destination < this.nbVertices; ++destination) {
+				str += String.format("%.2f", this.getEdgeCapacity(source, destination)) + ", ";
 			}
 			str = str.substring(0, str.length() - 2) + "]\n";
 		}
 
 		str += "\nCost matrix:\n";
-		for (int i = 0; i < this.nbVertices; ++i) {
+		for (int source = 0; source < this.nbVertices; ++source) {
 			str += "[";
-			for (int j = 0; j < this.nbVertices; ++j) {
-				str += String.format("%.2f", this.costMatrix[i][j]) + ", ";
+			for (int destination = 0; destination < this.nbVertices; ++destination) {
+				str += String.format("%.2f", this.getEdgeCost(source, destination)) + ", ";
 			}
 			str = str.substring(0, str.length() - 2) + "]\n";
 		}
@@ -401,7 +296,7 @@ public class Network {
 		str += "\nDemand vector:\n";
 		str += "[";
 		for (int i = 0; i < this.nbVertices; i++) {
-			str += String.format("%.2f", this.verticesDemand[i]) + ", ";
+			str += String.format("%.2f", this.verticesDemands[i]) + ", ";
 		}
 		str = str.substring(0, str.length() - 2) + "]\n";
 
