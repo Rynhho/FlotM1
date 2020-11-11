@@ -14,17 +14,7 @@ import optim.flow.domain.Solution;
 
 public class SolutionFileRepository implements Repository<Solution> {
     @Override
-    public String save(Solution solution) {
-        final Date date = new Date();
-        final String ID = Long.toString(date.getTime());
-
-        save(solution, ID);
-
-        return ID;
-    }
-
-    @Override
-    public void save(Solution solution, String ID) {
+    public void save(Solution solution) {
         final int nbVertices = solution.getNbVertices();
 
         String str = new String();
@@ -41,7 +31,7 @@ public class SolutionFileRepository implements Repository<Solution> {
         }
 
         try {
-            FileWriter fileWriter = new FileWriter(ID);
+            FileWriter fileWriter = new FileWriter(solution.getNetworkID()+"_sol");
             fileWriter.write(str);
             fileWriter.close();
         } catch (IOException e) {
@@ -52,7 +42,7 @@ public class SolutionFileRepository implements Repository<Solution> {
     @Override
     public Solution load(String ID) {
         try {
-            BufferedReader bufferedReader = new BufferedReader(new FileReader(ID));
+            BufferedReader bufferedReader = new BufferedReader(new FileReader(ID+"_sol"));
 
             /* Number of vertices */
             String line = bufferedReader.readLine();

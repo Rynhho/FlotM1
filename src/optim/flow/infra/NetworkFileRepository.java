@@ -15,18 +15,9 @@ import optim.flow.domain.Network;
 import optim.flow.domain.Repository;
 
 public class NetworkFileRepository implements Repository<Network> {
-    @Override
-    public String save(Network network) {
-        final Date date = new Date();
-        final String ID = Long.toString(date.getTime()) + ".txt";
-
-        save(network, ID);
-
-        return ID;
-    }
 
     @Override
-    public void save(Network network, String ID) {
+    public void save(Network network) {
         final int nbVertices = network.getNbVertices();
 
         String str = new String();
@@ -48,7 +39,7 @@ public class NetworkFileRepository implements Repository<Network> {
         }
 
         try {
-            FileWriter fileWriter = new FileWriter(ID);
+            FileWriter fileWriter = new FileWriter(network.getID()+"_net");
             fileWriter.write(str);
             fileWriter.close();
         } catch (IOException e) {
@@ -61,7 +52,7 @@ public class NetworkFileRepository implements Repository<Network> {
         Network network = null;
 
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(ID));
+            BufferedReader reader = new BufferedReader(new FileReader(ID+"_net"));
 
             String line = reader.readLine();
             List<String> keyValues = new ArrayList<>(extractWords(line));
