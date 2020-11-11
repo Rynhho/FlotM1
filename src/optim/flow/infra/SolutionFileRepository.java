@@ -28,7 +28,7 @@ public class SolutionFileRepository implements Repository<Solution> {
         final int nbVertices = solution.getNbVertices();
 
         String str = new String();
-        str += nbVertices + "\n";
+        str += solution.getNetworkID() + " " + nbVertices + "\n";
 
         for (int i = 0; i < nbVertices; ++i) {
             for (int j = 0; j < nbVertices; ++j) {
@@ -56,7 +56,9 @@ public class SolutionFileRepository implements Repository<Solution> {
 
             /* Number of vertices */
             String line = bufferedReader.readLine();
-            int nbVertices = Integer.parseInt(line);
+            List<String> keyValues = new ArrayList<>(extractWords(line));
+            //final String ID = keyValues.get(0);
+            final int nbVertices = Integer.parseInt(keyValues.get(1));
 
             double[][] flowMatrix = new double[nbVertices][nbVertices];
 
