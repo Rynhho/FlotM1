@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Network {
+	private final String ID;
+	
 	private final int nbVertices;
 	private final int nbEdges;
 
@@ -24,11 +26,12 @@ public class Network {
 	 * @param maxCost
 	 * @param maxDemand
 	 */
-	public Network(int nbVertices, int nbEdges, double maxCapacity, double maxCost, double maxDemand) {
+	public Network(String ID, int nbVertices, int nbEdges, double maxCapacity, double maxCost, double maxDemand) {
 		if (nbVertices <= 0 || nbEdges <= 0 || maxCapacity <= 0 || maxCost <= 0 || maxDemand <= 0) {
 			throw new IllegalArgumentException("Network parameters must be positive.\n");
 		}
-
+		this.ID = ID;
+		
 		this.nbVertices = nbVertices;
 		this.nbEdges = nbEdges;
 
@@ -53,7 +56,9 @@ public class Network {
 	 * @param costMatrix      Cost matrix
 	 * @param verticesDemands Vertices demand
 	 */
-	public Network(List<List<Edge>> adjacencyList, double[] verticesDemands) {
+	public Network(String ID, List<List<Edge>> adjacencyList, double[] verticesDemands) {
+		this.ID = ID;
+		
 		if (adjacencyList == null || verticesDemands == null) {
 			throw new IllegalArgumentException("Network parameters must not be null.\n");
 		}
@@ -159,7 +164,9 @@ public class Network {
 			return edge.getDestionation() == destination;
 		}).findFirst().get().getCost();
 	}
-
+	public String getID() {
+		return ID;
+	}
 	public double getMaxCapacity() {
 		return this.maxCapacity;
 	}
