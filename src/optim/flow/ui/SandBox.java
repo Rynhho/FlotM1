@@ -10,15 +10,15 @@ public class SandBox {
 	public static void main(String[] args) {
 		Repository<Network> networkRepo = new NetworkFileRepository();
 
-		Network smallNetwork = new Network("01_net", 10, 9, 30, 30, 10);
+		Network smallNetwork = new Network("SmallNetwork", 10, 9, 30, 30, 10);
 		// System.out.println("Small network realisable: " +
 		// smallNetwork.isRealisable());
 
-		networkRepo.save(smallNetwork, "SmallNetwork");
+		networkRepo.save(smallNetwork);
 
 		smallNetwork = networkRepo.load("SmallNetwork");
 
-		networkRepo.save(smallNetwork, "SmalleNetwork2");
+//		networkRepo.save(smallNetwork"SmalleNetwork2");
 
 		// Network bigNetwork = new Network(100, 5000, 30, 30, 10);
 		// // System.out.println("Big network realisable: " +
