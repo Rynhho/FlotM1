@@ -10,7 +10,7 @@ public class SandBox {
 	public static void main(String[] args) {
 		Repository<Network> networkRepo = new NetworkFileRepository();
 
-		Network smallNetwork = new Network(10, 9, 30, 30, 10);
+		Network smallNetwork = new Network("01_net", 10, 9, 30, 30, 10);
 		// System.out.println("Small network realisable: " +
 		// smallNetwork.isRealisable());
 
@@ -52,5 +52,6 @@ public class SandBox {
 		// handNetwork.isSolutionValid(handSolution));
 		// System.out.println("Hand solution cost: " +
 		// handNetwork.calculateSolutionCost(handSolution));
+		System.out.println("coucou");
 	}
 }
