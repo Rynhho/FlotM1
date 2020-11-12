@@ -5,7 +5,7 @@ import java.util.List;
 
 public class Network {
 	private final String ID;
-	
+
 	private final int nbVertices;
 	private final int nbEdges;
 
@@ -30,8 +30,9 @@ public class Network {
 		if (nbVertices <= 0 || nbEdges <= 0 || maxCapacity <= 0 || maxCost <= 0 || maxDemand <= 0) {
 			throw new IllegalArgumentException("Network parameters must be positive.\n");
 		}
+
 		this.ID = ID;
-		
+
 		this.nbVertices = nbVertices;
 		this.nbEdges = nbEdges;
 
@@ -57,8 +58,6 @@ public class Network {
 	 * @param verticesDemands Vertices demand
 	 */
 	public Network(String ID, List<List<Edge>> adjacencyList, double[] verticesDemands) {
-		this.ID = ID;
-		
 		if (adjacencyList == null || verticesDemands == null) {
 			throw new IllegalArgumentException("Network parameters must not be null.\n");
 		}
@@ -67,6 +66,8 @@ public class Network {
 			throw new IllegalArgumentException(
 					"Network adjacency list and vertices demands array must have the same dimension.\n");
 		}
+
+		this.ID = ID;
 
 		this.adjacencyList = adjacencyList;
 		this.verticesDemands = verticesDemands;
@@ -164,9 +165,11 @@ public class Network {
 			return edge.getDestionation() == destination;
 		}).findFirst().get().getCost();
 	}
+
 	public String getID() {
 		return ID;
 	}
+
 	public double getMaxCapacity() {
 		return this.maxCapacity;
 	}
@@ -297,7 +300,11 @@ public class Network {
 		for (int source = 0; source < this.nbVertices; ++source) {
 			str += "[";
 			for (int destination = 0; destination < this.nbVertices; ++destination) {
-				str += String.format("%.2f", this.getEdgeCapacity(source, destination)) + ", ";
+				if (hasEdgeBetween(source, destination)) {
+					str += String.format("%.2f", this.getEdgeCapacity(source, destination)) + ", ";
+				} else {
+					str += "0.0";
+				}
 			}
 			str = str.substring(0, str.length() - 2) + "]\n";
 		}
@@ -306,7 +313,11 @@ public class Network {
 		for (int source = 0; source < this.nbVertices; ++source) {
 			str += "[";
 			for (int destination = 0; destination < this.nbVertices; ++destination) {
-				str += String.format("%.2f", this.getEdgeCost(source, destination)) + ", ";
+				if (hasEdgeBetween(source, destination)) {
+					str += String.format("%.2f", this.getEdgeCost(source, destination)) + ", ";
+				} else {
+					str += "0.0";
+				}
 			}
 			str = str.substring(0, str.length() - 2) + "]\n";
 		}
