@@ -8,6 +8,7 @@ import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import optim.flow.domain.Repository;
 import optim.flow.domain.Solution;
@@ -31,7 +32,7 @@ public class SolutionFileRepository implements Repository<Solution> {
         }
 
         try {
-            FileWriter fileWriter = new FileWriter(solution.getNetworkID()+"_sol");
+            FileWriter fileWriter = new FileWriter("data" + solution.getID() + ".sol");
             fileWriter.write(str);
             fileWriter.close();
         } catch (IOException e) {
@@ -42,12 +43,12 @@ public class SolutionFileRepository implements Repository<Solution> {
     @Override
     public Solution load(String ID) {
         try {
-            BufferedReader bufferedReader = new BufferedReader(new FileReader(ID+"_sol"));
+            BufferedReader bufferedReader = new BufferedReader(new FileReader("data" + ID + ".sol"));
 
             /* Number of vertices */
             String line = bufferedReader.readLine();
             List<String> keyValues = new ArrayList<>(extractWords(line));
-            //final String ID = keyValues.get(0);
+            // final String ID = keyValues.get(0);
             final int nbVertices = Integer.parseInt(keyValues.get(1));
 
             double[][] flowMatrix = new double[nbVertices][nbVertices];

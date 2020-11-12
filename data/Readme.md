@@ -3,20 +3,20 @@
 ## Instances
 
 ```txt
-[Number of vertices]
+[Number of vertices] [Number of edges] [Maximum capacity] [Maximum cost] [Maximum demand]
 [For every vertex] {
 [Demand]
 }
 [Number of edges]
 [For every edge] {
-[Source vertex] [Destination vertex] [Capacity] [Costs]
+[Source vertex] [Destination vertex] [Capacity] [Cost]
 }
 ```
 
 ## Solutions
 
 ```txt
-[Number of vertices]
+[Network ID] [Number of vertices]
 [For every edge] {    
 [Source vertex] [Destination vertex] [Flow passing by the edge]
 }

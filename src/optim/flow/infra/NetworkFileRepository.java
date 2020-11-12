@@ -7,7 +7,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.BreakIterator;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import optim.flow.domain.Edge;
@@ -21,8 +20,8 @@ public class NetworkFileRepository implements Repository<Network> {
         final int nbVertices = network.getNbVertices();
 
         String str = new String();
-        str += network.getID() + " "+ nbVertices + " " + network.getNbEdges() + " " + network.getMaxCapacity() + " " + network.getMaxCost()
-                + " " + network.getMaxDemand() + "\n";
+        str += network.getID() + " " + nbVertices + " " + network.getNbEdges() + " " + network.getMaxCapacity() + " "
+                + network.getMaxCost() + " " + network.getMaxDemand() + "\n";
         for (int i = 0; i < nbVertices; ++i) {
             str += network.getVertexDemand(i) + "\n";
         }
@@ -39,7 +38,7 @@ public class NetworkFileRepository implements Repository<Network> {
         }
 
         try {
-            FileWriter fileWriter = new FileWriter(network.getID()+"_net");
+            FileWriter fileWriter = new FileWriter("data" + network.getID() + ".txt");
             fileWriter.write(str);
             fileWriter.close();
         } catch (IOException e) {
@@ -52,16 +51,13 @@ public class NetworkFileRepository implements Repository<Network> {
         Network network = null;
 
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(ID+"_net"));
+            BufferedReader reader = new BufferedReader(new FileReader("data" + ID + ".txt"));
 
             String line = reader.readLine();
             List<String> keyValues = new ArrayList<>(extractWords(line));
             final String networkID = keyValues.get(0);
             final int nbVertices = Integer.parseInt(keyValues.get(1));
             final int nbEdges = Integer.parseInt(keyValues.get(2));
-            // final int maxCapacity = Integer.parseInt(keyValues.get(3));
-            // final int maxCost = Integer.parseInt(keyValues.get(4));
-            // final int maxDemand = Integer.parseInt(keyValues.get(5));
 
             List<List<Edge>> edges = new ArrayList<List<Edge>>();
 
