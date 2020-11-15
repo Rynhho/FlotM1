@@ -40,7 +40,7 @@ public class SandBox {
 
 		double flow=0;
 		for (int i=0;i<5;i++){
-				flow = CplexSolution.getVertexFlowIn(i)-CplexSolution.getVertexFlowOut(i)+handNetwork.getVertexDemand(i);
+				flow = -CplexSolution.getVertexFlowIn(i)+CplexSolution.getVertexFlowOut(i)+handNetwork.getVertexDemand(i);
 				if (flow !=0){
 					System.out.println("vertex " + i + " has been violated");
 				}
@@ -51,7 +51,7 @@ public class SandBox {
 		for (int i=0;i<5;i++){
 			for (int j=0;j<5;j++){
 				cost+= CplexSolution.getEdgeFlow(i, j)*costMatrix[i][j];
-				System.out.println("edge " + i + " " + j + " cost " +  CplexSolution.getEdgeFlow(i, j)*costMatrix[i][j]);
+				System.out.println("edge " + i + " " + j + " cost " +  CplexSolution.getEdgeFlow(i, j));
 			}
 		}
 		System.out.println(cost);

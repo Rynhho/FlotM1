@@ -13,6 +13,7 @@ public class Cplex implements Algorithm{
 
     public Solution solve(Network net){
         try{
+            int debug = 1;
             IloCplex cplex = new IloCplex();
             int n = net.getNbVertices();
             Solution sol = new Solution(n);
@@ -47,9 +48,15 @@ public class Cplex implements Algorithm{
             //Capacity Constraint
             for (int i=0; i<n; i++) {
 				for (int j=0; j<n; j++) {
-                    IloLinearNumExpr ct = cplex.linearNumExpr();
-                    ct.addTerm(1.0, X[i][j]);
-                    cplex.addLe(ct, net.getEdgeCapacity(i,j));
+                    if (net.hasEdgeBetween(i, j)){
+                        IloLinearNumExpr ct = cplex.linearNumExpr();
+                        ct.addTerm(1.0, X[i][j]);
+                        cplex.addLe(ct, net.getEdgeCapacity(i,j));
+                    }else{
+                        IloLinearNumExpr ct = cplex.linearNumExpr();
+                        ct.addTerm(1.0, X[i][j]);
+                        cplex.addLe(ct, 0);
+                    }
 				}
             }
             
@@ -60,16 +67,16 @@ public class Cplex implements Algorithm{
                 IloLinearNumExpr ct = cplex.linearNumExpr();
                 for (int j=0;j<n;j++){
                     if (net.hasEdgeBetween(i,j) && i!=j){
-                        System.out.println(" + " + net.getEdgeCapacity(i, j));
-                        ct.addTerm(+1.0,X[i][j]);
+                        //System.out.println(" + " + net.getEdgeCapacity(i, j));
+                        ct.addTerm(1.0,X[i][j]);
                     }else{
                         if (net.hasEdgeBetween(j,i) && i!=j){
-                            System.out.println(" - " + net.getEdgeCapacity(j, i));
+                            //System.out.println(" - " + net.getEdgeCapacity(j, i));
                             ct.addTerm(-1.0,X[j][i]);
                         }
                     }
                 }
-                System.out.println(" = " + (-net.getVertexDemand(i)) + "\n");
+                //System.out.println(" = " + (-net.getVertexDemand(i)) + "\n");
                 cplex.addEq(ct, -net.getVertexDemand(i));
             }
 
@@ -93,8 +100,21 @@ public class Cplex implements Algorithm{
 			}else {
 				System.out.println("error, cannot find solution\n");
             }
-            
 
+            if (debug == 1 ){
+                for (int i=0; i<n; i++){
+                    for (int j=0;j<n;j++){
+                        if (net.hasEdgeBetween(i,j) && i!=j){
+                            System.out.println(" + " + cplex.getValue(X[i][j]));
+                        }else{
+                            if (net.hasEdgeBetween(j,i) && i!=j){
+                                System.out.println(" - " + cplex.getValue(X[j][i]));
+                            }
+                        }
+                    }
+                    System.out.println(" = " + (-net.getVertexDemand(i)) + "\n");
+                }
+            }
 
 			cplex.end();
 

@@ -11,6 +11,8 @@ public class Network {
 	private final double maxCost;
 	private final double maxDemand;
 
+	private double [][] CapacityMatrix;
+	private double [][] CostMatrix;
 	private final List<List<Edge>> adjacencyList;
 	private final double[] verticesDemands;
 
@@ -67,6 +69,8 @@ public class Network {
 		this.verticesDemands = verticesDemands;
 
 		this.nbVertices = this.adjacencyList.size();
+		this.CapacityMatrix = new double[nbVertices][];
+		this.CostMatrix = new double[nbVertices][];
 
 		double maxCapacity = this.adjacencyList.get(0).get(0).getCapacity();
 		double maxCost = this.adjacencyList.get(0).get(0).getCost();
@@ -76,12 +80,23 @@ public class Network {
 		for (int i = 0; i < this.nbVertices; ++i) {
 			maxDemand = Math.max(maxDemand, this.verticesDemands[i]);
 
+			this.CapacityMatrix[i] = new double[nbVertices];
+			this.CostMatrix[i] = new double[nbVertices];
+			for (int j=0;j<nbVertices;j++){
+				CapacityMatrix[i][j]=0;
+				CostMatrix[i][j]=0;
+			}
+
 			for (int j = 0; j < this.adjacencyList.get(i).size(); ++j) {
 				++nbEdges;
 
 				maxCapacity = Math.max(maxCapacity, this.adjacencyList.get(i).get(j).getCapacity());
 				maxCost = Math.max(maxCost, this.adjacencyList.get(i).get(j).getCost());
+
+				CapacityMatrix[i][adjacencyList.get(i).get(j).getDestionation()]=adjacencyList.get(i).get(j).getCapacity();
+				CostMatrix[i][adjacencyList.get(i).get(j).getDestionation()]=adjacencyList.get(i).get(j).getCost();
 			}
+			
 		}
 
 		this.nbEdges = nbEdges;
@@ -146,7 +161,10 @@ public class Network {
 		return this.adjacencyList.get(source).parallelStream().filter(edge -> {
 			return edge.getDestionation() == destination;
 		}).findFirst().get().getCapacity();
+		//not working
+		//return CapacityMatrix[source][destination];
 	}
+	
 
 	/**
 	 * @param from Source vertex
@@ -158,6 +176,8 @@ public class Network {
 		return this.adjacencyList.get(source).parallelStream().filter(edge -> {
 			return edge.getDestionation() == destination;
 		}).findFirst().get().getCost();
+		//not working
+		//return CostMatrix[source][destination];
 	}
 
 	public double getMaxCapacity() {
