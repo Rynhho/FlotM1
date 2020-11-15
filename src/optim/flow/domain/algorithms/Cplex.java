@@ -14,6 +14,9 @@ public class Cplex implements Algorithm{
     public Solution solve(Network net){
         try{
             int debug = 1;
+            // if equals to 1, print flows of edge comming in/out of the vertex and it's supply demand
+
+
             IloCplex cplex = new IloCplex();
             int n = net.getNbVertices();
             double[][] flowMatrix = new double[n][];
@@ -93,8 +96,6 @@ public class Cplex implements Algorithm{
                         flowMatrix[i][j]=cplex.getValue(X[i][j]);
                     }
                 }
-
-                System.out.println("non d'un gigawatt ca compile\n");
                 
 			}else {
 				System.out.println("error, cannot find solution\n");
@@ -116,7 +117,7 @@ public class Cplex implements Algorithm{
             }
 
 
-            Solution sol = new Solution(net.getID(),"ID?",flowMatrix);
+            Solution sol = new Solution(net.getID(),"CplexSolution",flowMatrix);
 
 			cplex.end();
 

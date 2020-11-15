@@ -30,9 +30,7 @@ public class SandBox {
 			}
 		}
 
-		Network handNetwork = new Network("ID?",adjacenceList, verticesDemand);
-
-		Solution handSolution = new Solution(handNetwork.getID(),"ID?", optimal);
+		Network handNetwork = new Network("lucas",adjacenceList, verticesDemand);
 
 		Cplex cplex = new Cplex();
 		Solution CplexSolution = cplex.solve(handNetwork);
@@ -51,7 +49,7 @@ public class SandBox {
 		for (int i=0;i<5;i++){
 			for (int j=0;j<5;j++){
 				cost+= CplexSolution.getEdgeFlow(i, j)*costMatrix[i][j];
-				System.out.println("edge " + i + " " + j + " cost " +  CplexSolution.getEdgeFlow(i, j));
+				System.out.println("edge " + i + " " + j + " on flow " +  CplexSolution.getEdgeFlow(i, j));
 			}
 		}
 		System.out.println(cost);
