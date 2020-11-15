@@ -8,15 +8,7 @@ public interface Repository<T> {
      * 
      * @return The ID given to the saved object.
      */
-    String save(T object);
-
-    /**
-     * Saves a object into some kind of adapted media, with the given ID.
-     * 
-     * @param object The object to save.
-     * @param ID     The object's ID.
-     */
-    void save(T object, String ID);
+    void save(T object);
 
     /**
      * Loads a object from some kind of adapted media.

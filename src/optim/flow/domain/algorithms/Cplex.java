@@ -16,7 +16,7 @@ public class Cplex implements Algorithm{
             int debug = 1;
             IloCplex cplex = new IloCplex();
             int n = net.getNbVertices();
-            Solution sol = new Solution(n);
+            double[][] flowMatrix = new double[n][];
             IloNumVar[][] X = new IloNumVar[n][];
             for (int i=0;i<n;i++){
                 X[i] = cplex.numVarArray(n,0.0,Integer.MAX_VALUE);
@@ -80,20 +80,19 @@ public class Cplex implements Algorithm{
                 cplex.addEq(ct, -net.getVertexDemand(i));
             }
 
+            
 
             cplex.setParam(IloCplex.IntParam.TimeLimit, 600);
 
             //solve and create a Solution
             if (cplex.solve()) {
-                double[][] flowMatrix = new double[n][];
+                
                 for (int i=0;i<n;i++){
                     flowMatrix[i] = new double [n];
                     for (int j=0;j<n;j++){
                         flowMatrix[i][j]=cplex.getValue(X[i][j]);
                     }
                 }
-
-                sol = new Solution(flowMatrix);
 
                 System.out.println("non d'un gigawatt ca compile\n");
                 
@@ -116,14 +115,17 @@ public class Cplex implements Algorithm{
                 }
             }
 
+
+            Solution sol = new Solution(net.getID(),"ID?",flowMatrix);
+
 			cplex.end();
 
             return sol;
         }
         catch (IloException e){
             System.out.println("something gone wrong with Cplex \n");
-            //throw (new RuntimeException());
-            return new Solution(12);
+            throw (new RuntimeException());
+            //return new Solution(12);
         }
     }
 }

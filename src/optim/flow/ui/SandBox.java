@@ -30,9 +30,9 @@ public class SandBox {
 			}
 		}
 
-		Network handNetwork = new Network(adjacenceList, verticesDemand);
+		Network handNetwork = new Network("ID?",adjacenceList, verticesDemand);
 
-		Solution handSolution = new Solution(optimal);
+		Solution handSolution = new Solution(handNetwork.getID(),"ID?", optimal);
 
 		Cplex cplex = new Cplex();
 		Solution CplexSolution = cplex.solve(handNetwork);

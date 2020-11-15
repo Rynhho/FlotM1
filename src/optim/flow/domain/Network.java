@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Network {
+	private final String ID;
+
 	private final int nbVertices;
 	private final int nbEdges;
 
@@ -11,8 +13,6 @@ public class Network {
 	private final double maxCost;
 	private final double maxDemand;
 
-	private double [][] CapacityMatrix;
-	private double [][] CostMatrix;
 	private final List<List<Edge>> adjacencyList;
 	private final double[] verticesDemands;
 
@@ -26,10 +26,12 @@ public class Network {
 	 * @param maxCost
 	 * @param maxDemand
 	 */
-	public Network(int nbVertices, int nbEdges, double maxCapacity, double maxCost, double maxDemand) {
+	public Network(String ID, int nbVertices, int nbEdges, double maxCapacity, double maxCost, double maxDemand) {
 		if (nbVertices <= 0 || nbEdges <= 0 || maxCapacity <= 0 || maxCost <= 0 || maxDemand <= 0) {
 			throw new IllegalArgumentException("Network parameters must be positive.\n");
 		}
+
+		this.ID = ID;
 
 		this.nbVertices = nbVertices;
 		this.nbEdges = nbEdges;
@@ -39,13 +41,13 @@ public class Network {
 		this.maxDemand = maxDemand;
 
 		this.adjacencyList = new ArrayList<List<Edge>>(nbVertices);
-		for (int i = 0; i < this.adjacencyList.size(); ++i) {
-			this.adjacencyList.set(i, new ArrayList<Edge>());
+		for (int i = 0; i < nbVertices; ++i) {
+			this.adjacencyList.add(null);
 		}
 
 		this.verticesDemands = new double[nbVertices];
 
-		// generateRandomData();
+		generateRandomData();
 	}
 
 	/**
@@ -55,7 +57,7 @@ public class Network {
 	 * @param costMatrix      Cost matrix
 	 * @param verticesDemands Vertices demand
 	 */
-	public Network(List<List<Edge>> adjacencyList, double[] verticesDemands) {
+	public Network(String ID, List<List<Edge>> adjacencyList, double[] verticesDemands) {
 		if (adjacencyList == null || verticesDemands == null) {
 			throw new IllegalArgumentException("Network parameters must not be null.\n");
 		}
@@ -65,12 +67,12 @@ public class Network {
 					"Network adjacency list and vertices demands array must have the same dimension.\n");
 		}
 
+		this.ID = ID;
+
 		this.adjacencyList = adjacencyList;
 		this.verticesDemands = verticesDemands;
 
 		this.nbVertices = this.adjacencyList.size();
-		this.CapacityMatrix = new double[nbVertices][];
-		this.CostMatrix = new double[nbVertices][];
 
 		double maxCapacity = this.adjacencyList.get(0).get(0).getCapacity();
 		double maxCost = this.adjacencyList.get(0).get(0).getCost();
@@ -80,21 +82,11 @@ public class Network {
 		for (int i = 0; i < this.nbVertices; ++i) {
 			maxDemand = Math.max(maxDemand, this.verticesDemands[i]);
 
-			this.CapacityMatrix[i] = new double[nbVertices];
-			this.CostMatrix[i] = new double[nbVertices];
-			for (int j=0;j<nbVertices;j++){
-				CapacityMatrix[i][j]=0;
-				CostMatrix[i][j]=0;
-			}
-
 			for (int j = 0; j < this.adjacencyList.get(i).size(); ++j) {
 				++nbEdges;
 
 				maxCapacity = Math.max(maxCapacity, this.adjacencyList.get(i).get(j).getCapacity());
 				maxCost = Math.max(maxCost, this.adjacencyList.get(i).get(j).getCost());
-
-				CapacityMatrix[i][adjacencyList.get(i).get(j).getDestionation()]=adjacencyList.get(i).get(j).getCapacity();
-				CostMatrix[i][adjacencyList.get(i).get(j).getDestionation()]=adjacencyList.get(i).get(j).getCost();
 			}
 			
 		}
@@ -161,8 +153,6 @@ public class Network {
 		return this.adjacencyList.get(source).parallelStream().filter(edge -> {
 			return edge.getDestionation() == destination;
 		}).findFirst().get().getCapacity();
-		//not working
-		//return CapacityMatrix[source][destination];
 	}
 	
 
@@ -176,8 +166,10 @@ public class Network {
 		return this.adjacencyList.get(source).parallelStream().filter(edge -> {
 			return edge.getDestionation() == destination;
 		}).findFirst().get().getCost();
-		//not working
-		//return CostMatrix[source][destination];
+	}
+
+	public String getID() {
+		return ID;
 	}
 
 	public double getMaxCapacity() {
@@ -192,6 +184,17 @@ public class Network {
 		return this.maxDemand;
 	}
 
+	private void generateRandomData() {
+		for (int i = 0; i < this.adjacencyList.size(); ++i) {
+			this.adjacencyList.set(i, new ArrayList<Edge>(1));
+			this.adjacencyList.get(i).add(new Edge(i, i + 1, 1, 1));
+
+			this.verticesDemands[i] = 0;
+		}
+
+		this.verticesDemands[0] = 1;
+		this.verticesDemands[this.verticesDemands.length - 1] = 1;
+	}
 	// /**
 	// * Generate random data set based on the network's caracteristics.
 	// */
@@ -299,7 +302,11 @@ public class Network {
 		for (int source = 0; source < this.nbVertices; ++source) {
 			str += "[";
 			for (int destination = 0; destination < this.nbVertices; ++destination) {
-				str += String.format("%.2f", this.getEdgeCapacity(source, destination)) + ", ";
+				if (hasEdgeBetween(source, destination)) {
+					str += String.format("%.2f", this.getEdgeCapacity(source, destination)) + ", ";
+				} else {
+					str += "0.0";
+				}
 			}
 			str = str.substring(0, str.length() - 2) + "]\n";
 		}
@@ -308,7 +315,11 @@ public class Network {
 		for (int source = 0; source < this.nbVertices; ++source) {
 			str += "[";
 			for (int destination = 0; destination < this.nbVertices; ++destination) {
-				str += String.format("%.2f", this.getEdgeCost(source, destination)) + ", ";
+				if (hasEdgeBetween(source, destination)) {
+					str += String.format("%.2f", this.getEdgeCost(source, destination)) + ", ";
+				} else {
+					str += "0.0";
+				}
 			}
 			str = str.substring(0, str.length() - 2) + "]\n";
 		}

@@ -1,6 +1,9 @@
 package optim.flow.domain;
 
 public class Solution {
+	private final String ID;
+	private final String networkID;
+
 	private final int nbVertices;
 	private final double[][] flowMatrix;
 
@@ -9,7 +12,10 @@ public class Solution {
 	 * 
 	 * @param nbVertices The number of vertices of the solution.
 	 */
-	public Solution(int nbVertices) {
+	public Solution(String ID, String networkID, int nbVertices) {
+		this.ID = ID;
+		this.networkID = networkID;
+
 		this.nbVertices = nbVertices;
 		this.flowMatrix = new double[nbVertices][nbVertices];
 	}
@@ -19,9 +25,28 @@ public class Solution {
 	 * 
 	 * @param flowMatrix The flow matrix.
 	 */
-	public Solution(double[][] flowMatrix) {
+	public Solution(String ID, String networkID, double[][] flowMatrix) {
+		this.ID = ID;
+		this.networkID = networkID;
+
 		this.nbVertices = flowMatrix.length;
 		this.flowMatrix = flowMatrix;
+	}
+
+	/**
+	 * @return Solution's ID
+	 */
+	public String getID() {
+		return this.ID;
+	}
+
+	/**
+	 * Returns the ID of the network linked with this solution.
+	 * 
+	 * @return The network ID.
+	 */
+	public String getNetworkID() {
+		return networkID;
 	}
 
 	/**

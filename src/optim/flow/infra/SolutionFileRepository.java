@@ -8,27 +8,18 @@ import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import optim.flow.domain.Repository;
 import optim.flow.domain.Solution;
 
 public class SolutionFileRepository implements Repository<Solution> {
     @Override
-    public String save(Solution solution) {
-        final Date date = new Date();
-        final String ID = Long.toString(date.getTime());
-
-        save(solution, ID);
-
-        return ID;
-    }
-
-    @Override
-    public void save(Solution solution, String ID) {
+    public void save(Solution solution) {
         final int nbVertices = solution.getNbVertices();
 
         String str = new String();
-        str += nbVertices + "\n";
+        str += solution.getNetworkID() + " " + nbVertices + "\n";
 
         for (int i = 0; i < nbVertices; ++i) {
             for (int j = 0; j < nbVertices; ++j) {
@@ -41,7 +32,7 @@ public class SolutionFileRepository implements Repository<Solution> {
         }
 
         try {
-            FileWriter fileWriter = new FileWriter(ID);
+            FileWriter fileWriter = new FileWriter("data" + solution.getID() + ".sol");
             fileWriter.write(str);
             fileWriter.close();
         } catch (IOException e) {
@@ -52,11 +43,13 @@ public class SolutionFileRepository implements Repository<Solution> {
     @Override
     public Solution load(String ID) {
         try {
-            BufferedReader bufferedReader = new BufferedReader(new FileReader(ID));
+            BufferedReader bufferedReader = new BufferedReader(new FileReader("data" + ID + ".sol"));
 
             /* Number of vertices */
             String line = bufferedReader.readLine();
-            int nbVertices = Integer.parseInt(line);
+            List<String> keyValues = new ArrayList<>(extractWords(line));
+            // final String ID = keyValues.get(0);
+            final int nbVertices = Integer.parseInt(keyValues.get(1));
 
             double[][] flowMatrix = new double[nbVertices][nbVertices];
 
