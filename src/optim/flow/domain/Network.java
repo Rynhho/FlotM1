@@ -88,6 +88,7 @@ public class Network {
 				maxCapacity = Math.max(maxCapacity, this.adjacencyList.get(i).get(j).getCapacity());
 				maxCost = Math.max(maxCost, this.adjacencyList.get(i).get(j).getCost());
 			}
+			
 		}
 
 		this.nbEdges = nbEdges;
@@ -157,6 +158,7 @@ public class Network {
 			return edge.getDestination() == destination;
 		}).findFirst().get().getCapacity();
 	}
+	
 
 	/**
 	 * @param from Source vertex

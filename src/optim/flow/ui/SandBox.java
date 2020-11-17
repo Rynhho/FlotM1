@@ -1,57 +1,57 @@
 package optim.flow.ui;
 
-import optim.flow.domain.Network;
-import optim.flow.domain.Repository;
-import optim.flow.domain.Solution;
+
+import optim.flow.domain.algorithms.*;
+
+import java.util.List;
+import java.util.ArrayList;
+
+import optim.flow.domain.*;
 import optim.flow.infra.NetworkFileRepository;
 import optim.flow.infra.SolutionFileRepository;
 
 public class SandBox {
 	public static void main(String[] args) {
-		Repository<Network> networkRepo = new NetworkFileRepository();
 
-		Network smallNetwork = new Network("SmallNetwork", 10, 9, 30, 30, 10);
-		// System.out.println("Small network realisable: " +
-		// smallNetwork.isRealisable());
+		double[][] capacityMatrix = { { 10, 12, 9, 0, 0 }, { 0, 0, 6, 0, 0 }, { 0, 0, 0, 15, 0 }, { 0, 0, 0, 0, 9 }, { 0, 0, 0, 0, 0 }};
+		double[][] costMatrix = { { -1, 0, 1, -10, 10 }, { 10, 10, -25, -10, -10 }, { 0, 0, 0, 5, 0 }, { -10, -10, -1, 1, 3 }, { 0, 0, 0, 0, 0} };
+		double[] verticesDemand = { -10, -5, 0, 7, 8 };
 
-		networkRepo.save(smallNetwork);
+		double [][] optimal = {{ 10, 1, 9, 0, 0 }, { 0, 0, 6, 0, 0 }, { 0, 0, 0, 15, 0 }, { 0, 0, 0, 0, 8 }, { 0, 0, 0, 0, 0 }};
+		double optimalCost = 20;
 
-		smallNetwork = networkRepo.load("SmallNetwork");
+		List<List<Edge>> adjacenceList = new ArrayList<List<Edge>>();
+		for (int i=0;i<5;i++){
+			adjacenceList.add(new ArrayList<Edge>());
+			for (int j=0;j<5;j++){
+				if (capacityMatrix[i][j]!=0){
+					adjacenceList.get(i).add(new Edge(i,j,costMatrix[i][j],capacityMatrix[i][j]));
+				}
+			}
+		}
 
-//		networkRepo.save(smallNetwork"SmalleNetwork2");
+		Network handNetwork = new Network("lucas",adjacenceList, verticesDemand);
 
-		// Network bigNetwork = new Network(100, 5000, 30, 30, 10);
-		// // System.out.println("Big network realisable: " +
-		// bigNetwork.isRealisable());
+		Cplex cplex = new Cplex();
+		Solution CplexSolution = cplex.solve(handNetwork);
 
-		// networkRepo.save(bigNetwork, "data/BigNetwork");
 
-		// Repository<Solution> solutionRepo = new SolutionFileRepository();
+		double flow=0;
+		for (int i=0;i<5;i++){
+				flow = -CplexSolution.getVertexFlowIn(i)+CplexSolution.getVertexFlowOut(i)+handNetwork.getVertexDemand(i);
+				if (flow !=0){
+					System.out.println("vertex " + i + " has been violated");
+				}
+		}
 
-		// double[][] capacityMatrix = { { 0, 0, 0, 2 }, { 0, 0, 3, 2 }, { 4, 0, 0, 0 },
-		// { 0, 0, 0, 0 } };
-		// double[][] costMatrix = { { 1, 1, 1, 1 }, { 1, 1, 1, 1 }, { 1, 1, 1, 1 }, {
-		// 1, 1, 1, 1 } };
-		// double[] verticesDemand = { 0, -100, 2, 3 };
 
-		// Network handNetwork = new Network(capacityMatrix, costMatrix,
-		// verticesDemand);
-		// networkRepo.save(handNetwork, "HandNetwork");
-
-		// double[][] flowMatrix = { { 0, 0, 0, 1 }, { 0, 0, 3, 2 }, { 1, 0, 0, 0 }, {
-		// 0, 0, 0, 0 } };
-
-		// Solution handSolution = new Solution(flowMatrix);
-
-		// System.out.println(handNetwork);
-		// System.out.println(handSolution);
-
-		// solutionRepo.save(handSolution, "HandSolution");
-
-		// System.out.println("Hand solution valid for hand network: " +
-		// handNetwork.isSolutionValid(handSolution));
-		// System.out.println("Hand solution cost: " +
-		// handNetwork.calculateSolutionCost(handSolution));
-		System.out.println("coucou");
+		double cost = 0;
+		for (int i=0;i<5;i++){
+			for (int j=0;j<5;j++){
+				cost+= CplexSolution.getEdgeFlow(i, j)*costMatrix[i][j];
+				System.out.println("edge " + i + " " + j + " on flow " +  CplexSolution.getEdgeFlow(i, j));
+			}
+		}
+		System.out.println(cost);
 	}
 }
