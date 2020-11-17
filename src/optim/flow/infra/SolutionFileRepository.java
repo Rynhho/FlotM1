@@ -6,9 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.BreakIterator;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import optim.flow.domain.Repository;
 import optim.flow.domain.Solution;

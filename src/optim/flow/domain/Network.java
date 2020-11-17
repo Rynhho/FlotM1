@@ -1,7 +1,7 @@
 package optim.flow.domain;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.ArrayList;
 
 public class Network {
 	private final String ID;
@@ -97,6 +97,10 @@ public class Network {
 		this.maxDemand = maxDemand;
 	}
 
+	public String getID() {
+		return ID;
+	}
+
 	/**
 	 * @return The number of vertices in the network.
 	 */
@@ -138,7 +142,7 @@ public class Network {
 	 */
 	public boolean hasEdgeBetween(int source, int destination) {
 		return this.adjacencyList.get(source).parallelStream().anyMatch(edge -> {
-			return edge.getDestionation() == destination;
+			return edge.getDestination() == destination;
 		});
 	}
 
@@ -150,7 +154,7 @@ public class Network {
 	 */
 	public double getEdgeCapacity(int source, int destination) {
 		return this.adjacencyList.get(source).parallelStream().filter(edge -> {
-			return edge.getDestionation() == destination;
+			return edge.getDestination() == destination;
 		}).findFirst().get().getCapacity();
 	}
 
@@ -162,12 +166,8 @@ public class Network {
 	 */
 	public double getEdgeCost(int source, int destination) {
 		return this.adjacencyList.get(source).parallelStream().filter(edge -> {
-			return edge.getDestionation() == destination;
+			return edge.getDestination() == destination;
 		}).findFirst().get().getCost();
-	}
-
-	public String getID() {
-		return ID;
 	}
 
 	public double getMaxCapacity() {

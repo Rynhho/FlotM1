@@ -19,7 +19,7 @@ public class Edge {
 		return this.source;
 	}
 
-	public int getDestionation() {
+	public int getDestination() {
 		return this.destination;
 	}
 
