@@ -1,3 +1,5 @@
+*.class
+
 *.vscode
 
 # For some reason VSCode insists on creating this
