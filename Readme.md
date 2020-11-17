@@ -20,7 +20,7 @@ Where arguments is one of the following:
 
 Information about some arguments:
 * **algorithm** is a string on the following list:
-  * Todo
+  * cplex
 <!-- 
 Adding to that, we have some optional arguments:
 * **-mt (integer, default=3600))**: Optional arguments in -r mode. The specified integer is the maximum number of seconds to run the algorithm. -->

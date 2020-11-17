@@ -1,6 +1,6 @@
 # Data files
 
-This is some kind of slow and not deployment ready database. You can add entries by moving instance or solution files into the directory, and you can remove them by deleting the files.
+This is some kind of slow and not deployment ready database. You can add entries by moving instance or solution files into the directory, and you can remove them by deleting the files. Note that an instance ID is the file name withouth the file extension.
 
 ## Instances
 

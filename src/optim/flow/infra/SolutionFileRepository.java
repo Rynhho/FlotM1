@@ -21,16 +21,14 @@ public class SolutionFileRepository implements Repository<Solution> {
 
         for (int i = 0; i < nbVertices; ++i) {
             for (int j = 0; j < nbVertices; ++j) {
-                /* Don't save 0-flow edges */
+                // Todo: We don't verify if i and j is a valid edge in the network
                 double flow = solution.getEdgeFlow(i, j);
-                if (flow != 0.0) {
-                    str += i + " " + j + " " + flow + "\n";
-                }
+                str += i + " " + j + " " + flow + "\n";
             }
         }
 
         try {
-            FileWriter fileWriter = new FileWriter("data" + solution.getID() + ".sol");
+            FileWriter fileWriter = new FileWriter("data/" + solution.getID() + ".sol");
             fileWriter.write(str);
             fileWriter.close();
         } catch (IOException e) {
@@ -41,7 +39,7 @@ public class SolutionFileRepository implements Repository<Solution> {
     @Override
     public Solution load(String ID) {
         try {
-            BufferedReader bufferedReader = new BufferedReader(new FileReader("data" + ID + ".sol"));
+            BufferedReader bufferedReader = new BufferedReader(new FileReader("data/" + ID + ".sol"));
 
             /* Number of vertices */
             String line = bufferedReader.readLine();

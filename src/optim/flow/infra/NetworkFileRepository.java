@@ -38,7 +38,7 @@ public class NetworkFileRepository implements Repository<Network> {
         }
 
         try {
-            FileWriter fileWriter = new FileWriter("data" + network.getID() + ".txt");
+            FileWriter fileWriter = new FileWriter("data/" + network.getID() + ".txt");
             fileWriter.write(str);
             fileWriter.close();
         } catch (IOException e) {
@@ -51,7 +51,7 @@ public class NetworkFileRepository implements Repository<Network> {
         Network network = null;
 
         try {
-            BufferedReader reader = new BufferedReader(new FileReader("data" + ID + ".txt"));
+            BufferedReader reader = new BufferedReader(new FileReader("data/" + ID + ".txt"));
 
             String line = reader.readLine();
             List<String> keyValues = new ArrayList<>(extractWords(line));

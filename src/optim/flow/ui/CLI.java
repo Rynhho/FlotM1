@@ -3,6 +3,8 @@ package optim.flow.ui;
 import optim.flow.domain.Network;
 import optim.flow.domain.Repository;
 import optim.flow.domain.Solution;
+import optim.flow.domain.algorithms.Algorithm;
+import optim.flow.domain.algorithms.CplexAlgorithm;
 import optim.flow.infra.NetworkFileRepository;
 import optim.flow.infra.SolutionFileRepository;
 
@@ -43,12 +45,29 @@ public class CLI {
                     return;
                 }
             } else if (mode.compareTo("-r") == 0) {
-                String algorithm = args[1];
+                String algorithmStr = args[1];
 
-                String inputFilename = args[2];
+                String networkID = args[2];
 
-                String outputFilename = args[3];
+                String outputSolutionID = args[3];
 
+                Repository<Network> networkRepo = new NetworkFileRepository();
+                Repository<Solution> solutionRepo = new SolutionFileRepository();
+
+                Network network = networkRepo.load(networkID);
+
+                Algorithm algorithm = null;
+
+                if (algorithmStr.equals("cplex")) {
+                    algorithm = new CplexAlgorithm();
+                } else {
+                    showUsage();
+                    return;
+                }
+
+                Solution solution = algorithm.solve(network);
+
+                solutionRepo.save(solution);
             } else {
                 showUsage();
                 return;
