@@ -1,5 +1,7 @@
 # Minimum cost flow solving algorithms
 
+TODO: Brief introduction to problem.
+
 ## Database
 
 The used database is a simple directory named *data*.

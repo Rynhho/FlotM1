@@ -1,5 +1,6 @@
 package optim.flow.domain.algorithms;
 
+import optim.flow.domain.Edge;
 import optim.flow.domain.Network;
 import optim.flow.domain.Solution;
 
@@ -36,30 +37,22 @@ public class CplexAlgorithm implements Algorithm {
             // Objective
             IloLinearNumExpr obj = cplex.linearNumExpr();
             for (int i = 0; i < n; i++) {
-                for (int j = 0; j < n; j++) {
-                    // System.out.println(i + " and " + j +" on " + n + "\n");
-                    if (net.hasEdgeBetween(i, j)) {
-                        obj.addTerm(net.getEdgeCost(i, j), X[i][j]);
-                    }
+                for (Edge edge : net.getOutEdges(i)) {
+                    obj.addTerm(edge.getCost(), X[i][edge.getDestination()]);
                 }
             }
             cplex.addMinimize(obj);
 
             // Capacity Constraint
             for (int i = 0; i < n; i++) {
-                for (int j = 0; j < n; j++) {
-                    if (net.hasEdgeBetween(i, j)) {
-                        IloLinearNumExpr ct = cplex.linearNumExpr();
-                        ct.addTerm(1.0, X[i][j]);
-                        cplex.addLe(ct, net.getEdgeCapacity(i, j));
-                    } else {
-                        IloLinearNumExpr ct = cplex.linearNumExpr();
-                        ct.addTerm(1.0, X[i][j]);
-                        cplex.addLe(ct, 0);
-                    }
+                for (Edge edge : net.getOutEdges(i)) {
+                    IloLinearNumExpr ct = cplex.linearNumExpr();
+                    ct.addTerm(1.0, X[i][edge.getDestination()]);
+                    cplex.addLe(ct, edge.getCapacity());
                 }
             }
 
+            // Todo: complexity
             // Demand constraint
             for (int i = 0; i < n; i++) {
                 IloLinearNumExpr ct = cplex.linearNumExpr();
@@ -109,7 +102,7 @@ public class CplexAlgorithm implements Algorithm {
                 }
             }
 
-            Solution sol = new Solution(net.getID(), "CplexSolution", flowMatrix);
+            Solution sol = new Solution("CplexSolution", flowMatrix);
 
             cplex.end();
 

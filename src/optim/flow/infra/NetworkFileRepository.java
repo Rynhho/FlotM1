@@ -14,31 +14,33 @@ import optim.flow.domain.Network;
 import optim.flow.domain.Repository;
 
 public class NetworkFileRepository implements Repository<Network> {
+    private final String directory = "data/";
+    private final String extension = ".txt";
 
     @Override
-    public void save(Network network) {
-        final int nbVertices = network.getNbVertices();
+    public boolean exists(String ID) {
+        // TODO Auto-generated method stub
+        return false;
+    }
 
+    @Override
+    public void save(String ID, Network network) {
         String str = new String();
-        str += network.getID() + " " + nbVertices + " " + network.getNbEdges() + " " + network.getMaxCapacity() + " "
+        str += network.getNbVertices() + " " + network.getNbEdges() + " " + network.getMaxCapacity() + " "
                 + network.getMaxCost() + " " + network.getMaxDemand() + "\n";
-        for (int i = 0; i < nbVertices; ++i) {
-            str += network.getVertexDemand(i) + "\n";
+
+        for (int vertex = 0; vertex < network.getNbVertices(); ++vertex) {
+            str += network.getVertexDemand(vertex) + "\n";
         }
 
-        for (int source = 0; source < nbVertices; ++source) {
-            for (int destination = 0; destination < nbVertices; ++destination) {
-                if (network.hasEdgeBetween(source, destination)) {
-                    if (network.getEdgeCapacity(source, destination) != 0) {
-                        str += source + " " + destination + " " + network.getEdgeCapacity(source, destination) + " "
-                                + network.getEdgeCost(source, destination) + "\n";
-                    }
-                }
+        for (int source = 0; source < network.getNbVertices(); ++source) {
+            for (Edge edge : network.getOutEdges(source)) {
+                str += source + " " + edge.getDestination() + " " + edge.getCapacity() + " " + edge.getCost() + "\n";
             }
         }
 
         try {
-            FileWriter fileWriter = new FileWriter("data/" + network.getID() + ".txt");
+            FileWriter fileWriter = new FileWriter(constructFilename(ID));
             fileWriter.write(str);
             fileWriter.close();
         } catch (IOException e) {
@@ -54,22 +56,22 @@ public class NetworkFileRepository implements Repository<Network> {
             BufferedReader reader = new BufferedReader(new FileReader("data/" + ID + ".txt"));
 
             String line = reader.readLine();
+
             List<String> keyValues = new ArrayList<>(extractWords(line));
-            final String networkID = keyValues.get(0);
-            final int nbVertices = Integer.parseInt(keyValues.get(1));
-            final int nbEdges = Integer.parseInt(keyValues.get(2));
+            final int nbVertices = Integer.parseInt(keyValues.get(0));
+            final int nbEdges = Integer.parseInt(keyValues.get(1));
 
             List<List<Edge>> edges = new ArrayList<List<Edge>>();
 
             final double[] verticesDemand = new double[nbVertices];
-            for (int vertexID = 0; vertexID < nbVertices; ++vertexID) {
+            for (int vertex = 0; vertex < nbVertices; ++vertex) {
                 line = reader.readLine();
-                verticesDemand[vertexID] = Double.parseDouble(line);
+                verticesDemand[vertex] = Double.parseDouble(line);
 
                 edges.add(new ArrayList<Edge>());
             }
 
-            for (int edgeID = 0; edgeID < nbEdges; ++edgeID) {
+            for (int i = 0; i < nbEdges; ++i) {
                 line = reader.readLine();
                 List<String> words = new ArrayList<>(extractWords(line));
 
@@ -77,13 +79,13 @@ public class NetworkFileRepository implements Repository<Network> {
                 int to = Integer.parseInt(words.get(1));
 
                 double capacity = Double.parseDouble(words.get(2));
-                double cost = Double.parseDouble(words.get(2));
+                double cost = Double.parseDouble(words.get(3));
 
-                Edge edge = new Edge(from, to, cost, capacity);
+                Edge edge = new Edge(to, cost, capacity);
                 edges.get(from).add(edge);
             }
 
-            network = new Network(networkID, edges, verticesDemand);
+            network = new Network(edges, verticesDemand);
 
             reader.close();
         } catch (FileNotFoundException e) {
@@ -103,7 +105,7 @@ public class NetworkFileRepository implements Repository<Network> {
      * @param s String to divide into words.
      * @return List containing s's words.
      */
-    private static List<String> extractWords(String s) {
+    private List<String> extractWords(String s) {
         List<String> words = new ArrayList<>();
 
         BreakIterator it = BreakIterator.getWordInstance();
@@ -121,5 +123,9 @@ public class NetworkFileRepository implements Repository<Network> {
         }
 
         return words;
+    }
+
+    private String constructFilename(String ID) {
+        return this.directory + ID + this.extension;
     }
 }

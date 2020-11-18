@@ -8,7 +8,14 @@ public interface Repository<T> {
      * 
      * @return The ID given to the saved object.
      */
-    void save(T object);
+    void save(String ID, T object);
+
+    /**
+     * Checks if a T object with given ID exists
+     * 
+     * @param ID The object's ID
+     */
+    boolean exists(String ID);
 
     /**
      * Loads a object from some kind of adapted media.

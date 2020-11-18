@@ -56,18 +56,22 @@ public class CLI {
 
                 Network network = networkRepo.load(networkID);
 
-                Algorithm algorithm = null;
+                Solution solution = null;
 
                 if (algorithmStr.equals("cplex")) {
-                    algorithm = new CplexAlgorithm();
+                    try {
+                        Algorithm algorithm = new CplexAlgorithm();
+                        solution = algorithm.solve(network);
+                    } catch (UnsatisfiedLinkError error) {
+                        System.out.println("You cannot use CPLEX because it's not installed on your system.\n");
+                        return;
+                    }
                 } else {
                     showUsage();
                     return;
                 }
 
-                Solution solution = algorithm.solve(network);
-
-                solutionRepo.save(solution);
+                solutionRepo.save("bidule", solution);
             } else {
                 showUsage();
                 return;

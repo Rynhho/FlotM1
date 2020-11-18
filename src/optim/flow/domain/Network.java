@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class Network {
-	private final String ID;
-
 	private final int nbVertices;
 	private final int nbEdges;
 
@@ -20,18 +18,22 @@ public class Network {
 	 * Constructs a network with the parameters characteristics. The underlying data
 	 * is generated randomly.
 	 * 
+	 * Condition 1: nbEdges <= 2 * nbVertices
+	 * 
 	 * @param nbVertices
 	 * @param nbEdges
 	 * @param maxCapacity
 	 * @param maxCost
 	 * @param maxDemand
 	 */
-	public Network(String ID, int nbVertices, int nbEdges, double maxCapacity, double maxCost, double maxDemand) {
+	public Network(int nbVertices, int nbEdges, double maxCapacity, double maxCost, double maxDemand) {
 		if (nbVertices <= 0 || nbEdges <= 0 || maxCapacity <= 0 || maxCost <= 0 || maxDemand <= 0) {
 			throw new IllegalArgumentException("Network parameters must be positive.\n");
 		}
 
-		this.ID = ID;
+		if (nbEdges > 2 * nbVertices) {
+			throw new IllegalArgumentException("Condition 1 (nbEdges <= 2 * nbVertices) is not satisfied.\n");
+		}
 
 		this.nbVertices = nbVertices;
 		this.nbEdges = nbEdges;
@@ -51,23 +53,23 @@ public class Network {
 	}
 
 	/**
-	 * Creates a flow network from its corresponding data matrices.
+	 * Creates a flow network from its corresponding adjacency list and vertices
+	 * demands.
 	 * 
-	 * @param capacityMatrix  Capacity matrix
-	 * @param costMatrix      Cost matrix
-	 * @param verticesDemands Vertices demand
+	 * The adjacency list must be constructed before calling this constructor.
+	 * 
+	 * @param adjacencyList   Adjacency list
+	 * @param verticesDemands Vertices demands
 	 */
-	public Network(String ID, List<List<Edge>> adjacencyList, double[] verticesDemands) {
+	public Network(List<List<Edge>> adjacencyList, double[] verticesDemands) {
 		if (adjacencyList == null || verticesDemands == null) {
 			throw new IllegalArgumentException("Network parameters must not be null.\n");
 		}
 
 		if (adjacencyList.size() != verticesDemands.length) {
 			throw new IllegalArgumentException(
-					"Network adjacency list and vertices demands array must have the same dimension.\n");
+					"Network adjacency list and vertices demands array must have the same number of vertices.\n");
 		}
-
-		this.ID = ID;
 
 		this.adjacencyList = adjacencyList;
 		this.verticesDemands = verticesDemands;
@@ -79,16 +81,15 @@ public class Network {
 		double maxDemand = this.verticesDemands[0];
 
 		int nbEdges = 0;
-		for (int i = 0; i < this.nbVertices; ++i) {
-			maxDemand = Math.max(maxDemand, this.verticesDemands[i]);
+		for (int source = 0; source < this.nbVertices; ++source) {
+			maxDemand = Math.max(maxDemand, this.verticesDemands[source]);
 
-			for (int j = 0; j < this.adjacencyList.get(i).size(); ++j) {
+			for (Edge edge : getOutEdges(source)) {
 				++nbEdges;
 
-				maxCapacity = Math.max(maxCapacity, this.adjacencyList.get(i).get(j).getCapacity());
-				maxCost = Math.max(maxCost, this.adjacencyList.get(i).get(j).getCost());
+				maxCapacity = Math.max(maxCapacity, edge.getCapacity());
+				maxCost = Math.max(maxCost, edge.getCost());
 			}
-			
 		}
 
 		this.nbEdges = nbEdges;
@@ -98,78 +99,32 @@ public class Network {
 		this.maxDemand = maxDemand;
 	}
 
-	public String getID() {
-		return ID;
-	}
-
-	/**
-	 * @return The number of vertices in the network.
-	 */
 	public int getNbVertices() {
 		return this.nbVertices;
 	}
 
-	/**
-	 * Verifies if a vertex ID is within the network's vertices range.
-	 * 
-	 * @param vertexID The ID to verify.
-	 * 
-	 * @return true if the vertex is valid, else false.
-	 */
-	public boolean isVertexIDValid(int vertexID) {
-		return vertexID >= 0 && vertexID < this.nbVertices;
-	}
-
-	/**
-	 * @param vertexID The vertex ID.
-	 * @return The vertex demand.
-	 */
 	public double getVertexDemand(int vertexID) {
 		return this.verticesDemands[vertexID];
 	}
 
-	/**
-	 * @return The number of edges in the network.
-	 */
 	public int getNbEdges() {
 		return this.nbEdges;
 	}
 
-	/**
-	 * @param source      Source vertex
-	 * @param destination Destination vertex
-	 * @return True if the edge between source and destination exists, false
-	 *         otherwise.
-	 */
 	public boolean hasEdgeBetween(int source, int destination) {
 		return this.adjacencyList.get(source).parallelStream().anyMatch(edge -> {
 			return edge.getDestination() == destination;
 		});
 	}
 
-	/**
-	 * @param from Source vertex
-	 * @param to   Destination vertex
-	 * 
-	 * @return The capacity of the corresponding edge.
-	 */
-	public double getEdgeCapacity(int source, int destination) {
+	public Edge getEdge(int source, int destination) {
 		return this.adjacencyList.get(source).parallelStream().filter(edge -> {
 			return edge.getDestination() == destination;
-		}).findFirst().get().getCapacity();
+		}).findFirst().get();
 	}
-	
 
-	/**
-	 * @param from Source vertex
-	 * @param to   Destination vertex
-	 * 
-	 * @return The cost of the corresponding edge.
-	 */
-	public double getEdgeCost(int source, int destination) {
-		return this.adjacencyList.get(source).parallelStream().filter(edge -> {
-			return edge.getDestination() == destination;
-		}).findFirst().get().getCost();
+	public List<Edge> getOutEdges(int source) {
+		return this.adjacencyList.get(source);
 	}
 
 	public double getMaxCapacity() {
@@ -187,7 +142,7 @@ public class Network {
 	private void generateRandomData() {
 		for (int i = 0; i < this.adjacencyList.size(); ++i) {
 			this.adjacencyList.set(i, new ArrayList<Edge>(1));
-			this.adjacencyList.get(i).add(new Edge(i, i + 1, 1, 1));
+			this.adjacencyList.get(i).add(new Edge(i + 1, 1, 1));
 
 			this.verticesDemands[i] = 0;
 		}
@@ -195,6 +150,7 @@ public class Network {
 		this.verticesDemands[0] = 1;
 		this.verticesDemands[this.verticesDemands.length - 1] = 1;
 	}
+
 	// /**
 	// * Generate random data set based on the network's caracteristics.
 	// */
@@ -240,13 +196,11 @@ public class Network {
 
 		boolean shouldReturn = false;
 		for (int source = 0; source < this.nbVertices; ++source) {
-			for (int destination = 0; destination < this.nbVertices; ++destination) {
-				if (this.hasEdgeBetween(source, destination)) {
-					if (solution.getEdgeFlow(source, destination) > this.getEdgeCapacity(source, destination)) {
-						System.out.println("Unvalid solution: Flow from #" + source + " to #" + destination
-								+ " exceeds the edge's capacity.\n");
-						shouldReturn = true;
-					}
+			for (Edge edge : this.getOutEdges(source)) {
+				if (solution.getEdgeFlow(source, edge.getDestination()) > edge.getCapacity()) {
+					System.out.println("Unvalid solution: Flow from #" + source + " to #" + edge.getDestination()
+							+ " exceeds the edge's capacity.\n");
+					shouldReturn = true;
 				}
 			}
 		}
@@ -277,10 +231,8 @@ public class Network {
 		double cost = 0;
 
 		for (int source = 0; source < solution.getNbVertices(); ++source) {
-			for (int destination = 0; destination < solution.getNbVertices(); ++destination) {
-				if (this.hasEdgeBetween(source, destination)) {
-					cost += solution.getEdgeFlow(source, destination) * this.getEdgeCost(source, destination);
-				}
+			for (Edge edge : this.getOutEdges(source)) {
+				cost += solution.getEdgeFlow(source, edge.getDestination()) * edge.getCost();
 			}
 		}
 
@@ -301,26 +253,32 @@ public class Network {
 		str += "\nCapacity matrix:\n";
 		for (int source = 0; source < this.nbVertices; ++source) {
 			str += "[";
-			for (int destination = 0; destination < this.nbVertices; ++destination) {
-				if (hasEdgeBetween(source, destination)) {
-					str += String.format("%.2f", this.getEdgeCapacity(source, destination)) + ", ";
-				} else {
-					str += "0.0";
+			int currentDestination = 0;
+			for (Edge edge : this.getOutEdges(source)) {
+				for (int i = currentDestination; i < edge.getDestination(); ++i) {
+					str += "0.0, ";
 				}
+
+				str += String.format("%.2f", edge.getCapacity()) + ", ";
+				currentDestination = edge.getDestination() + 1;
 			}
+
 			str = str.substring(0, str.length() - 2) + "]\n";
 		}
 
 		str += "\nCost matrix:\n";
 		for (int source = 0; source < this.nbVertices; ++source) {
 			str += "[";
-			for (int destination = 0; destination < this.nbVertices; ++destination) {
-				if (hasEdgeBetween(source, destination)) {
-					str += String.format("%.2f", this.getEdgeCost(source, destination)) + ", ";
-				} else {
-					str += "0.0";
+			int currentDestination = 0;
+			for (Edge edge : this.getOutEdges(source)) {
+				for (int i = currentDestination; i < edge.getDestination(); ++i) {
+					str += "0.0, ";
 				}
+
+				str += String.format("%.2f", edge.getCost()) + ", ";
+				currentDestination = edge.getDestination() + 1;
 			}
+
 			str = str.substring(0, str.length() - 2) + "]\n";
 		}
 

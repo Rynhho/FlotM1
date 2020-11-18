@@ -12,8 +12,17 @@ import optim.flow.domain.Repository;
 import optim.flow.domain.Solution;
 
 public class SolutionFileRepository implements Repository<Solution> {
+    private final String directory = "data/";
+    private final String extension = ".txt";
+
     @Override
-    public void save(Solution solution) {
+    public boolean exists(String ID) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public void save(String ID, Solution solution) {
         final int nbVertices = solution.getNbVertices();
 
         String str = new String();
@@ -22,13 +31,14 @@ public class SolutionFileRepository implements Repository<Solution> {
         for (int i = 0; i < nbVertices; ++i) {
             for (int j = 0; j < nbVertices; ++j) {
                 // Todo: We don't verify if i and j is a valid edge in the network
+                // Todo: zeros are getting stored and complexity is still n^2
                 double flow = solution.getEdgeFlow(i, j);
                 str += i + " " + j + " " + flow + "\n";
             }
         }
 
         try {
-            FileWriter fileWriter = new FileWriter("data/" + solution.getID() + ".sol");
+            FileWriter fileWriter = new FileWriter(constructFilename(ID));
             fileWriter.write(str);
             fileWriter.close();
         } catch (IOException e) {
@@ -90,5 +100,9 @@ public class SolutionFileRepository implements Repository<Solution> {
         }
 
         return words;
+    }
+
+    private String constructFilename(String ID) {
+        return this.directory + ID + this.extension;
     }
 }
