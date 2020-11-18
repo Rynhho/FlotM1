@@ -6,6 +6,7 @@ public class Edge {
 	private final double cost;
 	private final double capacity;
 
+	// Todo: this is inverted compared to file structure
 	public Edge(int destination, double cost, double capacity) {
 		this.destination = destination;
 

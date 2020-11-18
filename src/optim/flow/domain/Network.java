@@ -248,7 +248,7 @@ public class Network {
 	@Override
 	public String toString() {
 		String str = "Number of vertices: " + this.nbVertices + "\n";
-		str += "Number of edges: " + this.nbVertices + "\n";
+		str += "Number of edges: " + this.nbEdges + "\n";
 
 		str += "\nCapacity matrix:\n";
 		for (int source = 0; source < this.nbVertices; ++source) {
@@ -261,6 +261,10 @@ public class Network {
 
 				str += String.format("%.2f", edge.getCapacity()) + ", ";
 				currentDestination = edge.getDestination() + 1;
+			}
+
+			for (int i = currentDestination; i < this.nbVertices; ++i) {
+				str += "0.00, ";
 			}
 
 			str = str.substring(0, str.length() - 2) + "]\n";
@@ -277,6 +281,10 @@ public class Network {
 
 				str += String.format("%.2f", edge.getCost()) + ", ";
 				currentDestination = edge.getDestination() + 1;
+			}
+
+			for (int i = currentDestination; i < this.nbVertices; ++i) {
+				str += "0.00, ";
 			}
 
 			str = str.substring(0, str.length() - 2) + "]\n";

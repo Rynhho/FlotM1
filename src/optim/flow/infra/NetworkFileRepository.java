@@ -61,14 +61,14 @@ public class NetworkFileRepository implements Repository<Network> {
             final int nbVertices = Integer.parseInt(keyValues.get(0));
             final int nbEdges = Integer.parseInt(keyValues.get(1));
 
-            List<List<Edge>> edges = new ArrayList<List<Edge>>();
+            List<List<Edge>> adjacencyList = new ArrayList<List<Edge>>();
 
             final double[] verticesDemand = new double[nbVertices];
             for (int vertex = 0; vertex < nbVertices; ++vertex) {
                 line = reader.readLine();
                 verticesDemand[vertex] = Double.parseDouble(line);
 
-                edges.add(new ArrayList<Edge>());
+                adjacencyList.add(new ArrayList<Edge>());
             }
 
             for (int i = 0; i < nbEdges; ++i) {
@@ -82,10 +82,10 @@ public class NetworkFileRepository implements Repository<Network> {
                 double cost = Double.parseDouble(words.get(3));
 
                 Edge edge = new Edge(to, cost, capacity);
-                edges.get(from).add(edge);
+                adjacencyList.get(from).add(edge);
             }
 
-            network = new Network(edges, verticesDemand);
+            network = new Network(adjacencyList, verticesDemand);
 
             reader.close();
         } catch (FileNotFoundException e) {
