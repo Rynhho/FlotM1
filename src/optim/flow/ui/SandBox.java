@@ -39,28 +39,18 @@ public class SandBox {
 		// Algorithm cplex = new CplexAlgorithm();
 		// Solution CplexSolution = cplex.solve(handNetwork);
 
-		// double flow = 0;
-		// for (int i = 0; i < 5; i++) {
-		// flow = -CplexSolution.getVertexFlowIn(i) + CplexSolution.getVertexFlowOut(i)
-		// + handNetwork.getVertexDemand(i);
-		// if (flow != 0) {
-		// System.out.println("vertex " + i + " has been violated");
-		// }
-		// }
-
-		// double cost = 0;
-		// for (int i = 0; i < 5; i++) {
-		// for (int j = 0; j < 5; j++) {
-		// cost += CplexSolution.getEdgeFlow(i, j) * costMatrix[i][j];
-		// System.out.println("edge " + i + " " + j + " on flow " +
-		// CplexSolution.getEdgeFlow(i, j));
-		// }
-		// }
-		// System.out.println(cost);
-
 		Repository<Network> networkRepository = new NetworkFileRepository();
 		Network googleNet = networkRepository.load("Google");
 
 		System.out.println(googleNet);
+
+		Algorithm cplex = new CplexAlgorithm();
+		Solution CplexSolution = cplex.solve(googleNet);
+
+		if (googleNet.isSolutionValid(CplexSolution)){
+			System.out.println("solution cost : " + googleNet.calculateSolutionCost(CplexSolution));
+		}else{
+			System.out.println("solution not valid");
+		}
 	}
 }
