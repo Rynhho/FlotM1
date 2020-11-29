@@ -60,7 +60,13 @@ public class SandBox {
 
 		Repository<Network> networkRepository = new NetworkFileRepository();
 		Network googleNet = networkRepository.load("Google");
-
 		System.out.println(googleNet);
+		Dijkstra d = new Dijkstra();
+		List<Integer> b = d.solve(googleNet, 0, 4);
+		for(int i:b) {
+			System.out.println(i);
+		}
+		System.out.println(googleNet.getEdge(2, 4).getCost());
+		
 	}
 }
