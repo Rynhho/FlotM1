@@ -6,6 +6,12 @@ public class Solution {
 	private final int nbVertices;
 	private final double[][] flowMatrix;
 
+	/*
+	 * Auxiliary variables to speed up execution.
+	 */
+	private final double[] verticesFlowIn;
+	private final double[] verticesFlowOut;
+
 	/**
 	 * Creates an empty solution.
 	 * 
@@ -16,6 +22,9 @@ public class Solution {
 
 		this.nbVertices = nbVertices;
 		this.flowMatrix = new double[nbVertices][nbVertices];
+
+		this.verticesFlowIn = new double[nbVertices];
+		this.verticesFlowOut = new double[nbVertices];
 	}
 
 	/**
@@ -28,6 +37,16 @@ public class Solution {
 
 		this.nbVertices = flowMatrix.length;
 		this.flowMatrix = flowMatrix;
+
+		this.verticesFlowIn = new double[nbVertices];
+		this.verticesFlowOut = new double[nbVertices];
+
+		for (int source = 0; source < nbVertices; ++source) {
+			for (int destination = 0; destination < nbVertices; ++destination) {
+				this.verticesFlowIn[destination] += this.flowMatrix[source][destination];
+				this.verticesFlowIn[source] += this.flowMatrix[source][destination];
+			}
+		}
 	}
 
 	/**
@@ -68,6 +87,8 @@ public class Solution {
 	 */
 	public void setEdgeFlow(int from, int to, double flow) {
 		this.flowMatrix[from][to] = flow;
+
+		// Todo: Update verticesFlowIn and verticesFlowOut
 	}
 
 	/**

@@ -123,6 +123,22 @@ public class Network {
 		}).findFirst().get();
 	}
 
+	public List<Edge> getInEdges(int destination) {
+		final List<Edge> inEdges = new ArrayList<>();
+
+		this.adjacencyList.parallelStream().forEach(sourceList -> {
+			sourceList.parallelStream().forEach(edge -> {
+				if (edge.getDestination() == destination) {
+					synchronized (inEdges) {
+						inEdges.add(edge);
+					}
+				}
+			});
+		});
+
+		return inEdges;
+	}
+
 	public List<Edge> getOutEdges(int source) {
 		return this.adjacencyList.get(source);
 	}
