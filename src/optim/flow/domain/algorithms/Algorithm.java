@@ -1,7 +1,7 @@
 package optim.flow.domain.algorithms;
 
 import optim.flow.domain.Network;
-import optim.flow.domain.Solution;
+import optim.flow.domain.ResidualNetwork;
 
 /**
  * Class to be implemented by network flow solving algorithms.
@@ -14,5 +14,5 @@ public interface Algorithm {
      * 
      * @return A realisable solution.
      */
-    Solution solve(Network Network);
+    ResidualNetwork solve(Network Network);
 }

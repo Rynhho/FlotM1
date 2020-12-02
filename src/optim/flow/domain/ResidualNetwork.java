@@ -1,68 +1,61 @@
 package optim.flow.domain;
 
-public class Solution {
-	private final String networkID;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
 
-	private final int nbVertices;
+public class ResidualNetwork extends Network {
+	private final Network network;
+
 	private final double[][] flowMatrix;
 
 	/*
 	 * Auxiliary variables to speed up execution.
 	 */
+	// Todo: Implement
 	private final double[] verticesFlowIn;
 	private final double[] verticesFlowOut;
+	private int solutionCost;
 
-	/**
-	 * Creates an empty solution.
-	 * 
-	 * @param nbVertices The number of vertices of the solution.
-	 */
-	public Solution(String networkID, int nbVertices) {
-		this.networkID = networkID;
+	private Map<Edge, Edge> oppositeEdgesTable = new HashMap<>();
 
-		this.nbVertices = nbVertices;
-		this.flowMatrix = new double[nbVertices][nbVertices];
+	public ResidualNetwork(Network network) {
+		super(network);
 
-		this.verticesFlowIn = new double[nbVertices];
-		this.verticesFlowOut = new double[nbVertices];
-	}
+		this.network = network;
+		this.flowMatrix = new double[this.nbVertices][this.nbVertices];
 
-	/**
-	 * Creates a solution from a flow matrix.
-	 * 
-	 * @param flowMatrix The flow matrix.
-	 */
-	public Solution(String networkID, double[][] flowMatrix) {
-		this.networkID = networkID;
+		this.verticesFlowIn = new double[this.nbVertices];
+		this.verticesFlowOut = new double[this.nbVertices];
 
-		this.nbVertices = flowMatrix.length;
-		this.flowMatrix = flowMatrix;
+		// Todo: Parallelise
+		for (int source = 0; source < this.network.nbVertices; ++source) {
+			this.adjacencyList.clear();
 
-		this.verticesFlowIn = new double[nbVertices];
-		this.verticesFlowOut = new double[nbVertices];
+			final int i = source;
 
-		for (int source = 0; source < nbVertices; ++source) {
-			for (int destination = 0; destination < nbVertices; ++destination) {
-				this.verticesFlowIn[destination] += this.flowMatrix[source][destination];
-				this.verticesFlowIn[source] += this.flowMatrix[source][destination];
-			}
+			this.network.getOutEdges(source).stream().forEach(edge -> {
+				Edge residualEdge = new Edge(edge.getDestination(), edge.getCost(), edge.getCapacity());
+				Edge oppositeResidualEdge = new Edge(i, -edge.getCost(), 0);
+
+				this.adjacencyList.get(i).add(residualEdge);
+				this.adjacencyList.get(edge.getDestination()).add(oppositeResidualEdge);
+
+				this.oppositeEdgesTable.put(residualEdge, oppositeResidualEdge);
+				this.oppositeEdgesTable.put(oppositeResidualEdge, residualEdge);
+			});
 		}
 	}
 
-	/**
-	 * Returns the ID of the network linked with this solution.
-	 * 
-	 * @return The network ID.
-	 */
-	public String getNetworkID() {
-		return networkID;
-	}
+	public ResidualNetwork(Network network, double[][] flowMatrix) {
+		super(network);
 
-	/**
-	 * Returns size of the solution
-	 */
-	public int getNbVertices() {
-		return this.nbVertices;
+		this.network = network;
+		this.flowMatrix = flowMatrix;
+
+		this.verticesFlowIn = new double[this.nbVertices];
+		this.verticesFlowOut = new double[this.nbVertices];
 	}
 
 	/**
@@ -97,6 +90,7 @@ public class Solution {
 	 * @return The flow going into the vertex
 	 */
 	public double getVertexFlowIn(int vertexID) {
+		// Todo: verticesFlowIn
 		double flowIn = 0;
 		for (int i = 0; i < this.nbVertices; ++i) {
 			flowIn += this.flowMatrix[i][vertexID];
@@ -110,6 +104,7 @@ public class Solution {
 	 * @return The flow going out of the vertex
 	 */
 	public double getVertexFlowOut(int vertex) {
+		// Todo: verticesFlowOut
 		double flowOut = 0;
 		for (int j = 0; j < this.nbVertices; ++j) {
 			flowOut += this.flowMatrix[vertex][j];

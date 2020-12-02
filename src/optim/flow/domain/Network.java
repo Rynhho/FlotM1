@@ -4,15 +4,17 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class Network {
-	private final int nbVertices;
-	private final int nbEdges;
+	protected final int nbVertices;
+	protected final int nbEdges;
 
-	private final double maxCapacity;
-	private final double maxCost;
-	private final double maxDemand;
+	protected final double maxCapacity;
+	protected final double maxCost;
+	protected final double maxDemand;
 
-	private final List<List<Edge>> adjacencyList;
-	private final double[] verticesDemands;
+	protected final List<List<Edge>> adjacencyList;
+	protected final double[] verticesDemands;
+
+	protected final Edge[][] edgesTable; // Todo: implement
 
 	/**
 	 * Constructs a network with the parameters characteristics. The underlying data
@@ -48,6 +50,7 @@ public class Network {
 		}
 
 		this.verticesDemands = new double[nbVertices];
+		this.edgesTable = new Edge[nbVertices][nbVertices];
 
 		generateRandomData();
 	}
@@ -80,6 +83,9 @@ public class Network {
 		double maxCost = this.adjacencyList.get(0).get(0).getCost();
 		double maxDemand = this.verticesDemands[0];
 
+		// Todo
+		this.edgesTable = new Edge[nbVertices][nbVertices];
+
 		int nbEdges = 0;
 		for (int source = 0; source < this.nbVertices; ++source) {
 			maxDemand = Math.max(maxDemand, this.verticesDemands[source]);
@@ -99,16 +105,41 @@ public class Network {
 		this.maxDemand = maxDemand;
 	}
 
+	public Network(Network network) {
+		this.nbVertices = network.nbVertices;
+		this.nbEdges = network.nbEdges;
+
+		this.maxCapacity = network.maxCapacity;
+		this.maxCost = network.maxCost;
+		this.maxDemand = network.maxDemand;
+
+		this.adjacencyList = network.adjacencyList; // Todo: Should be a copy
+		this.verticesDemands = network.verticesDemands; // Todo: Should be a copy
+		this.edgesTable = network.edgesTable; // Todo: Should be a copy
+	}
+
 	public int getNbVertices() {
 		return this.nbVertices;
 	}
 
-	public double getVertexDemand(int vertexID) {
-		return this.verticesDemands[vertexID];
-	}
-
 	public int getNbEdges() {
 		return this.nbEdges;
+	}
+
+	public double getMaxCapacity() {
+		return this.maxCapacity;
+	}
+
+	public double getMaxCost() {
+		return this.maxCost;
+	}
+
+	public double getMaxDemand() {
+		return this.maxDemand;
+	}
+
+	public double getVertexDemand(int vertexID) {
+		return this.verticesDemands[vertexID];
 	}
 
 	public boolean hasEdgeBetween(int source, int destination) {
@@ -123,6 +154,7 @@ public class Network {
 		}).findFirst().get();
 	}
 
+	// Todo: Potentially optimisable
 	public List<Edge> getInEdges(int destination) {
 		final List<Edge> inEdges = new ArrayList<>();
 
@@ -141,18 +173,6 @@ public class Network {
 
 	public List<Edge> getOutEdges(int source) {
 		return this.adjacencyList.get(source);
-	}
-
-	public double getMaxCapacity() {
-		return this.maxCapacity;
-	}
-
-	public double getMaxCost() {
-		return this.maxCost;
-	}
-
-	public double getMaxDemand() {
-		return this.maxDemand;
 	}
 
 	private void generateRandomData() {
@@ -204,7 +224,7 @@ public class Network {
 	 * @param solution The solution to check
 	 * @return true if the solution is realisable, else false.
 	 */
-	public boolean isSolutionValid(Solution solution) {
+	public boolean isSolutionValid(ResidualNetwork solution) {
 		if (this.nbVertices != solution.getNbVertices()) {
 			System.out.println("Unvalid solution: Instance and solution must have the same number of vertices.\n");
 			return false;
@@ -243,7 +263,7 @@ public class Network {
 	 * @param solution The solution to calculate.
 	 * @return The solution's cost.
 	 */
-	public double calculateSolutionCost(Solution solution) {
+	public double getSolutionCost(ResidualNetwork solution) {
 		double cost = 0;
 
 		for (int source = 0; source < solution.getNbVertices(); ++source) {

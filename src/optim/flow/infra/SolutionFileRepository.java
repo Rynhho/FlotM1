@@ -9,9 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import optim.flow.domain.Repository;
-import optim.flow.domain.Solution;
+import optim.flow.domain.ResidualNetwork;
 
-public class SolutionFileRepository implements Repository<Solution> {
+public class SolutionFileRepository implements Repository<ResidualNetwork> {
     private final String directory = "data/";
     private final String extension = ".txt";
 
@@ -22,11 +22,11 @@ public class SolutionFileRepository implements Repository<Solution> {
     }
 
     @Override
-    public void save(String ID, Solution solution) {
+    public void save(String ID, ResidualNetwork solution) {
         final int nbVertices = solution.getNbVertices();
 
         String str = new String();
-        str += solution.getNetworkID() + " " + nbVertices + "\n";
+        // str += solution.getNetworkID() + " " + nbVertices + "\n";
 
         for (int i = 0; i < nbVertices; ++i) {
             for (int j = 0; j < nbVertices; ++j) {
@@ -47,7 +47,7 @@ public class SolutionFileRepository implements Repository<Solution> {
     }
 
     @Override
-    public Solution load(String ID) {
+    public ResidualNetwork load(String ID) {
         try {
             BufferedReader bufferedReader = new BufferedReader(new FileReader("data/" + ID + ".sol"));
 

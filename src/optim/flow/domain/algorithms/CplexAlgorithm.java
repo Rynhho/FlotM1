@@ -2,7 +2,7 @@ package optim.flow.domain.algorithms;
 
 import optim.flow.domain.Edge;
 import optim.flow.domain.Network;
-import optim.flow.domain.Solution;
+import optim.flow.domain.ResidualNetwork;
 
 import ilog.concert.IloException;
 import ilog.concert.IloLinearNumExpr;
@@ -12,7 +12,7 @@ import ilog.cplex.IloCplex;
 public class CplexAlgorithm implements Algorithm {
 
     @Override
-    public Solution solve(Network net) {
+    public ResidualNetwork solve(Network net) {
         try {
             int debug = 1;
             // if equals to 1, print flows of edge comming in/out of the vertex and it's
@@ -102,7 +102,7 @@ public class CplexAlgorithm implements Algorithm {
                 }
             }
 
-            Solution sol = new Solution("CplexSolution", flowMatrix);
+            ResidualNetwork sol = new ResidualNetwork(net, flowMatrix);
 
             cplex.end();
 
