@@ -14,21 +14,8 @@ public class Network {
 	protected final List<List<Edge>> adjacencyList;
 	protected final double[] verticesDemands;
 
-	protected final Edge[][] edgesTable; // Todo: implement
-
-	/**
-	 * Constructs a network with the parameters characteristics. The underlying data
-	 * is generated randomly.
-	 * 
-	 * Condition 1: nbEdges <= 2 * nbVertices
-	 * 
-	 * @param nbVertices
-	 * @param nbEdges
-	 * @param maxCapacity
-	 * @param maxCost
-	 * @param maxDemand
-	 */
-	public Network(int nbVertices, int nbEdges, double maxCapacity, double maxCost, double maxDemand) {
+	public Network(int nbVertices, int nbEdges, double maxCapacity, double maxCost, double maxDemand, double pSource,
+			double pSink) {
 		if (nbVertices <= 0 || nbEdges <= 0 || maxCapacity <= 0 || maxCost <= 0 || maxDemand <= 0) {
 			throw new IllegalArgumentException("Network parameters must be positive.\n");
 		}
@@ -50,20 +37,10 @@ public class Network {
 		}
 
 		this.verticesDemands = new double[nbVertices];
-		this.edgesTable = new Edge[nbVertices][nbVertices];
 
 		generateRandomData();
 	}
 
-	/**
-	 * Creates a flow network from its corresponding adjacency list and vertices
-	 * demands.
-	 * 
-	 * The adjacency list must be constructed before calling this constructor.
-	 * 
-	 * @param adjacencyList   Adjacency list
-	 * @param verticesDemands Vertices demands
-	 */
 	public Network(List<List<Edge>> adjacencyList, double[] verticesDemands) {
 		if (adjacencyList == null || verticesDemands == null) {
 			throw new IllegalArgumentException("Network parameters must not be null.\n");
@@ -74,23 +51,29 @@ public class Network {
 					"Network adjacency list and vertices demands array must have the same number of vertices.\n");
 		}
 
-		this.adjacencyList = adjacencyList;
-		this.verticesDemands = verticesDemands;
+		this.nbVertices = adjacencyList.size();
 
-		this.nbVertices = this.adjacencyList.size();
+		// This kind of copy is enough as Edges are Value Objects
+		this.verticesDemands = new double[this.nbVertices];
+		this.adjacencyList = new ArrayList<>();
+		for (int source = 0; source < this.nbVertices; ++source) {
+			this.verticesDemands[source] = this.verticesDemands[source];
+
+			this.adjacencyList.add(new ArrayList<>());
+			for (Edge edge : this.adjacencyList.get(source)) {
+				this.adjacencyList.get(source).add(edge);
+			}
+		}
 
 		double maxCapacity = this.adjacencyList.get(0).get(0).getCapacity();
 		double maxCost = this.adjacencyList.get(0).get(0).getCost();
 		double maxDemand = this.verticesDemands[0];
 
-		// Todo
-		this.edgesTable = new Edge[nbVertices][nbVertices];
-
 		int nbEdges = 0;
 		for (int source = 0; source < this.nbVertices; ++source) {
 			maxDemand = Math.max(maxDemand, this.verticesDemands[source]);
 
-			for (Edge edge : getOutEdges(source)) {
+			for (Edge edge : this.adjacencyList.get(source)) {
 				++nbEdges;
 
 				maxCapacity = Math.max(maxCapacity, edge.getCapacity());
@@ -113,9 +96,18 @@ public class Network {
 		this.maxCost = network.maxCost;
 		this.maxDemand = network.maxDemand;
 
-		this.adjacencyList = network.adjacencyList; // Todo: Should be a copy
-		this.verticesDemands = network.verticesDemands; // Todo: Should be a copy
-		this.edgesTable = network.edgesTable; // Todo: Should be a copy
+		this.verticesDemands = new double[this.nbVertices];
+
+		// This kind of copy is enough as Edges are Value Objects
+		this.adjacencyList = new ArrayList<>();
+		for (int source = 0; source < this.nbVertices; ++source) {
+			this.verticesDemands[source] = network.verticesDemands[source];
+
+			this.adjacencyList.add(new ArrayList<>());
+			for (Edge edge : network.adjacencyList.get(source)) {
+				this.adjacencyList.get(source).add(edge);
+			}
+		}
 	}
 
 	public int getNbVertices() {
@@ -148,25 +140,32 @@ public class Network {
 		});
 	}
 
-	public Edge getEdge(int source, int destination) {
-		return this.adjacencyList.get(source).parallelStream().filter(edge -> {
-			return edge.getDestination() == destination;
-		}).findFirst().get();
+	public List<Edge> getEdges(int source, int destination) {
+		final List<Edge> edges = new ArrayList<>();
+
+		this.adjacencyList.get(source).parallelStream().forEach(edge -> {
+			if (edge.getDestination() == destination) {
+				synchronized (edges) {
+					edges.add(edge);
+				}
+			}
+		});
+
+		return edges;
 	}
 
-	// Todo: Potentially optimisable
 	public List<Edge> getInEdges(int destination) {
 		final List<Edge> inEdges = new ArrayList<>();
 
-		this.adjacencyList.parallelStream().forEach(sourceList -> {
-			sourceList.parallelStream().forEach(edge -> {
+		for (int source = 0; source < this.adjacencyList.size(); ++source) {
+			this.adjacencyList.get(source).parallelStream().forEach(edge -> {
 				if (edge.getDestination() == destination) {
 					synchronized (inEdges) {
 						inEdges.add(edge);
 					}
 				}
 			});
-		});
+		}
 
 		return inEdges;
 	}
@@ -177,8 +176,8 @@ public class Network {
 
 	private void generateRandomData() {
 		for (int i = 0; i < this.adjacencyList.size(); ++i) {
-			this.adjacencyList.set(i, new ArrayList<Edge>(1));
-			this.adjacencyList.get(i).add(new Edge(i + 1, 1, 1));
+			this.adjacencyList.set(i, new ArrayList<Edge>());
+			this.adjacencyList.get(i).add(new Edge(i, i + 1, 1, 1));
 
 			this.verticesDemands[i] = 0;
 		}
@@ -220,10 +219,6 @@ public class Network {
 	// return new int[] { x, y };
 	// }
 
-	/**
-	 * @param solution The solution to check
-	 * @return true if the solution is realisable, else false.
-	 */
 	public boolean isSolutionValid(ResidualNetwork solution) {
 		if (this.nbVertices != solution.getNbVertices()) {
 			System.out.println("Unvalid solution: Instance and solution must have the same number of vertices.\n");
@@ -233,7 +228,7 @@ public class Network {
 		boolean shouldReturn = false;
 		for (int source = 0; source < this.nbVertices; ++source) {
 			for (Edge edge : this.getOutEdges(source)) {
-				if (solution.getEdgeFlow(source, edge.getDestination()) > edge.getCapacity()) {
+				if (solution.getFlow(edge) > edge.getCapacity()) {
 					System.out.println("Unvalid solution: Flow from #" + source + " to #" + edge.getDestination()
 							+ " exceeds the edge's capacity.\n");
 					shouldReturn = true;
@@ -259,28 +254,18 @@ public class Network {
 		return true;
 	}
 
-	/**
-	 * @param solution The solution to calculate.
-	 * @return The solution's cost.
-	 */
 	public double getSolutionCost(ResidualNetwork solution) {
 		double cost = 0;
 
 		for (int source = 0; source < solution.getNbVertices(); ++source) {
 			for (Edge edge : this.getOutEdges(source)) {
-				cost += solution.getEdgeFlow(source, edge.getDestination()) * edge.getCost();
+				cost += solution.getFlow(edge) * edge.getCost();
 			}
 		}
 
 		return cost;
 	}
 
-	/**
-	 * Constructs a human readable string of the network. Can also be used to save
-	 * into a file.
-	 * 
-	 * @return The string to be displayed
-	 */
 	@Override
 	public String toString() {
 		String str = "Number of vertices: " + this.nbVertices + "\n";

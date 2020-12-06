@@ -28,14 +28,14 @@ public class SolutionFileRepository implements Repository<ResidualNetwork> {
         String str = new String();
         // str += solution.getNetworkID() + " " + nbVertices + "\n";
 
-        for (int i = 0; i < nbVertices; ++i) {
-            for (int j = 0; j < nbVertices; ++j) {
-                // Todo: We don't verify if i and j is a valid edge in the network
-                // Todo: zeros are getting stored and complexity is still n^2
-                double flow = solution.getEdgeFlow(i, j);
-                str += i + " " + j + " " + flow + "\n";
-            }
-        }
+        // for (int i = 0; i < nbVertices; ++i) {
+        // for (int j = 0; j < nbVertices; ++j) {
+        // // Todo: We don't verify if i and j is a valid edge in the network
+        // // Todo: zeros are getting stored and complexity is still n^2
+        // double flow = solution.getEdge(i, j).getFlow();
+        // str += i + " " + j + " " + flow + "\n";
+        // }
+        // }
 
         try {
             FileWriter fileWriter = new FileWriter(constructFilename(ID));

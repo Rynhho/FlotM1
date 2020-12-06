@@ -28,8 +28,8 @@ public class SandBox {
 		// adjacenceList.add(new ArrayList<Edge>());
 		// for (int j = 0; j < 5; j++) {
 		// if (capacityMatrix[i][j] != 0) {
-		// adjacenceList.get(i).add(new Edge(j, costMatrix[i][j],
-		// capacityMatrix[i][j]));
+		// adjacenceList.get(i).add(new Edge(j, capacityMatrix[i][j], costMatrix[i][j]
+		// ));
 		// }
 		// }
 		// }
@@ -63,10 +63,10 @@ public class SandBox {
 		System.out.println(googleNet);
 		Dijkstra d = new Dijkstra();
 		List<Integer> b = d.solve(googleNet, 0, 4);
-		for(int i:b) {
+		for (int i : b) {
 			System.out.println(i);
 		}
-		System.out.println(googleNet.getEdge(2, 4).getCost());
-		
+		System.out.println(googleNet.getEdges(2, 4).get(0).getCost());
+
 	}
 }

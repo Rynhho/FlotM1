@@ -81,7 +81,7 @@ public class NetworkFileRepository implements Repository<Network> {
                 double capacity = Double.parseDouble(words.get(2));
                 double cost = Double.parseDouble(words.get(3));
 
-                Edge edge = new Edge(to, cost, capacity);
+                Edge edge = new Edge(from, to, capacity, cost);
                 adjacencyList.get(from).add(edge);
             }
 

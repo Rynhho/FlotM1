@@ -2,114 +2,96 @@ package optim.flow.domain;
 
 import java.util.Map;
 import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
 
 public class ResidualNetwork extends Network {
 	private final Network network;
+	private final int nbEdges;
 
-	private final double[][] flowMatrix;
+	private final Map<Edge, Edge> oppositeEdgesMap;
 
-	/*
-	 * Auxiliary variables to speed up execution.
-	 */
-	// Todo: Implement
 	private final double[] verticesFlowIn;
 	private final double[] verticesFlowOut;
-	private int solutionCost;
 
-	private Map<Edge, Edge> oppositeEdgesTable = new HashMap<>();
+	private int solutionCost;
 
 	public ResidualNetwork(Network network) {
 		super(network);
-
 		this.network = network;
-		this.flowMatrix = new double[this.nbVertices][this.nbVertices];
+		this.nbEdges = 2 * network.nbEdges;
+
+		this.oppositeEdgesMap = new HashMap<Edge, Edge>();
+
+		for (int source = 0; source < network.nbVertices; ++source) {
+			final int s = source;
+			network.getOutEdges(source).stream().forEach(edge -> {
+				Edge oppositeEdge = new Edge(edge.getDestination(), s, 0, -edge.getCost());
+
+				this.adjacencyList.get(edge.getDestination()).add(oppositeEdge);
+
+				this.oppositeEdgesMap.put(edge, oppositeEdge);
+				this.oppositeEdgesMap.put(oppositeEdge, edge);
+			});
+		}
 
 		this.verticesFlowIn = new double[this.nbVertices];
 		this.verticesFlowOut = new double[this.nbVertices];
 
-		// Todo: Parallelise
-		for (int source = 0; source < this.network.nbVertices; ++source) {
-			this.adjacencyList.clear();
+		this.solutionCost = 0;
+	}
 
-			final int i = source;
+	public ResidualNetwork(Network network, double[][] flowMatrix) {
+		this(network);
 
-			this.network.getOutEdges(source).stream().forEach(edge -> {
-				Edge residualEdge = new Edge(edge.getDestination(), edge.getCost(), edge.getCapacity());
-				Edge oppositeResidualEdge = new Edge(i, -edge.getCost(), 0);
+		if (flowMatrix.length != this.nbVertices) {
+			throw new IllegalArgumentException("Network and flow matrix don't have the same number of vertices.\n");
+		}
 
-				this.adjacencyList.get(i).add(residualEdge);
-				this.adjacencyList.get(edge.getDestination()).add(oppositeResidualEdge);
-
-				this.oppositeEdgesTable.put(residualEdge, oppositeResidualEdge);
-				this.oppositeEdgesTable.put(oppositeResidualEdge, residualEdge);
+		for (int source = 0; source < this.nbVertices; ++source) {
+			this.adjacencyList.get(source).forEach(edge -> {
+				addFlow(edge, flowMatrix[edge.getSource()][edge.getDestination()]);
 			});
 		}
 	}
 
-	public ResidualNetwork(Network network, double[][] flowMatrix) {
-		super(network);
-
-		this.network = network;
-		this.flowMatrix = flowMatrix;
-
-		this.verticesFlowIn = new double[this.nbVertices];
-		this.verticesFlowOut = new double[this.nbVertices];
-	}
-
-	/**
-	 * Returns the flow of a certain edge. Please verify it's a valid edge
-	 * beforehand.
-	 * 
-	 * @param from Source vertex
-	 * @param to   Destination vertex
-	 * 
-	 * @return The flow of the edge
-	 */
-	public double getEdgeFlow(int from, int to) {
-		return this.flowMatrix[from][to];
-	}
-
-	/**
-	 * Sets the flow of a certain edge. Please verify it's a valid edge beforehand.
-	 * 
-	 * @param from Source vertex
-	 * @param to   Destination vertex
-	 * @param flow The flow to be set
-	 */
-	public void setEdgeFlow(int from, int to, double flow) {
-		this.flowMatrix[from][to] = flow;
-
-		// Todo: Update verticesFlowIn and verticesFlowOut
-	}
-
-	/**
-	 * @param vertex The vertex
-	 * 
-	 * @return The flow going into the vertex
-	 */
-	public double getVertexFlowIn(int vertexID) {
-		// Todo: verticesFlowIn
-		double flowIn = 0;
-		for (int i = 0; i < this.nbVertices; ++i) {
-			flowIn += this.flowMatrix[i][vertexID];
+	public double getFlow(Edge edge) {
+		if (this.network.hasEdgeBetween(edge.getSource(), edge.getDestination())) {
+			throw new IllegalArgumentException(
+					"ResidualNetwork::getFlow: edge parameter must be present in the principal network.\n");
 		}
-		return flowIn;
+
+		// Principal network's edge's capacity - this network's edges's capacity
+		return this.network.getEdges(edge.getSource(), edge.getDestination()).get(0).getCapacity() - edge.getCapacity();
 	}
 
-	/**
-	 * @param vertex The vertex
-	 * 
-	 * @return The flow going out of the vertex
-	 */
+	public void addFlow(Edge edge, double flow) {
+		Edge newEdge = new Edge(edge.getSource(), edge.getDestination(), edge.getCapacity() - flow, edge.getCost());
+
+		Edge oppositeEdge = oppositeEdgesMap.get(edge);
+		Edge newOppositeEdge = new Edge(oppositeEdge.getSource(), oppositeEdge.getDestination(),
+				oppositeEdge.getCapacity() + flow, oppositeEdge.getCost());
+
+		this.adjacencyList.get(edge.getSource()).remove(edge);
+		this.adjacencyList.get(oppositeEdge.getSource()).remove(oppositeEdge);
+
+		this.adjacencyList.get(edge.getSource()).add(newEdge);
+		this.adjacencyList.get(oppositeEdge.getSource()).add(newOppositeEdge);
+
+		this.oppositeEdgesMap.remove(edge);
+		this.oppositeEdgesMap.remove(oppositeEdge);
+
+		this.oppositeEdgesMap.put(newEdge, newOppositeEdge);
+		this.oppositeEdgesMap.put(newOppositeEdge, newEdge);
+
+		this.verticesFlowOut[edge.getSource()] += flow;
+		this.verticesFlowIn[edge.getDestination()] += flow;
+	}
+
+	public double getVertexFlowIn(int vertex) {
+		return this.verticesFlowIn[vertex];
+	}
+
 	public double getVertexFlowOut(int vertex) {
-		// Todo: verticesFlowOut
-		double flowOut = 0;
-		for (int j = 0; j < this.nbVertices; ++j) {
-			flowOut += this.flowMatrix[vertex][j];
-		}
-		return flowOut;
+		return this.verticesFlowOut[vertex];
 	}
 
 	@Override
@@ -119,14 +101,24 @@ public class ResidualNetwork extends Network {
 		str += "Number of vertices: " + this.nbVertices + "\n";
 
 		str += "Flow matrix:\n";
-		for (int i = 0; i < this.nbVertices; ++i) {
+		for (int source = 0; source < this.nbVertices; ++source) {
 			str += "[";
-			for (int j = 0; j < this.nbVertices - 1; ++j) {
-				str += this.flowMatrix[i][j] + " ";
+			int currentDestination = 0;
+			for (Edge edge : this.getOutEdges(source)) {
+				for (int i = currentDestination; i < edge.getDestination(); ++i) {
+					str += "0.0, ";
+				}
+
+				str += String.format("%.2f", this.getFlow(edge)) + ", ";
 			}
-			str += this.flowMatrix[i][this.nbVertices - 1];
-			str += "]\n";
+
+			for (int i = currentDestination; i < this.nbVertices; ++i) {
+				str += "0.00, ";
+			}
+
+			str = str.substring(0, str.length() - 2) + "]\n";
 		}
+
 		return str;
 	}
 }
