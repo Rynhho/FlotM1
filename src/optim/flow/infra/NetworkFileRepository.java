@@ -1,12 +1,15 @@
 package optim.flow.infra;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.BreakIterator;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import optim.flow.domain.Edge;
@@ -19,23 +22,27 @@ public class NetworkFileRepository implements Repository<Network> {
 
     @Override
     public boolean exists(String ID) {
-        // TODO Auto-generated method stub
+        File file = new File(constructFilename(ID));
+        if (file.exists() && file.isFile()) {
+            return true;
+        }
         return false;
     }
 
     @Override
     public void save(String ID, Network network) {
         String str = new String();
-        str += network.getNbVertices() + " " + network.getNbEdges() + " " + network.getMaxCapacity() + " "
-                + network.getMaxCost() + " " + network.getMaxDemand() + "\n";
+
+        str += "p min " + network.getNbVertices() + " " + network.getNbEdges() + "\n";
 
         for (int vertex = 0; vertex < network.getNbVertices(); ++vertex) {
-            str += network.getVertexDemand(vertex) + "\n";
+            str += "n 0 " + network.getVertexDemand(vertex) + "\n";
         }
 
         for (int source = 0; source < network.getNbVertices(); ++source) {
             for (Edge edge : network.getOutEdges(source)) {
-                str += source + " " + edge.getDestination() + " " + edge.getCapacity() + " " + edge.getCost() + "\n";
+                str += "a " + source + " " + edge.getDestination() + " 0 " + edge.getCapacity() + " " + edge.getCost()
+                        + "\n";
             }
         }
 
@@ -55,39 +62,61 @@ public class NetworkFileRepository implements Repository<Network> {
         try {
             BufferedReader reader = new BufferedReader(new FileReader("data/" + ID + ".txt"));
 
+            int nbVertices;
+            int nbEdges;
+            boolean problemDefined = false;
+
+            List<List<Edge>> adjacencyList = null;
+            double[] verticesDemand = null;
+
             String line = reader.readLine();
-
-            List<String> keyValues = new ArrayList<>(extractWords(line));
-            final int nbVertices = Integer.parseInt(keyValues.get(0));
-            final int nbEdges = Integer.parseInt(keyValues.get(1));
-
-            List<List<Edge>> adjacencyList = new ArrayList<List<Edge>>();
-
-            final double[] verticesDemand = new double[nbVertices];
-            for (int vertex = 0; vertex < nbVertices; ++vertex) {
-                line = reader.readLine();
-                verticesDemand[vertex] = Double.parseDouble(line);
-
-                adjacencyList.add(new ArrayList<Edge>());
-            }
-
-            for (int i = 0; i < nbEdges; ++i) {
-                line = reader.readLine();
+            while (line != null) {
                 List<String> words = new ArrayList<>(extractWords(line));
 
-                int from = Integer.parseInt(words.get(0));
-                int to = Integer.parseInt(words.get(1));
+                String objCategory = words.get(0);
+                if (objCategory.equals("p")) {
+                    if (problemDefined) {
+                        throw new RuntimeException("Error: Two problems in the same file in database.\n");
+                    }
 
-                double capacity = Double.parseDouble(words.get(2));
-                double cost = Double.parseDouble(words.get(3));
+                    nbVertices = Integer.parseInt(words.get(2));
+                    nbEdges = Integer.parseInt(words.get(3));
 
-                Edge edge = new Edge(from, to, capacity, cost);
-                adjacencyList.get(from).add(edge);
+                    adjacencyList = new ArrayList<List<Edge>>();
+                    for (int vertex = 0; vertex < nbVertices; ++vertex) {
+                        adjacencyList.add(new ArrayList<Edge>());
+                    }
+                    verticesDemand = new double[nbVertices];
+
+                    problemDefined = true;
+                } else if (objCategory.equals("n")) {
+                    if (!problemDefined) {
+                        throw new RuntimeException("Error: Adding nodes to undefined problem.\n");
+                    }
+
+                    int vertex = Integer.parseInt(words.get(1));
+                    verticesDemand[vertex] = Double.parseDouble(words.get(2));
+                } else if (objCategory.equals("a")) {
+                    if (!problemDefined) {
+                        throw new RuntimeException("Error: Adding nodes to undefined problem.\n");
+                    }
+
+                    int from = Integer.parseInt(words.get(1));
+                    int to = Integer.parseInt(words.get(2));
+
+                    double capacity = Double.parseDouble(words.get(4));
+                    double cost = Double.parseDouble(words.get(5));
+
+                    Edge edge = new Edge(from, to, capacity, cost);
+                    adjacencyList.get(from).add(edge);
+                }
+
+                line = reader.readLine();
             }
 
-            network = new Network(adjacencyList, verticesDemand);
-
             reader.close();
+
+            network = new Network(adjacencyList, verticesDemand);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -97,32 +126,9 @@ public class NetworkFileRepository implements Repository<Network> {
         return network;
     }
 
-    /**
-     * Function taken from previous project.
-     * 
-     * Separates a line into a list of words.
-     * 
-     * @param s String to divide into words.
-     * @return List containing s's words.
-     */
     private List<String> extractWords(String s) {
-        List<String> words = new ArrayList<>();
-
-        BreakIterator it = BreakIterator.getWordInstance();
-        it.setText(s);
-
-        int start = it.first();
-        int end = it.next();
-        while (end != BreakIterator.DONE) {
-            String word = s.substring(start, end);
-            if (Character.isLetterOrDigit(word.charAt(0))) {
-                words.add(word);
-            }
-            start = end;
-            end = it.next();
-        }
-
-        return words;
+        String[] words = s.split(" ");
+        return Arrays.asList(words);
     }
 
     private String constructFilename(String ID) {

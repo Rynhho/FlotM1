@@ -1,6 +1,7 @@
 package optim.flow.infra;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -17,7 +18,10 @@ public class SolutionFileRepository implements Repository<ResidualNetwork> {
 
     @Override
     public boolean exists(String ID) {
-        // TODO Auto-generated method stub
+        File file = new File(constructFilename(ID));
+        if (file.exists() && file.isFile()) {
+            return true;
+        }
         return false;
     }
 

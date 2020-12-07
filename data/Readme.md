@@ -4,18 +4,16 @@ This is some kind of slow and not deployment ready database. You can add entries
 
 ## Instances
 
-Instances must have a ".txt" extension.
+Instances must have a ".txt" extension. Their internal format is the DIMACS minimum cost format, altough we don't use some of the parameters.
 
 ```txt
-[Number of vertices] [Number of edges] [Maximum capacity] [Maximum cost] [Maximum demand]
-[For every vertex] {
-[Demand]
-}
-[Number of edges]
-[For every edge] {
-[Source vertex] [Destination vertex] [Capacity] [Cost]
-}
+c [comment]
+p [unused argument] [Number of vertices] [Number of edges]
+n [Vertex ID] [Vertex demand]
+a [Source vertex] [Destination vertex] [unused argument] [Capacity] [Cost]  
 ```
+
+The reader demands that the problem be defined before any nodes or arcs.
 
 ## Solutions
 
@@ -27,5 +25,3 @@ Solutions must have a ".sol" extension.
 [Source vertex] [Destination vertex] [Flow passing by the edge]
 }
 ```
-
-It's important we store the number of vertices and edges to not go out of bounds.

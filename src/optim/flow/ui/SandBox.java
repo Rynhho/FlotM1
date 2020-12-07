@@ -68,5 +68,6 @@ public class SandBox {
 		}
 		System.out.println(googleNet.getEdges(2, 4).get(0).getCost());
 
+		networkRepository.save("Test", googleNet);
 	}
 }
