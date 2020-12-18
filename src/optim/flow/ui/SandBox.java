@@ -61,6 +61,8 @@ public class SandBox {
 		Repository<Network> networkRepository = new NetworkFileRepository();
 		Network googleNet = networkRepository.load("Google");
 		System.out.println(googleNet);
+		SuccessiveShortestPathAlgo algo1 = new SuccessiveShortestPathAlgo();
+//		System.out.println(Double.toString(googleNet.getEdge(4, 3).getCost()));
 		Dijkstra d = new Dijkstra();
 		List<Integer> b = d.solve(googleNet, 0, 4);
 		for (int i : b) {
@@ -69,5 +71,12 @@ public class SandBox {
 		System.out.println(googleNet.getEdges(2, 4).get(0).getCost());
 
 		networkRepository.save("Test", googleNet);
+		 List<Integer> b = d.solve(googleNet, 1, 4);
+//		 for(int i:b) {
+//		 	System.out.println(i);
+//		 }
+		Solution sol = algo1.solve(googleNet);
+		// System.out.println(googleNet.getEdge(2, 4).getCost());
+		
 	}
 }

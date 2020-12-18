@@ -35,10 +35,17 @@ public class Dijkstra {
 	}
 
 	private int findMin(List<Integer> VerticesAvailable) {
-		double min = Double.MAX_VALUE;
-		int closestVertex = -1;
-		for (int vertex : VerticesAvailable) {
-			if (this.dist.get(vertex) < min) {
+//<<<<<<< Updated upstream
+//		double min = Double.MAX_VALUE;
+//		int closestVertex = -1;
+//		for (int vertex : VerticesAvailable) {
+//			if (this.dist.get(vertex) < min) {
+//=======
+		double min = this.dist.get(VerticesAvailable.get(0));
+		int closestVertex = VerticesAvailable.get(0);
+		for(int vertex : VerticesAvailable) {
+			if(this.dist.get(vertex) < min) {
+//>>>>>>> Stashed changes
 				min = this.dist.get(vertex);
 				closestVertex = vertex;
 			}
@@ -67,8 +74,14 @@ public class Dijkstra {
 	public List<Integer> solve(Network network, int start, int end) {
 		initialize(network, start, end);
 		initializeLists();
+//<<<<<<< Updated upstream
 		List<Integer> VerticesAvailable = IntStream.rangeClosed(0, nbVertices - 1).boxed().collect(Collectors.toList());
 		while (!VerticesAvailable.isEmpty()) {
+//=======
+//		List<Integer> VerticesAvailable = IntStream.rangeClosed(0, nbVertices-1).boxed().collect(Collectors.toList());
+//		
+//		while(!VerticesAvailable.isEmpty()) {
+//>>>>>>> Stashed changes
 			int vertex = findMin(VerticesAvailable);
 			if (VerticesAvailable.contains(vertex)) {
 				VerticesAvailable.remove((Object) vertex);
