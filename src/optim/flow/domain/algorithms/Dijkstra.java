@@ -70,8 +70,18 @@ public class Dijkstra {
 		shortestPath.add(path);
 		return shortestPath;
 	}
+	
+	private List<Edge> getShortestPathEdge() {
+		List<Edge> shortestPath = new ArrayList<Edge>();
+		int path = this.end;
+		while (this.predecessor.get(path) != -1) {
+			shortestPath.add(network.getEdges(this.predecessor.get(path), path).get(0));
+			path = this.predecessor.get(path);
+		}
+		return shortestPath;
+	}
 
-	public List<Integer> solve(Network network, int start, int end) {
+	public List<Edge> solve(Network network, int start, int end) {
 		initialize(network, start, end);
 		initializeLists();
 //<<<<<<< Updated upstream
@@ -93,6 +103,6 @@ public class Dijkstra {
 			}
 
 		}
-		return getShortestPath();
+		return getShortestPathEdge();
 	}
 }
