@@ -7,17 +7,18 @@ import java.util.stream.IntStream;
 
 import optim.flow.domain.Edge;
 import optim.flow.domain.Network;
+import optim.flow.domain.ResidualNetwork;
 
 public class Dijkstra {
-	Network network;
+	ResidualNetwork residualNetwork;
 	int nbVertices;
 	List<Double> dist;
 	List<Integer> predecessor;
 	int start;
 	int end;
 
-	public void initialize(Network network, int start, int end) {
-		this.network = network;
+	public void initialize(ResidualNetwork network, int start, int end) {
+		this.residualNetwork = network;
 		this.start = start;
 		this.end = end;
 		this.nbVertices = network.getNbVertices();
@@ -54,8 +55,8 @@ public class Dijkstra {
 	}
 
 	private void updateDist(int v1, int v2) {
-		if (this.dist.get(v2) > this.dist.get(v1) + this.network.getEdges(v1, v2).get(0).getCost()) {
-			this.dist.set(v2, this.dist.get(v1) + this.network.getEdges(v1, v2).get(0).getCost());
+		if (this.dist.get(v2) > this.dist.get(v1) + this.residualNetwork.getEdges(v1, v2).get(0).getCost()) {
+			this.dist.set(v2, this.dist.get(v1) + this.residualNetwork.getEdges(v1, v2).get(0).getCost());
 			this.predecessor.set(v2, v1);
 		}
 	}
@@ -75,30 +76,26 @@ public class Dijkstra {
 		List<Edge> shortestPath = new ArrayList<Edge>();
 		int path = this.end;
 		while (this.predecessor.get(path) != -1) {
-			shortestPath.add(network.getEdges(this.predecessor.get(path), path).get(0));
+			shortestPath.add(residualNetwork.getEdges(this.predecessor.get(path), path).get(0));
 			path = this.predecessor.get(path);
 		}
 		return shortestPath;
 	}
 
-	public List<Edge> solve(Network network, int start, int end) {
+	public List<Edge> solve(ResidualNetwork network, int start, int end) {
 		initialize(network, start, end);
 		initializeLists();
-//<<<<<<< Updated upstream
 		List<Integer> VerticesAvailable = IntStream.rangeClosed(0, nbVertices - 1).boxed().collect(Collectors.toList());
 		while (!VerticesAvailable.isEmpty()) {
-//=======
-//		List<Integer> VerticesAvailable = IntStream.rangeClosed(0, nbVertices-1).boxed().collect(Collectors.toList());
-//		
-//		while(!VerticesAvailable.isEmpty()) {
-//>>>>>>> Stashed changes
 			int vertex = findMin(VerticesAvailable);
 			if (VerticesAvailable.contains(vertex)) {
 				VerticesAvailable.remove((Object) vertex);
 			}
 			if (network.getOutEdges(vertex) != null) {
 				for (Edge outEdge : network.getOutEdges(vertex)) {
-					updateDist(vertex, outEdge.getDestination());
+					if(network.getFlow(outEdge) != outEdge.getCapacity()) {						
+						updateDist(vertex, outEdge.getDestination());
+					}
 				}
 			}
 
