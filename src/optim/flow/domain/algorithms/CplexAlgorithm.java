@@ -11,7 +11,7 @@ import ilog.cplex.IloCplex;
 public class CplexAlgorithm implements Algorithm{
 
 
-    public Solution solve(Network net){
+    public ResidualNetwork solve(Network net){
         try{
             
 
@@ -37,7 +37,7 @@ public class CplexAlgorithm implements Algorithm{
 			for (int i = 0; i < n; i++) {
                 for (int j = 0;j < net.getOutEdges(i).size(); j++){
                     //System.out.println(i + " and " + j +" on " + n + "\n");
-                    obj.addTerm(net.getEdge(i, net.getOutEdges(i).get(j).getDestination()).getCost(), X[i][j]);
+                    obj.addTerm(net.getEdges(i, net.getOutEdges(i).get(j).getDestination()).get(0).getCost(), X[i][j]);
                 }
             }
             cplex.addMinimize(obj);
@@ -49,7 +49,7 @@ public class CplexAlgorithm implements Algorithm{
 				for (int j=0; j<net.getOutEdges(i).size(); j++) {
                     IloLinearNumExpr ct = cplex.linearNumExpr();
                     ct.addTerm(1.0, X[i][j]);
-                    cplex.addLe(ct, net.getEdge(i, net.getOutEdges(i).get(j).getDestination() ).getCapacity());
+                    cplex.addLe(ct, net.getEdges(i, net.getOutEdges(i).get(j).getDestination() ).get(0).getCapacity());
                 }
             }
             
@@ -59,7 +59,7 @@ public class CplexAlgorithm implements Algorithm{
                 IloLinearNumExpr ct = cplex.linearNumExpr();
                 for (int j=0;j<net.getOutEdges(i).size();j++){
                     if (i!=net.getOutEdges(i).get(j).getDestination()){
-                        System.out.println(" + " + net.getEdge(i, net.getOutEdges(i).get(j).getDestination()).getCapacity());
+                        System.out.println(" + " + net.getEdges(i, net.getOutEdges(i).get(j).getDestination()).get(0).getCapacity());
                         ct.addTerm(1.0,X[i][j]);
                     }
                 }
@@ -67,7 +67,7 @@ public class CplexAlgorithm implements Algorithm{
                     if (net.hasEdgeBetween(j,i) && i!=j){
                         for (int k=0;k<net.getOutEdges(j).size();k++){
                             if (net.getOutEdges(j).get(k).getDestination()==i){
-                                System.out.println(" - " + net.getEdge(j, i).getCapacity());
+                                System.out.println(" - " + net.getEdges(j, i).get(0).getCapacity());
                                 ct.addTerm(-1.0,X[j][k]);
                             }
                         }
@@ -100,8 +100,6 @@ public class CplexAlgorithm implements Algorithm{
             }
 
             ResidualNetwork sol = new ResidualNetwork(net, flowMatrix);
-
-            Solution sol = new Solution("CplexSolution",flowMatrix);
 
 			cplex.end();
 
