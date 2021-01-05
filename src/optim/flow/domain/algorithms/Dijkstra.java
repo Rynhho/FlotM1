@@ -1,6 +1,8 @@
 package optim.flow.domain.algorithms;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -10,14 +12,14 @@ import optim.flow.domain.Network;
 import optim.flow.domain.ResidualNetwork;
 
 public class Dijkstra {
-	ResidualNetwork residualNetwork;
+	Network residualNetwork;
 	int nbVertices;
 	List<Double> dist;
 	List<Integer> predecessor;
 	int start;
 	int end;
 
-	public void initialize(ResidualNetwork network, int start, int end) {
+	public void initialize(Network network, int start, int end) {
 		this.residualNetwork = network;
 		this.start = start;
 		this.end = end;
@@ -55,14 +57,17 @@ public class Dijkstra {
 	}
 
 	private void updateDist(int v1, int v2) {
-		if (this.dist.get(v2) > this.dist.get(v1) + this.residualNetwork.getEdges(v1, v2).get(0).getCost()) {
-			this.dist.set(v2, this.dist.get(v1) + this.residualNetwork.getEdges(v1, v2).get(0).getCost());
+		if (this.dist.get(v2) > this.dist.get(v1) + this.residualNetwork.getEdges(v1, v2).get(0).getReducedCost()) {
+			this.dist.set(v2, this.dist.get(v1) + this.residualNetwork.getEdges(v1, v2).get(0).getReducedCost());
 			this.predecessor.set(v2, v1);
 		}
 	}
 
 	private List<Integer> getShortestPath() {
 		List<Integer> shortestPath = new ArrayList<Integer>();
+		if(this.predecessor.isEmpty()) {
+			return shortestPath;
+		}
 		int path = this.end;
 		while (this.predecessor.get(path) != -1) {
 			shortestPath.add(path);
@@ -74,15 +79,20 @@ public class Dijkstra {
 	
 	private List<Edge> getShortestPathEdge() {
 		List<Edge> shortestPath = new ArrayList<Edge>();
+		if(this.predecessor.isEmpty()) {
+			System.out.println("empty shortest path in Dijkstra");
+			return shortestPath;
+		}
 		int path = this.end;
 		while (this.predecessor.get(path) != -1) {
 			shortestPath.add(residualNetwork.getEdges(this.predecessor.get(path), path).get(0));
 			path = this.predecessor.get(path);
 		}
+		Collections.reverse(shortestPath);
 		return shortestPath;
 	}
 
-	public List<Edge> solve(ResidualNetwork network, int start, int end) {
+	public List<Edge> solve(Network network, int start, int end) {
 		initialize(network, start, end);
 		initializeLists();
 		List<Integer> VerticesAvailable = IntStream.rangeClosed(0, nbVertices - 1).boxed().collect(Collectors.toList());
@@ -93,9 +103,13 @@ public class Dijkstra {
 			}
 			if (network.getOutEdges(vertex) != null) {
 				for (Edge outEdge : network.getOutEdges(vertex)) {
-					if(network.getFlow(outEdge) != outEdge.getCapacity()) {						
-						updateDist(vertex, outEdge.getDestination());
+					if(network.getClass().getName() == "optim.flow.domain.ResidualNetwork") {
+						if( outEdge.getCapacity() >0) {		
+							updateDist(vertex, outEdge.getDestination());
+						}
 					}
+					else
+						updateDist(vertex, outEdge.getDestination());
 				}
 			}
 
