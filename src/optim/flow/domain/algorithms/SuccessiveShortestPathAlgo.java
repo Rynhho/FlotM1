@@ -10,7 +10,6 @@ import optim.flow.domain.ResidualNetwork;
 public class SuccessiveShortestPathAlgo implements Algorithm{
     List<Integer> providerSetE;
     List<Integer> demanderSetD;
-    int x = 0;
     List<Double> pi;
     ResidualNetwork solution;
     public SuccessiveShortestPathAlgo(){
@@ -19,7 +18,7 @@ public class SuccessiveShortestPathAlgo implements Algorithm{
     private void reduceCost() {
     	for(int i=0; i<solution.getNbVertices(); ++i) {
 			for(Edge edge: solution.getOutEdges(i)) {
-				if(edge.getCapacity()>0) {
+				if(edge.getCapacity()!=0) {
 					edge.updateReducedCost( pi.get(edge.getSource()) - pi.get(edge.getDestination()));
 					this.solution.getOppositeEdge(edge).updateReducedCost(-this.solution.getOppositeEdge(edge).getReducedCost());
 				}
@@ -42,55 +41,35 @@ public class SuccessiveShortestPathAlgo implements Algorithm{
         	}
         	shortestPath = dijkstra.solve(this.solution, 0, 1);
         }
-        
-        
-        
-        
-        
-        
-//        while(!this.providerSetE.isEmpty()){
-////        	System.out.println(this.solution);
-////        	System.out.println(provider);
-//            int k = this.providerSetE.get(0);
-//            int i = this.demanderSetD.get(0);
-//            double dist = 0;
-//            
-//            Network remainingGraph = getRemainingGraph(network);
-//            
-//            List<Edge> path = dijkstra.solve(remainingGraph, k, i);
-//            double delta = Math.min(-network.getVertexDemand(k), network.getVertexDemand(i));
-//            for(int j = 0; j < path.size()-1; j++) {
-//            	dist += path.get(j).getCost();
-////            			getEdges(path.get(j+1), path.get(j)).get(0).getCost();
-//            	delta = Math.min(delta, path.get(j).getCapacity() - solution.getFlow(path.get(j)));
-//            }
-//            for(int j = 0; j < path.size()-1; j++) {
-//            	this.solution.addFlow(path.get(j), delta);
-//            }
-//            this.pi -= dist;
-//            //update x, G(x), E, D, and the reduced costs;
-//            updateList(network);
-//        }
+//        removeSourceAndSink();
 		return this.solution;
-
+    }
+    
+    private void removeSourceAndSink() {
+    	double[][] flowMatrix = new double[this.solution.getNbVertices()][this.solution.getNbVertices()];
+    	for (int i = 2; i < this.solution.getNbVertices(); i++) {
+			for (int j = 2; j < this.solution.getNbVertices(); j++) {
+				for(Edge edge:this.solution.getEdges(i, j)) {
+					if(!edge.isResidual()) {						
+						flowMatrix[i][j] = this.solution.getFlow(edge);
+						break;
+					}
+						
+				}
+			}
+		}
+    	this.solution = new ResidualNetwork(this.solution.getNetwork(), flowMatrix);
     }
     
     public double getDelta(List<Edge> path) {
     	// on regarde la demande des sommets du début et de la fin, avant la source et la destination
-    	double flowOutSource = -solution.getVertexDemand(path.get(0).getDestination());
-//    	- this.solution.getVertexFlowOut(path.get(0).getDestination());
-    	double flowInSink = solution.getVertexDemand(path.get(path.size()-1).getSource());
-//    	- this.solution.getVertexFlowOut(path.get(path.size()-1).getSource());
-//    	for(Edge edge:this.solution.getInEdges(path.get(path.size()-1).getSource())) {
-//    		flowOutSource -= this.solution.getFlow(edge);
-//    	}
-    	double delta = Math.min(flowOutSource, flowInSink);
-	    for(int j = 0; j < path.size()-1; j++) {
-//	    	dist += path.get(j).getCost();
-	//      			getEdges(path.get(j+1), path.get(j)).get(0).getCost();
-//	    	System.out.println();
+    	double delta = path.get(0).getCapacity();
+//    	String capMax = ""+delta;
+	    for(int j = 1; j < path.size(); j++) {
 	      	delta = Math.min(delta, path.get(j).getCapacity());
+//	      	capMax += " "+ path.get(j).getCapacity();
 	      }
+//	    System.out.println(capMax+"\ndelta = "+delta);
     	return delta;
     	
     }
@@ -128,7 +107,6 @@ public class SuccessiveShortestPathAlgo implements Algorithm{
 			remainingEdges.add(new ArrayList<Edge>());
 			for(Edge edge: network.getOutEdges(i)) {
 				if(this.solution.getFlow(edge) != network.getEdges(i, edge.getDestination()).get(0).getCapacity()) {
-//						getEdgeFlow(i, edge.getDestination()) != network.getEdge(i, edge.getDestination()).getCapacity()) {
 					remainingEdges.get(i).add(edge);
 				}
 			}
@@ -138,17 +116,11 @@ public class SuccessiveShortestPathAlgo implements Algorithm{
 	}
 
 
-	private void setPrivateVariables(){
-        this.x = 0;
-        
-    }
-
     private void updateList(Network network){
         this.providerSetE = new ArrayList<>();
         this.demanderSetD = new ArrayList<>();
         for(int vertex = 0; vertex < network.getNbVertices(); ++vertex){
             double imbalance = network.getVertexDemand(vertex) - this.solution.getVertexFlowIn(vertex) + this.solution.getVertexFlowOut(vertex);
-//            System.out.println("vertex: "+ vertex+ " demand: "+ network.getVertexDemand(vertex)+ " flow in: "+ this.solution.getVertexFlowIn(vertex)+ " flot out "+ this.solution.getVertexFlowOut(vertex)+ " imbalance: "+ imbalance);
             if(imbalance < 0){
                 this.providerSetE.add(vertex);
             }else if(imbalance > 0){
