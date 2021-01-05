@@ -24,7 +24,7 @@ public class ResidualNetwork extends Network {
 		for (int source = 0; source < network.nbVertices; ++source) {
 			final int s = source;
 			network.getOutEdges(source).stream().forEach(edge -> {
-				Edge oppositeEdge = new Edge(edge.getDestination(), s, 0, 0);
+				Edge oppositeEdge = new Edge(edge.getDestination(), s, 0, 0, 0, true);
 
 				this.adjacencyList.get(edge.getDestination()).add(oppositeEdge);
 
@@ -68,18 +68,26 @@ public class ResidualNetwork extends Network {
 //		}
 
 		// Principal network's edge's capacity - this network's edges's capacity
-		if (this.network.hasEdgeBetween(edge.getSource(), edge.getDestination())) {			
-			return this.network.getEdges(edge.getSource(), edge.getDestination()).get(0).getCapacity() - edge.getCapacity();
+		// may cause bug if edge is in residual (?)
+		for(Edge e:this.network.getEdges(edge.getSource(), edge.getDestination())) {
+			if(e.isResidual() == edge.isResidual()) {
+				return e.getCapacity() - edge.getCapacity();
+			}
 		}
-		return this.network.getEdges(edge.getDestination(), edge.getSource()).get(0).getCapacity() - edge.getCapacity();
+		return 0;
 	}
 
+	public Network getNetwork() {
+		return this.network;
+	}
+	
 	public void addFlow(Edge edge, double flow) {
-		Edge newEdge = new Edge(edge.getSource(), edge.getDestination(), edge.getCapacity() - flow, edge.getCost(), edge.getReducedCost());
+		
+		Edge newEdge = new Edge(edge.getSource(), edge.getDestination(), edge.getCapacity() - flow, edge.getCost(), edge.getReducedCost(), edge.isResidual());
 
 		Edge oppositeEdge = oppositeEdgesMap.get(edge);
 		Edge newOppositeEdge = new Edge(oppositeEdge.getSource(), oppositeEdge.getDestination(),
-				oppositeEdge.getCapacity() + flow, oppositeEdge.getCost(), oppositeEdge.getReducedCost());
+				oppositeEdge.getCapacity() + flow, oppositeEdge.getCost(), oppositeEdge.getReducedCost(), oppositeEdge.isResidual());
 
 		this.adjacencyList.get(edge.getSource()).remove(edge);
 		this.adjacencyList.get(oppositeEdge.getSource()).remove(oppositeEdge);
