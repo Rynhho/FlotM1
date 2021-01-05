@@ -57,8 +57,18 @@ public class Dijkstra {
 	}
 
 	private void updateDist(int v1, int v2) {
-		if (this.dist.get(v2) > this.dist.get(v1) + this.residualNetwork.getEdges(v1, v2).get(0).getReducedCost()) {
-			this.dist.set(v2, this.dist.get(v1) + this.residualNetwork.getEdges(v1, v2).get(0).getReducedCost());
+		
+		Edge lightestNonFullEdge = null;
+		for(Edge edge:this.residualNetwork.getEdges(v1, v2)) {
+			if(edge.getCapacity() > 0 && lightestNonFullEdge == null) {
+				lightestNonFullEdge = edge;
+			}
+			else if(edge.getCapacity()>0 && edge.getCost() < lightestNonFullEdge.getCost())
+				lightestNonFullEdge = edge;
+		}
+		
+		if (this.dist.get(v2) > this.dist.get(v1) + lightestNonFullEdge.getReducedCost()) {
+			this.dist.set(v2, this.dist.get(v1) + lightestNonFullEdge.getReducedCost());
 			this.predecessor.set(v2, v1);
 		}
 	}
@@ -85,7 +95,16 @@ public class Dijkstra {
 		}
 		int path = this.end;
 		while (this.predecessor.get(path) != -1) {
-			shortestPath.add(residualNetwork.getEdges(this.predecessor.get(path), path).get(0));
+			List<Edge> edges = residualNetwork.getEdges(this.predecessor.get(path), path);
+			Edge lightestNonFullEdge = null;
+			for(Edge edge:edges) {
+				if(edge.getCapacity() > 0 && lightestNonFullEdge == null) {
+					lightestNonFullEdge = edge;
+				}
+				else if(edge.getCapacity()>0 && edge.getCost() < lightestNonFullEdge.getCost())
+					lightestNonFullEdge = edge;
+			}
+			shortestPath.add(lightestNonFullEdge);
 			path = this.predecessor.get(path);
 		}
 		Collections.reverse(shortestPath);
