@@ -11,47 +11,91 @@ public class SuccessiveShortestPathAlgo implements Algorithm{
     List<Integer> providerSetE;
     List<Integer> demanderSetD;
     int x = 0;
-    int pi = 0;
+    List<Double> pi;
     ResidualNetwork solution;
-//    Solution solution;
     public SuccessiveShortestPathAlgo(){
     }
 
-
+    private void reduceCost() {
+    	for(int i=0; i<solution.getNbVertices(); ++i) {
+			for(Edge edge: solution.getOutEdges(i)) {
+				if(edge.getCapacity()>0) {
+					edge.updateReducedCost( pi.get(edge.getSource()) - pi.get(edge.getDestination()));
+					this.solution.getOppositeEdge(edge).updateReducedCost(-this.solution.getOppositeEdge(edge).getReducedCost());
+				}
+//				System.out.println(edge);
+			}
+    	}
+//    	System.out.println(solution);
+    }
+    
     public ResidualNetwork solve(Network network){
-    	this.solution = new ResidualNetwork(network);
+    	this.solution = new ResidualNetwork(addSinkAndSource(network));
+    	reduceCost();
     	Dijkstra dijkstra = new Dijkstra();
-        setPrivateVariables();
-        updateList(network);
-
-        while(!this.providerSetE.isEmpty()){
-//        	System.out.println(this.solution);
-//        	System.out.println(provider);
-            int k = this.providerSetE.get(0);
-            int i = this.demanderSetD.get(0);
-            double dist = 0;
-            
-            Network remainingGraph = getRemainingGraph(network);
-            
-            List<Edge> path = dijkstra.solve(remainingGraph, k, i);
-            double delta = Math.min(-network.getVertexDemand(k), network.getVertexDemand(i));
-            for(int j = 0; j < path.size()-1; j++) {
-            	dist += path.get(j).getCost();
-//            			getEdges(path.get(j+1), path.get(j)).get(0).getCost();
-            	delta = Math.min(delta, path.get(j).getCapacity() - solution.getFlow(path.get(j)));
-            }
-            for(int j = 0; j < path.size()-1; j++) {
-            	this.solution.addFlow(path.get(j), delta);
-            }
-            this.pi -= dist;
-            //update x, G(x), E, D, and the reduced costs;
-            updateList(network);
+        List<Edge> shortestPath = dijkstra.solve(this.solution, 0, 1);
+        while(!shortestPath.isEmpty()) {
+        	double delta = getDelta(shortestPath);
+        	if(delta<=0)break;
+        	for(Edge edge:shortestPath) {
+        		solution.addFlow(edge, delta);
+        	}
+        	shortestPath = dijkstra.solve(this.solution, 0, 1);
         }
+        
+        
+        
+        
+        
+        
+//        while(!this.providerSetE.isEmpty()){
+////        	System.out.println(this.solution);
+////        	System.out.println(provider);
+//            int k = this.providerSetE.get(0);
+//            int i = this.demanderSetD.get(0);
+//            double dist = 0;
+//            
+//            Network remainingGraph = getRemainingGraph(network);
+//            
+//            List<Edge> path = dijkstra.solve(remainingGraph, k, i);
+//            double delta = Math.min(-network.getVertexDemand(k), network.getVertexDemand(i));
+//            for(int j = 0; j < path.size()-1; j++) {
+//            	dist += path.get(j).getCost();
+////            			getEdges(path.get(j+1), path.get(j)).get(0).getCost();
+//            	delta = Math.min(delta, path.get(j).getCapacity() - solution.getFlow(path.get(j)));
+//            }
+//            for(int j = 0; j < path.size()-1; j++) {
+//            	this.solution.addFlow(path.get(j), delta);
+//            }
+//            this.pi -= dist;
+//            //update x, G(x), E, D, and the reduced costs;
+//            updateList(network);
+//        }
 		return this.solution;
 
     }
     
-    public void getFullGraph(Network network) {
+    public double getDelta(List<Edge> path) {
+    	// on regarde la demande des sommets du début et de la fin, avant la source et la destination
+    	double flowOutSource = -solution.getVertexDemand(path.get(0).getDestination());
+//    	- this.solution.getVertexFlowOut(path.get(0).getDestination());
+    	double flowInSink = solution.getVertexDemand(path.get(path.size()-1).getSource());
+//    	- this.solution.getVertexFlowOut(path.get(path.size()-1).getSource());
+//    	for(Edge edge:this.solution.getInEdges(path.get(path.size()-1).getSource())) {
+//    		flowOutSource -= this.solution.getFlow(edge);
+//    	}
+    	double delta = Math.min(flowOutSource, flowInSink);
+	    for(int j = 0; j < path.size()-1; j++) {
+//	    	dist += path.get(j).getCost();
+	//      			getEdges(path.get(j+1), path.get(j)).get(0).getCost();
+//	    	System.out.println();
+	      	delta = Math.min(delta, path.get(j).getCapacity());
+	      }
+    	return delta;
+    	
+    }
+    
+    public Network addSinkAndSource(Network network) {
     	// new 0 is the source, new 1 is the destination 
     	List<List<Edge>> Edges = new ArrayList<List<Edge>>();
     	Edges.add(new ArrayList<Edge>());
@@ -62,14 +106,19 @@ public class SuccessiveShortestPathAlgo implements Algorithm{
     		
     		verticesDemands[i+2] = network.getVertexDemand(i);
 			if(network.getVertexDemand(i) < 0) {
-				Edges.get(0).add(new Edge(0, i+2, 100, 0));
+				Edges.get(0).add(new Edge(0, i+2, -network.getVertexDemand(i), 0));
 			}else if(network.getVertexDemand(i) > 0) {
-				Edges.get(i+2).add(new Edge(i+2, 1, 100, 0));
+				Edges.get(i+2).add(new Edge(i+2, 1, network.getVertexDemand(i), 0));
+			}
+			for(Edge edge:network.getOutEdges(i)) {
+				Edges.get(i+2).add(new Edge(edge.getSource()+2, edge.getDestination()+2, edge.getCapacity(), edge.getCost(), edge.getReducedCost()));
 			}
 			
 		}
-    	this.solution = new ResidualNetwork(new Network(Edges, verticesDemands));
-    	System.out.println(new Network(Edges, verticesDemands));
+    	BellmanFord bf = new BellmanFord();
+    	bf.solve(new Network(Edges, verticesDemands), 0);
+    	this.pi = bf.getDist();
+    	return new Network(Edges, verticesDemands);
     }
     
     private Network getRemainingGraph(Network network) {
@@ -91,7 +140,6 @@ public class SuccessiveShortestPathAlgo implements Algorithm{
 
 	private void setPrivateVariables(){
         this.x = 0;
-        this.pi = 0;
         
     }
 
