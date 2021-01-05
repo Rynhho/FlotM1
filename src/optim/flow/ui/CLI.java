@@ -2,7 +2,7 @@ package optim.flow.ui;
 
 import optim.flow.domain.Network;
 import optim.flow.domain.Repository;
-import optim.flow.domain.Solution;
+import optim.flow.domain.ResidualNetwork;
 import optim.flow.domain.algorithms.Algorithm;
 import optim.flow.domain.algorithms.CplexAlgorithm;
 import optim.flow.infra.NetworkFileRepository;
@@ -27,16 +27,15 @@ public class CLI {
                         return;
                     }
 
-                    Repository<Solution> solutionRepo = new SolutionFileRepository();
-                    Solution solution = solutionRepo.load(inputSolutionFile);
+                    Repository<ResidualNetwork> solutionRepo = new SolutionFileRepository();
+                    ResidualNetwork solution = solutionRepo.load(inputSolutionFile);
                     if (solution == null) {
                         System.out.println("Error: Could not load network solution file.\n");
                         return;
                     }
 
                     if (network.isSolutionValid(solution)) {
-                        System.out.println(
-                                "Solution valid. Its cost is " + network.calculateSolutionCost(solution) + ".\n");
+                        System.out.println("Solution valid. Its cost is " + network.getSolutionCost(solution) + ".\n");
                     } else {
                         System.out.println("Solution unvalid.\n");
                     }
@@ -52,11 +51,11 @@ public class CLI {
                 String outputSolutionID = args[3];
 
                 Repository<Network> networkRepo = new NetworkFileRepository();
-                Repository<Solution> solutionRepo = new SolutionFileRepository();
+                Repository<ResidualNetwork> solutionRepo = new SolutionFileRepository();
 
                 Network network = networkRepo.load(networkID);
 
-                Solution solution = null;
+                ResidualNetwork solution = null;
 
                 if (algorithmStr.equals("cplex")) {
                     try {

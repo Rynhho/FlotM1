@@ -1,7 +1,7 @@
 package optim.flow.domain.algorithms;
 
 import optim.flow.domain.Network;
-import optim.flow.domain.Solution;
+import optim.flow.domain.ResidualNetwork;
 
 import ilog.concert.IloException;
 import ilog.concert.IloLinearNumExpr;
@@ -13,8 +13,6 @@ public class CplexAlgorithm implements Algorithm{
 
     public Solution solve(Network net){
         try{
-            //int debug = 0;
-            // if equals to 1, print flows of edge comming in/out of the vertex and it's supply demand
             
 
             IloCplex cplex = new IloCplex();
@@ -101,22 +99,7 @@ public class CplexAlgorithm implements Algorithm{
 				System.out.println("error, cannot find solution\n");
             }
 
-            //print the values of variables of Cplex, if needed ask me to update (still in matricial form)
-            // if (debug == 1 ){
-            //     for (int i=0; i<n; i++){
-            //         for (int j=0;j<n;j++){
-            //             if (net.hasEdgeBetween(i,j) && i!=j){
-            //                 System.out.println(" + " + cplex.getValue(X[i][j]));
-            //             }else{
-            //                 if (net.hasEdgeBetween(j,i) && i!=j){
-            //                     System.out.println(" - " + cplex.getValue(X[j][i]));
-            //                 }
-            //             }
-            //         }
-            //         System.out.println(" = " + (-net.getVertexDemand(i)) + "\n");
-            //     }
-            // }
-
+            ResidualNetwork sol = new ResidualNetwork(net, flowMatrix);
 
             Solution sol = new Solution("CplexSolution",flowMatrix);
 
