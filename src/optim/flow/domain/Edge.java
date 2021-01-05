@@ -7,6 +7,7 @@ public class Edge {
 	private double reducedCost;
 	private double capacity;
 	private double cost;
+	private boolean isResidual;
 
 	public Edge(int source, int destination, double capacity, double cost) {
 		this.source = source;
@@ -15,6 +16,7 @@ public class Edge {
 		this.capacity = capacity;
 		this.cost = cost;
 		this.reducedCost = cost;
+		this.isResidual = false;
 	}
 	public Edge(int source, int destination, double capacity, double cost, double reducedcost) {
 		this.source = source;
@@ -24,7 +26,20 @@ public class Edge {
 		this.cost = cost;
 		this.reducedCost = reducedcost;
 	}
+	public Edge(int source, int destination, double capacity, double cost, double reducedcost, boolean isResidual) {
+		this.source = source;
+		this.destination = destination;
 
+		this.capacity = capacity;
+		this.cost = cost;
+		this.reducedCost = reducedcost;
+		this.isResidual = isResidual;
+	}
+	
+	public boolean isResidual() {
+		return this.isResidual;
+	}
+	
 	public double getReducedCost() {
 		return this.reducedCost;
 	}
