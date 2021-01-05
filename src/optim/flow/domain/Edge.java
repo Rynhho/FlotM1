@@ -4,6 +4,7 @@ public class Edge {
 	private int source;
 	private int destination;
 
+	private double reducedCost;
 	private double capacity;
 	private double cost;
 
@@ -13,8 +14,25 @@ public class Edge {
 
 		this.capacity = capacity;
 		this.cost = cost;
+		this.reducedCost = cost;
+	}
+	public Edge(int source, int destination, double capacity, double cost, double reducedcost) {
+		this.source = source;
+		this.destination = destination;
+
+		this.capacity = capacity;
+		this.cost = cost;
+		this.reducedCost = reducedcost;
 	}
 
+	public double getReducedCost() {
+		return this.reducedCost;
+	}
+	
+	public void updateReducedCost(double toAdd) {
+		this.reducedCost += toAdd;
+	}
+	
 	public int getSource() {
 		return this.source;
 	}
@@ -39,5 +57,11 @@ public class Edge {
 		equals = equals && (this.cost == e.cost);
 
 		return equals;
+	}
+	@Override
+	public String toString() {
+		String str = new String();
+		str += this.source + "->"+this.destination+" capacity: "+this.capacity+" cost: "+this.cost+" ("+this.reducedCost+")";
+		return str;
 	}
 }
