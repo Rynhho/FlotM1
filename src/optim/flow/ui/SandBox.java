@@ -3,6 +3,7 @@ package optim.flow.ui;
 import optim.flow.domain.*;
 import optim.flow.domain.algorithms.*;
 import optim.flow.infra.NetworkFileRepository;
+import optim.flow.infra.SolutionFileRepository;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -97,6 +98,9 @@ public class SandBox {
 					System.out.println(edge+ " flow: "+sol.getFlow(edge));
 			}
 		}
+		SolutionFileRepository solRep = new SolutionFileRepository();
+		solRep.save("googlebyme.sol", sol);
+		System.out.println("done");
 //		System.out.println(bellman.getDist());
 //		System.out.println(bellman.solve(algo1.addSinkAndSource(ex), 0));
 //		System.out.println(bellman.getDist().toString());
