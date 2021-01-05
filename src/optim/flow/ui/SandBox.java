@@ -47,10 +47,7 @@ public class SandBox {
 //		SuccessiveShortestPathAlgo algo1 = new SuccessiveShortestPathAlgo();
 //		System.out.println(Double.toString(googleNet.getEdge(4, 3).getCost()));
 //		ResidualNetwork n = new ResidualNetwork(googleNet);
-		System.out.printf("meh ptn\n");
-		Network net = networkRepository.load("A1");
-		System.out.printf("tu vas marcher oui !\n");
-		System.out.println(net);
+	
 //		
 //		System.out.println(ex);
 //		Dijkstra d = new Dijkstra();
@@ -68,20 +65,26 @@ public class SandBox {
 //		ResidualNetwork exRN = new ResidualNetwork(exSS);
 //		System.out.println(d.solve(exRN, 0, 1));
 //		System.out.println(exRN);
-		ResidualNetwork sol = cplex.solve(net);
+		
 //		System.out.println(sol);
-		for (int i = 0; i < sol.getNbVertices(); i++) {
+//		for (int i = 0; i < sol.getNbVertices(); i++) {
 //			System.out.println(sol.getVertexDemand(i));
-			for (Edge edge: sol.getOutEdges(i)) {
+//			for (Edge edge: sol.getOutEdges(i)) {
 //				System.out.println(edge);
 //				edge.updateReducedCost(bellman.getDist().get(edge.getSource()) - bellman.getDist().get(edge.getDestination()));
 //				System.out.println(edge+"\n");
-				if(sol.getFlow(edge) != 0 && sol.isInOriginalNet(edge))
-					System.out.println(edge+ " flow: "+sol.getFlow(edge));
-			}
+//				if(sol.getFlow(edge) != 0 && sol.isInOriginalNet(edge))
+//					System.out.println(edge+ " flow: "+sol.getFlow(edge));
+//			}
+//		}
+		NetworkFileRepository solRep = new NetworkFileRepository();
+
+		for (int i=1;i<=22;i++){
+			Network net = networkRepository.load("A"+ i);
+			ResidualNetwork sol = cplex.solve(net);
+			solRep.save("A" + i + "CplexSol", sol);
 		}
-		SolutionFileRepository solRep = new SolutionFileRepository();
-		solRep.save("A1Cplex.sol", sol);
+
 		System.out.println("done");
 //		System.out.println(bellman.getDist());
 //		System.out.println(bellman.solve(algo1.addSinkAndSource(ex), 0));

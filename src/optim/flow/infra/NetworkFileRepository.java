@@ -36,12 +36,14 @@ public class NetworkFileRepository implements Repository<Network> {
         str += "p min " + network.getNbVertices() + " " + network.getNbEdges() + "\n";
 
         for (int vertex = 0; vertex < network.getNbVertices(); ++vertex) {
-            str += "n 0 " + network.getVertexDemand(vertex) + "\n";
+            if (network.getVertexDemand(vertex)!=0){
+                str += "n " + (vertex) + " " + network.getVertexDemand(vertex) + "\n";
+            }
         }
 
         for (int source = 0; source < network.getNbVertices(); ++source) {
             for (Edge edge : network.getOutEdges(source)) {
-                str += "a " + source + " " + edge.getDestination() + " 0 " + edge.getCapacity() + " " + edge.getCost()
+                str += "a " + (source) + " " + (edge.getDestination()) + " 0 " + edge.getCapacity() + " " + edge.getCost()
                         + "\n";
             }
         }
