@@ -24,7 +24,7 @@ public class ResidualNetwork extends Network {
 		for (int source = 0; source < network.nbVertices; ++source) {
 			final int s = source;
 			network.getOutEdges(source).stream().forEach(edge -> {
-				Edge oppositeEdge = new Edge(edge.getDestination(), s, 0, -edge.getCost());
+				Edge oppositeEdge = new Edge(edge.getDestination(), s, 0, 0);
 
 				this.adjacencyList.get(edge.getDestination()).add(oppositeEdge);
 
@@ -52,23 +52,34 @@ public class ResidualNetwork extends Network {
 			});
 		}
 	}
+	
+	public Edge getOppositeEdge(Edge edge) {
+		return this.oppositeEdgesMap.get(edge);
+	}
+	
+	public boolean isInOriginalNet(Edge edge) {
+		return this.network.hasEdgeBetween(edge.getSource(), edge.getDestination());
+	}
 
 	public double getFlow(Edge edge) {
-		if (this.network.hasEdgeBetween(edge.getSource(), edge.getDestination())) {
-			throw new IllegalArgumentException(
-					"ResidualNetwork::getFlow: edge parameter must be present in the principal network.\n");
-		}
+//		if (this.network.hasEdgeBetween(edge.getSource(), edge.getDestination())) {
+//			throw new IllegalArgumentException(
+//					"ResidualNetwork::getFlow: edge parameter must be present in the principal network.\n");
+//		}
 
 		// Principal network's edge's capacity - this network's edges's capacity
-		return this.network.getEdges(edge.getSource(), edge.getDestination()).get(0).getCapacity() - edge.getCapacity();
+		if (this.network.hasEdgeBetween(edge.getSource(), edge.getDestination())) {			
+			return this.network.getEdges(edge.getSource(), edge.getDestination()).get(0).getCapacity() - edge.getCapacity();
+		}
+		return this.network.getEdges(edge.getDestination(), edge.getSource()).get(0).getCapacity() - edge.getCapacity();
 	}
 
 	public void addFlow(Edge edge, double flow) {
-		Edge newEdge = new Edge(edge.getSource(), edge.getDestination(), edge.getCapacity() - flow, edge.getCost());
+		Edge newEdge = new Edge(edge.getSource(), edge.getDestination(), edge.getCapacity() - flow, edge.getCost(), edge.getReducedCost());
 
 		Edge oppositeEdge = oppositeEdgesMap.get(edge);
 		Edge newOppositeEdge = new Edge(oppositeEdge.getSource(), oppositeEdge.getDestination(),
-				oppositeEdge.getCapacity() + flow, oppositeEdge.getCost());
+				oppositeEdge.getCapacity() + flow, oppositeEdge.getCost(), oppositeEdge.getReducedCost());
 
 		this.adjacencyList.get(edge.getSource()).remove(edge);
 		this.adjacencyList.get(oppositeEdge.getSource()).remove(oppositeEdge);
@@ -93,7 +104,7 @@ public class ResidualNetwork extends Network {
 	public double getVertexFlowOut(int vertex) {
 		return this.verticesFlowOut[vertex];
 	}
-
+	
 	@Override
 	public String toString() {
 		String str = new String();
