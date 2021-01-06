@@ -16,7 +16,7 @@ public class SuccessiveShortestPathAlgo implements Algorithm{
     }
 
     private void reduceCost() {
-    	for(int i=0; i<solution.getNbVertices(); ++i) {
+    	for(int i=0; i<solution.getNbVertices(); i++) {
 			for(Edge edge: solution.getOutEdges(i)) {
 				if(edge.getCapacity()!=0) {
 					edge.updateReducedCost( pi.get(edge.getSource()) - pi.get(edge.getDestination()));
@@ -29,7 +29,7 @@ public class SuccessiveShortestPathAlgo implements Algorithm{
     }
     
     public ResidualNetwork solve(Network network){
-    	this.solution = new ResidualNetwork(addSinkAndSource(network));
+		this.solution = new ResidualNetwork(addSinkAndSource(network));
     	reduceCost();
     	Dijkstra dijkstra = new Dijkstra();
         List<Edge> shortestPath = dijkstra.solve(this.solution, 0, 1);
@@ -41,7 +41,7 @@ public class SuccessiveShortestPathAlgo implements Algorithm{
         	}
         	shortestPath = dijkstra.solve(this.solution, 0, 1);
         }
-//        removeSourceAndSink();
+		solution = removeSinkAndSource(solution);
 		return this.solution;
     }
     
@@ -99,7 +99,29 @@ public class SuccessiveShortestPathAlgo implements Algorithm{
     	this.pi = bf.getDist();
     	return new Network(Edges, verticesDemands);
     }
-    
+	
+	public ResidualNetwork removeSinkAndSource(ResidualNetwork network) {
+		int n = network.getNbVertices(); 
+		List<List<Edge>> Edges = new ArrayList<List<Edge>>(); 
+		double[] verticesDemands = new double[n-2];
+		for (int i = 2; i < n; i++) {
+			Edges.add(new ArrayList<Edge>());
+
+			verticesDemands[i-2] = network.getVertexDemand(i);
+			for(Edge edge:network.getOutEdges(i)) {
+				if (edge.getSource()>=2 && edge.getDestination()>=2){
+					Edges.get(i-2).add(new Edge(edge.getSource()-2, edge.getDestination()-2, edge.getCapacity(), edge.getCost(), edge.getReducedCost()));
+				}
+			}
+		}
+
+
+
+		return new ResidualNetwork(new Network(Edges,verticesDemands));
+	}
+
+
+
     private Network getRemainingGraph(Network network) {
 		List<List<Edge>> remainingEdges = new ArrayList<List<Edge>>();
 		double[] verticesDemands = new double[network.getNbVertices()];

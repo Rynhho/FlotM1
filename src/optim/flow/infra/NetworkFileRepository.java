@@ -85,7 +85,7 @@ public class NetworkFileRepository implements Repository<Network> {
                     nbEdges = Integer.parseInt(words.get(3));
 
                     adjacencyList = new ArrayList<List<Edge>>();
-                    for (int vertex = 0; vertex < nbVertices; ++vertex) {
+                    for (int vertex = 0; vertex < nbVertices; vertex++) {
                         adjacencyList.add(new ArrayList<Edge>());
                     }
                     verticesDemand = new double[nbVertices];
@@ -117,7 +117,7 @@ public class NetworkFileRepository implements Repository<Network> {
             }
 
             reader.close();
-
+            System.out.printf("ta mere en slip " + adjacencyList.size() + "\n");
             network = new Network(adjacencyList, verticesDemand);
         } catch (FileNotFoundException e) {
             e.printStackTrace();

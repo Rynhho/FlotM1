@@ -15,6 +15,7 @@ public class ResidualNetwork extends Network {
 	private int solutionCost;
 
 	public ResidualNetwork(Network network) {
+		
 		super(network);
 		
 		this.network = network;
