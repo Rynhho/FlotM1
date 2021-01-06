@@ -4,11 +4,14 @@ public class Edge {
 	private int source;
 	private int destination;
 
-	private double reducedCost;
 	private double capacity;
 	private double cost;
-	private boolean isResidual;
 
+	private double reducedCost;
+	private boolean isResidual;
+	private double flow;
+	private Edge oppositeEdge;
+	
 	public Edge(int source, int destination, double capacity, double cost) {
 		this.source = source;
 		this.destination = destination;
@@ -17,23 +20,40 @@ public class Edge {
 		this.cost = cost;
 		this.reducedCost = cost;
 		this.isResidual = false;
+		this.oppositeEdge = new Edge(source, destination, capacity, 0, this);
 	}
+	
+	private Edge(int source, int destination, double capacity, double cost, Edge oppositeEdge) {
+		this.source = source;
+		this.destination = destination;
+
+		this.capacity = capacity;
+		this.cost = cost;
+		this.reducedCost = cost;
+		this.isResidual = true;
+		this.flow = capacity;
+		this.oppositeEdge = oppositeEdge;
+	}
+	
 	public Edge(int source, int destination, double capacity, double cost, double reducedcost) {
-		this.source = source;
-		this.destination = destination;
-
-		this.capacity = capacity;
-		this.cost = cost;
+		this(source, destination, capacity, cost);
 		this.reducedCost = reducedcost;
 	}
-	public Edge(int source, int destination, double capacity, double cost, double reducedcost, boolean isResidual) {
-		this.source = source;
-		this.destination = destination;
-
-		this.capacity = capacity;
-		this.cost = cost;
-		this.reducedCost = reducedcost;
-		this.isResidual = isResidual;
+	
+	public Edge getOppositeEdge() {
+		return this.oppositeEdge;
+	}
+	
+	public double getFlow() {
+		return this.flow;
+	}
+	public void addFlow(double toAdd) {
+		this.flow += toAdd;
+		this.oppositeEdge.flow -= toAdd;
+		if(this.flow < 0 || this.oppositeEdge.flow < 0) {
+			System.out.println(this);
+			throw new IllegalArgumentException("Flow must be not negative.\n");
+		}
 	}
 	
 	public boolean isResidual() {
