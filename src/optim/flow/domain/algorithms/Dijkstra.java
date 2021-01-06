@@ -60,7 +60,7 @@ public class Dijkstra {
 		
 		Edge lightestNonFullEdge = null;
 		for(Edge edge:this.residualNetwork.getEdges(v1, v2)) {
-			if(edge.getCapacity() > 0 && lightestNonFullEdge == null) {
+			if(edge.getCapacity() - edge.getFlow() > 0 && lightestNonFullEdge == null) {
 				lightestNonFullEdge = edge;
 			}
 			else if(edge.getCapacity()>0 && edge.getCost() < lightestNonFullEdge.getCost())
@@ -98,10 +98,10 @@ public class Dijkstra {
 			List<Edge> edges = residualNetwork.getEdges(this.predecessor.get(path), path);
 			Edge lightestNonFullEdge = null;
 			for(Edge edge:edges) {
-				if(edge.getCapacity() > 0 && lightestNonFullEdge == null) {
+				if(edge.getCapacity() - edge.getFlow() > 0 && lightestNonFullEdge == null) {
 					lightestNonFullEdge = edge;
 				}
-				else if(edge.getCapacity()>0 && edge.getCost() < lightestNonFullEdge.getCost())
+				else if(edge.getCapacity() - edge.getFlow()>0 && edge.getCost() < lightestNonFullEdge.getCost())
 					lightestNonFullEdge = edge;
 			}
 			shortestPath.add(lightestNonFullEdge);
@@ -123,7 +123,7 @@ public class Dijkstra {
 			if (network.getOutEdges(vertex) != null) {
 				for (Edge outEdge : network.getOutEdges(vertex)) {
 					if(network.getClass().getName() == "optim.flow.domain.ResidualNetwork") {
-						if( outEdge.getCapacity() >0) {		
+						if( outEdge.getCapacity() - outEdge.getFlow() >0) {		
 							updateDist(vertex, outEdge.getDestination());
 						}
 					}

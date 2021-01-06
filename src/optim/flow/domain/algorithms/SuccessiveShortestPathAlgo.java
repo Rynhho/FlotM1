@@ -63,13 +63,13 @@ public class SuccessiveShortestPathAlgo implements Algorithm{
     
     public double getDelta(List<Edge> path) {
     	// on regarde la demande des sommets du début et de la fin, avant la source et la destination
-    	double delta = path.get(0).getCapacity();
-//    	String capMax = ""+delta;
+    	double delta = path.get(0).getCapacity() - path.get(0).getFlow();
+    	String capMax = ""+delta;
 	    for(int j = 1; j < path.size(); j++) {
-	      	delta = Math.min(delta, path.get(j).getCapacity());
-//	      	capMax += " "+ path.get(j).getCapacity();
+	      	delta = Math.min(delta, path.get(j).getCapacity() - path.get(j).getFlow());
+	      	capMax += " "+ (path.get(j).getCapacity()- path.get(j).getFlow());
 	      }
-//	    System.out.println(capMax+"\ndelta = "+delta);
+	    System.out.println(capMax+"\ndelta = "+delta);
     	return delta;
     	
     }
