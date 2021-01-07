@@ -11,6 +11,7 @@ public class SuccessiveShortestPathAlgo implements Algorithm{
     List<Integer> providerSetE;
     List<Integer> demanderSetD;
     List<Double> pi;
+    Network originalNet;
     ResidualNetwork solution;
     public SuccessiveShortestPathAlgo(){
     }
@@ -29,6 +30,7 @@ public class SuccessiveShortestPathAlgo implements Algorithm{
     }
     
     public ResidualNetwork solve(Network network){
+    	this.originalNet = network;
     	this.solution = new ResidualNetwork(addSinkAndSource(network));
     	reduceCost();
     	Dijkstra dijkstra = new Dijkstra();
@@ -41,35 +43,35 @@ public class SuccessiveShortestPathAlgo implements Algorithm{
         	}
         	shortestPath = dijkstra.solve(this.solution, 0, 1);
         }
-//        removeSourceAndSink();
+        removeSourceAndSink();
 		return this.solution;
     }
     
     private void removeSourceAndSink() {
-    	double[][] flowMatrix = new double[this.solution.getNbVertices()][this.solution.getNbVertices()];
+    	double[][] flowMatrix = new double[this.solution.getNbVertices()-2][this.solution.getNbVertices()-2];
     	for (int i = 2; i < this.solution.getNbVertices(); i++) {
 			for (int j = 2; j < this.solution.getNbVertices(); j++) {
 				for(Edge edge:this.solution.getEdges(i, j)) {
 					if(!edge.isResidual()) {						
-						flowMatrix[i][j] = this.solution.getFlow(edge);
+						flowMatrix[i-2][j-2] = this.solution.getFlow(edge);
 						break;
 					}
 						
 				}
 			}
 		}
-    	this.solution = new ResidualNetwork(this.solution.getNetwork(), flowMatrix);
+    	this.solution = new ResidualNetwork(this.originalNet, flowMatrix);
     }
     
     public double getDelta(List<Edge> path) {
     	// on regarde la demande des sommets du début et de la fin, avant la source et la destination
     	double delta = path.get(0).getCapacity() - path.get(0).getFlow();
-//    	String capMax = ""+delta;
+    	// String capMax = ""+delta;
 	    for(int j = 1; j < path.size(); j++) {
 	      	delta = Math.min(delta, path.get(j).getCapacity() - path.get(j).getFlow());
-//	      	capMax += " "+ (path.get(j).getCapacity()- path.get(j).getFlow());
+	      	// capMax += " "+ (path.get(j).getCapacity()- path.get(j).getFlow());
 	      }
-//	    System.out.println(capMax+"\ndelta = "+delta);
+	    // System.out.println(capMax+"\ndelta = "+delta);
     	return delta;
     	
     }
