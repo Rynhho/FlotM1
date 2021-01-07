@@ -65,7 +65,7 @@ public class Network {
 
 			for (Edge edge : adjacencyList.get(source)) {
 				this.adjacencyList.get(source).add(edge);
-				this.adjacencyList.get(edge.getDestination()).add(edge.getOppositeEdge());
+//				this.adjacencyList.get(edge.getDestination()).add(edge.getOppositeEdge());
 			}
 		}
 
