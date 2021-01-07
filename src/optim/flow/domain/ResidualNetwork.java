@@ -58,17 +58,10 @@ public class ResidualNetwork extends Network {
 	}
 	
 	public boolean isInOriginalNet(Edge edge) {
-		return this.network.hasEdgeBetween(edge.getSource(), edge.getDestination());
+		return !edge.isResidual();
 	}
 
 	public double getFlow(Edge edge) {
-//		if (this.network.hasEdgeBetween(edge.getSource(), edge.getDestination())) {
-//			throw new IllegalArgumentException(
-//					"ResidualNetwork::getFlow: edge parameter must be present in the principal network.\n");
-//		}
-
-		// Principal network's edge's capacity - this network's edges's capacity
-		// may cause bug if edge is in residual (?)
 		return edge.getFlow();
 	}
 
@@ -78,24 +71,6 @@ public class ResidualNetwork extends Network {
 	
 	public void addFlow(Edge edge, double flow) {
 		edge.addFlow(flow);
-//		Edge newEdge = new Edge(edge.getSource(), edge.getDestination(), edge.getCapacity() - flow, edge.getCost(), edge.getReducedCost(), edge.isResidual());
-//
-//		Edge oppositeEdge = oppositeEdgesMap.get(edge);
-//		Edge newOppositeEdge = new Edge(oppositeEdge.getSource(), oppositeEdge.getDestination(),
-//				oppositeEdge.getCapacity() + flow, oppositeEdge.getCost(), oppositeEdge.getReducedCost(), oppositeEdge.isResidual());
-//
-//		this.adjacencyList.get(edge.getSource()).remove(edge);
-//		this.adjacencyList.get(oppositeEdge.getSource()).remove(oppositeEdge);
-//
-//		this.adjacencyList.get(edge.getSource()).add(newEdge);
-//		this.adjacencyList.get(oppositeEdge.getSource()).add(newOppositeEdge);
-//
-//		this.oppositeEdgesMap.remove(edge);
-//		this.oppositeEdgesMap.remove(oppositeEdge);
-//
-//		this.oppositeEdgesMap.put(newEdge, newOppositeEdge);
-//		this.oppositeEdgesMap.put(newOppositeEdge, newEdge);
-//
 		this.verticesFlowOut[edge.getSource()] += flow;
 		this.verticesFlowIn[edge.getDestination()] += flow;
 	}
