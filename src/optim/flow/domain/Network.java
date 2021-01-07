@@ -57,11 +57,15 @@ public class Network {
 		this.verticesDemands = new double[this.nbVertices];
 		this.adjacencyList = new ArrayList<>();
 		for (int source = 0; source < this.nbVertices; ++source) {
+			this.adjacencyList.add(new ArrayList<>());
+		}
+		for (int source = 0; source < this.nbVertices; ++source) {
+			
 			this.verticesDemands[source] = verticesDemands[source];
 
-			this.adjacencyList.add(new ArrayList<>());
 			for (Edge edge : adjacencyList.get(source)) {
 				this.adjacencyList.get(source).add(edge);
+				this.adjacencyList.get(edge.getDestination()).add(edge.getOppositeEdge());
 			}
 		}
 
@@ -102,7 +106,7 @@ public class Network {
 		this.adjacencyList = new ArrayList<>();
 		for (int source = 0; source < this.nbVertices; ++source) {
 			this.verticesDemands[source] = network.verticesDemands[source];
-
+			
 			this.adjacencyList.add(new ArrayList<>());
 			for (Edge edge : network.adjacencyList.get(source)) {
 				this.adjacencyList.get(source).add(edge);
