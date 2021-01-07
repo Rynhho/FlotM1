@@ -60,11 +60,13 @@ public class Dijkstra {
 		
 		Edge lightestNonFullEdge = null;
 		for(Edge edge:this.residualNetwork.getEdges(v1, v2)) {
-			if(edge.getCapacity() - edge.getFlow() > 0 && lightestNonFullEdge == null) {
-				lightestNonFullEdge = edge;
+			if(edge.getCapacity() - edge.getFlow() > 0) {
+				if( lightestNonFullEdge == null) {
+					lightestNonFullEdge = edge;
+				}
+				else if(edge.getCost() < lightestNonFullEdge.getCost())
+					lightestNonFullEdge = edge;
 			}
-			else if(edge.getCapacity()>0 && edge.getCost() < lightestNonFullEdge.getCost())
-				lightestNonFullEdge = edge;
 		}
 		
 		if (this.dist.get(v2) > this.dist.get(v1) + lightestNonFullEdge.getReducedCost()) {
