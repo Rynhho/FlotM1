@@ -69,6 +69,21 @@ public class ResidualNetwork extends Network {
 		return this.network;
 	}
 	
+	public double getCost() {
+		double cost=0;
+		for (int i = 0; i < this.getNbVertices(); i++) {
+			for (Edge edge: this.getOutEdges(i)) {
+//				System.out.println(edge);
+//				edge.updateReducedCost(bellman.getDist().get(edge.getSource()) - bellman.getDist().get(edge.getDestination()));
+//				System.out.println(edge+"\n");
+//				if(sol.getFlow(edge) != 0)
+//					if(sol.isInOriginalNet(edge))
+						cost+= edge.getCost()*edge.getFlow();
+			}
+		}
+		return cost;
+	}
+	
 	public void addFlow(Edge edge, double flow) {
 		edge.addFlow(flow);
 		this.verticesFlowOut[edge.getSource()] += flow;
