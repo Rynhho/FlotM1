@@ -38,17 +38,7 @@ public class SuccessiveShortestPathAlgo implements Algorithm{
 //        				System.out.println(edge+ " flow: "+this.solution.getFlow(edge));
 //        	}
 //        }
-    	reduceCost();
-    	Dijkstra dijkstra = new Dijkstra();
-        List<Edge> shortestPath = dijkstra.solve(this.solution, 0, 1);
-        while(!shortestPath.isEmpty()) {
-        	double delta = getDelta(shortestPath);
-        	if(delta<=0)break;
-        	for(Edge edge:shortestPath) {
-        		solution.addFlow(edge, delta);
-        	}
-        	shortestPath = dijkstra.solve(this.solution, 0, 1);
-        }
+		this.solution = new ResidualNetwork(addSinkAndSource(network));
         removeSourceAndSink();
 		return this.solution;
     }
