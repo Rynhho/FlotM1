@@ -28,7 +28,6 @@ public class SuccessiveShortestPathAlgo implements Algorithm{
     }
     
     public ResidualNetwork solve(Network network){
-<<<<<<< HEAD
     	this.originalNet = network;
     	this.solution = new ResidualNetwork(addSinkAndSource(network));
 //    	for (int i = 0; i < this.solution.getNbVertices(); i++) {
@@ -39,9 +38,6 @@ public class SuccessiveShortestPathAlgo implements Algorithm{
 //        				System.out.println(edge+ " flow: "+this.solution.getFlow(edge));
 //        	}
 //        }
-=======
-		this.solution = new ResidualNetwork(addSinkAndSource(network));
->>>>>>> lucas
     	reduceCost();
     	Dijkstra dijkstra = new Dijkstra();
         List<Edge> shortestPath = dijkstra.solve(this.solution, 0, 1);
@@ -53,11 +49,7 @@ public class SuccessiveShortestPathAlgo implements Algorithm{
         	}
         	shortestPath = dijkstra.solve(this.solution, 0, 1);
         }
-<<<<<<< HEAD
         removeSourceAndSink();
-=======
-		solution = removeSinkAndSource(solution);
->>>>>>> lucas
 		return this.solution;
     }
     

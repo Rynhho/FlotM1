@@ -15,7 +15,6 @@ public class ResidualNetwork extends Network {
 	private int solutionCost;
 
 	public ResidualNetwork(Network network) {
-<<<<<<< HEAD
 		super(network, true);
 		this.network = network;
 		this.nbEdges = 2 * network.nbEdges;
@@ -33,28 +32,6 @@ public class ResidualNetwork extends Network {
 //				this.oppositeEdgesMap.put(oppositeEdge, edge);
 //			});
 //		}
-=======
-		
-		super(network);
-		
-		this.network = network;
-		this.nbEdges = 2 * network.nbEdges;
-
-		this.oppositeEdgesMap = new HashMap<Edge, Edge>();
-
-		for (int source = 0; source < network.nbVertices; ++source) {
-			final int s = source;
-			network.getOutEdges(source).stream().forEach(edge -> {
-				Edge oppositeEdge = new Edge(edge.getDestination(), s, 0, 0, 0, true);
-
-				this.adjacencyList.get(edge.getDestination()).add(oppositeEdge);
-
-				this.oppositeEdgesMap.put(edge, oppositeEdge);
-				this.oppositeEdgesMap.put(oppositeEdge, edge);
-				
-			});
-		}
->>>>>>> lucas
 
 		this.verticesFlowIn = new double[this.nbVertices];
 		this.verticesFlowOut = new double[this.nbVertices];

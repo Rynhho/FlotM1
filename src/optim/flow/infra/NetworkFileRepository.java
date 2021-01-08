@@ -117,7 +117,6 @@ public class NetworkFileRepository implements Repository<Network> {
             }
 
             reader.close();
-            System.out.printf("ta mere en slip " + adjacencyList.size() + "\n");
             network = new Network(adjacencyList, verticesDemand);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
