@@ -20,7 +20,7 @@ public class Edge {
 		this.cost = cost;
 		this.reducedCost = cost;
 		this.isResidual = false;
-		this.oppositeEdge = new Edge(source, destination, capacity, 0, this);
+		this.oppositeEdge = new Edge(destination, source, capacity, 0, this);
 	}
 	
 	private Edge(int source, int destination, double capacity, double cost, Edge oppositeEdge) {
@@ -38,6 +38,10 @@ public class Edge {
 	public Edge(int source, int destination, double capacity, double cost, double reducedcost) {
 		this(source, destination, capacity, cost);
 		this.reducedCost = reducedcost;
+	}
+	public Edge(int source, int destination, double capacity, double cost, double reducedcost, double flow) {
+		this(source, destination, capacity, cost, reducedcost);
+		this.addFlow(flow);
 	}
 	
 	public Edge getOppositeEdge() {
