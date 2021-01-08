@@ -19,19 +19,25 @@ public class SuccessiveShortestPathAlgo implements Algorithm{
     private void reduceCost() {
     	for(int i=0; i<solution.getNbVertices(); ++i) {
 			for(Edge edge: solution.getOutEdges(i)) {
-				if(edge.getCapacity()!=0) {
+				if(edge.getCapacity()-edge.getFlow()>0) {
 					edge.updateReducedCost( pi.get(edge.getSource()) - pi.get(edge.getDestination()));
 					this.solution.getOppositeEdge(edge).updateReducedCost(-this.solution.getOppositeEdge(edge).getReducedCost());
 				}
-//				System.out.println(edge);
 			}
     	}
-//    	System.out.println(solution);
     }
     
     public ResidualNetwork solve(Network network){
     	this.originalNet = network;
     	this.solution = new ResidualNetwork(addSinkAndSource(network));
+//    	for (int i = 0; i < this.solution.getNbVertices(); i++) {
+////    		System.out.println(i+" demands "+this.originalNet.getVertexDemand(i));
+//        	for (Edge edge: this.solution.getOutEdges(i)) {
+////        		if(this.solution.getFlow(edge) != 0)
+////        			if( edge.getFlow()!=edge.getCapacity())
+//        				System.out.println(edge+ " flow: "+this.solution.getFlow(edge));
+//        	}
+//        }
     	reduceCost();
     	Dijkstra dijkstra = new Dijkstra();
         List<Edge> shortestPath = dijkstra.solve(this.solution, 0, 1);
@@ -48,19 +54,18 @@ public class SuccessiveShortestPathAlgo implements Algorithm{
     }
     
     private void removeSourceAndSink() {
-    	double[][] flowMatrix = new double[this.solution.getNbVertices()-2][this.solution.getNbVertices()-2];
+    	double[] verticesDemands = new double[this.solution.getNbVertices()-2];
+    	List<List<Edge>> adjacencyList = new ArrayList<>();
     	for (int i = 2; i < this.solution.getNbVertices(); i++) {
-			for (int j = 2; j < this.solution.getNbVertices(); j++) {
-				for(Edge edge:this.solution.getEdges(i, j)) {
-					if(!edge.isResidual()) {						
-						flowMatrix[i-2][j-2] = this.solution.getFlow(edge);
-						break;
-					}
-						
+    		verticesDemands[i-2] = this.solution.getVertexDemand(i);
+    		adjacencyList.add(new ArrayList<Edge>());
+			for(Edge edge:this.solution.getOutEdges(i)) {
+				if(!edge.isResidual() && !(edge.getDestination()<2)) {					
+					adjacencyList.get(i-2).add(new Edge(edge.getSource()-2, edge.getDestination()-2, edge.getCapacity(), edge.getCost(),edge.getReducedCost(), edge.getFlow()));
 				}
 			}
 		}
-    	this.solution = new ResidualNetwork(this.originalNet, flowMatrix);
+    	this.solution = new ResidualNetwork(new Network(adjacencyList, verticesDemands)); 
     }
     
     public double getDelta(List<Edge> path) {
@@ -72,6 +77,7 @@ public class SuccessiveShortestPathAlgo implements Algorithm{
 	      	// capMax += " "+ (path.get(j).getCapacity()- path.get(j).getFlow());
 	      }
 	    // System.out.println(capMax+"\ndelta = "+delta);
+//	    System.out.println("delta = "+ delta);
     	return delta;
     	
     }
@@ -97,9 +103,10 @@ public class SuccessiveShortestPathAlgo implements Algorithm{
 			
 		}
     	BellmanFord bf = new BellmanFord();
-    	bf.solve(new Network(Edges, verticesDemands), 0);
+    	Network net =new Network(Edges, verticesDemands);
+    	bf.solve(net, 0);
     	this.pi = bf.getDist();
-    	return new Network(Edges, verticesDemands);
+    	return net;
     }
     
     private Network getRemainingGraph(Network network) {
