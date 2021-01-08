@@ -15,7 +15,7 @@ public class ResidualNetwork extends Network {
 	private int solutionCost;
 
 	public ResidualNetwork(Network network) {
-		super(network);
+		super(network, true);
 		this.network = network;
 		this.nbEdges = 2 * network.nbEdges;
 
@@ -82,6 +82,26 @@ public class ResidualNetwork extends Network {
 			}
 		}
 		return cost;
+	}
+	
+	public boolean isFeasible() {
+		boolean isFeasible = true;
+		for (int i = 0; i < this.getNbVertices(); i++) {
+			double flowRemaing = -this.getVertexDemand(i);
+			for(Edge edge:this.getInEdges(i) ){
+				if(!edge.isResidual())
+					flowRemaing+=edge.getFlow();
+			}
+			for(Edge edge:this.getOutEdges(i)) {
+				if(!edge.isResidual())
+					flowRemaing-=edge.getFlow();
+			}
+			if(flowRemaing!=0) {
+//				System.out.println(flowRemaing +" remaining in vertex "+i+" should be 0.");
+				return false;
+			}
+		}
+		return isFeasible;
 	}
 	
 	public void addFlow(Edge edge, double flow) {
