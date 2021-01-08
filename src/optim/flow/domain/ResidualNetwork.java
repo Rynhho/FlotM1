@@ -15,6 +15,7 @@ public class ResidualNetwork extends Network {
 	private int solutionCost;
 
 	public ResidualNetwork(Network network) {
+<<<<<<< HEAD
 		super(network, true);
 		this.network = network;
 		this.nbEdges = 2 * network.nbEdges;
@@ -32,6 +33,28 @@ public class ResidualNetwork extends Network {
 //				this.oppositeEdgesMap.put(oppositeEdge, edge);
 //			});
 //		}
+=======
+		
+		super(network);
+		
+		this.network = network;
+		this.nbEdges = 2 * network.nbEdges;
+
+		this.oppositeEdgesMap = new HashMap<Edge, Edge>();
+
+		for (int source = 0; source < network.nbVertices; ++source) {
+			final int s = source;
+			network.getOutEdges(source).stream().forEach(edge -> {
+				Edge oppositeEdge = new Edge(edge.getDestination(), s, 0, 0, 0, true);
+
+				this.adjacencyList.get(edge.getDestination()).add(oppositeEdge);
+
+				this.oppositeEdgesMap.put(edge, oppositeEdge);
+				this.oppositeEdgesMap.put(oppositeEdge, edge);
+				
+			});
+		}
+>>>>>>> lucas
 
 		this.verticesFlowIn = new double[this.nbVertices];
 		this.verticesFlowOut = new double[this.nbVertices];
@@ -40,17 +63,29 @@ public class ResidualNetwork extends Network {
 	}
 
 	public ResidualNetwork(Network network, double[][] flowMatrix) {
+		
 		this(network);
 
 		if (flowMatrix.length != this.nbVertices) {
 			throw new IllegalArgumentException("Network and flow matrix don't have the same number of vertices.\n");
 		}
+		// for (int source = 0; source < this.nbVertices; ++source) {
+		// 	this.adjacencyList.get(source).forEach(edge -> {
+		// 		addFlow(edge, flowMatrix[edge.getSource()][edge.getDestination()]);
+		// 	});
+		// }
+		// dans ce nouvel opus de : "les iterator, cette belle invension", "supprimer et rajouter des elements de la liste que tu parcour, c'est pas une bonne idee :)"
 
-		for (int source = 0; source < this.nbVertices; ++source) {
-			this.adjacencyList.get(source).forEach(edge -> {
-				addFlow(edge, flowMatrix[edge.getSource()][edge.getDestination()]);
-			});
+		for (int source = 0; source < this.nbVertices; source++) {
+			for (int dst = 0; dst < this.nbVertices; dst++) {
+				for (int edge=0 ; edge < adjacencyList.get(source).size(); edge++){
+					if (adjacencyList.get(source).get(edge).getDestination()==dst){
+						addFlow(adjacencyList.get(source).get(edge), flowMatrix[source][dst]);
+					}
+				}
+			}
 		}
+		//comme on crée et suprime des aretes avec addFlow, les indices se melangent ce qui gene le parcour :) donc 3 boucles for pour 3 x + de fun
 	}
 	
 	public Edge getOppositeEdge(Edge edge) {

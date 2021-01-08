@@ -17,18 +17,18 @@ public class SandBox {
 		// double[][] costMatrix = { { -1, 0, 1, -10, 10 }, { 10, 10, -25, -10, -10 }, {
 		// 0, 0, 0, 5, 0 },
 		// { -10, -10, -1, 1, 3 }, { 0, 0, 0, 0, 0 } };
-		 double[] verticesDemand = {7, 8 };
+  		// double[] verticesDemand = {7, 8 };
 
 		// double[][] optimal = { { 10, 1, 9, 0, 0 }, { 0, 0, 6, 0, 0 }, { 0, 0, 0, 15,
 		// 0 }, { 0, 0, 0, 0, 8 },
 		// { 0, 0, 0, 0, 0 } };
 		// double optimalCost = 20;
 
-		 List<List<Edge>> adjacenceList = new ArrayList<List<Edge>>();
-		 for (int i = 0; i < 2; i++) {
-			 adjacenceList.add(new ArrayList<Edge>());
-		 }
-		 adjacenceList.get(0).add(new Edge(0,1,0,0));
+		// List<List<Edge>> adjacenceList = new ArrayList<List<Edge>>();
+		// for (int i = 0; i < 2; i++) {
+		//	 adjacenceList.add(new ArrayList<Edge>());
+		// }
+		// adjacenceList.get(0).add(new Edge(0,1,0,0));
 		// for (int j = 0; j < 5; j++) {
 		// if (capacityMatrix[i][j] != 0) {
 		// adjacenceList.get(i).add(new Edge(j, capacityMatrix[i][j], costMatrix[i][j]
@@ -39,36 +39,15 @@ public class SandBox {
 
 		// Network handNetwork = new Network(adjacenceList, verticesDemand);
 
-		// Algorithm cplex = new CplexAlgorithm();
-		// Solution CplexSolution = cplex.solve(handNetwork);
-
-		// double flow = 0;
-		// for (int i = 0; i < 5; i++) {
-		// flow = -CplexSolution.getVertexFlowIn(i) + CplexSolution.getVertexFlowOut(i)
-		// + handNetwork.getVertexDemand(i);
-		// if (flow != 0) {
-		// System.out.println("vertex " + i + " has been violated");
-		// }
-		// }
-
-		// double cost = 0;
-		// for (int i = 0; i < 5; i++) {
-		// for (int j = 0; j < 5; j++) {
-		// cost += CplexSolution.getEdgeFlow(i, j) * costMatrix[i][j];
-		// System.out.println("edge " + i + " " + j + " on flow " +
-		// CplexSolution.getEdgeFlow(i, j));
-		// }
-		// }
-		// System.out.println(cost);
-
+		Algorithm cplex = new CplexAlgorithm();
+		
 		Repository<Network> networkRepository = new NetworkFileRepository();
 //		Network googleNet = networkRepository.load("Google");
 //		System.out.println(googleNet);
 		SuccessiveShortestPathAlgo algo1 = new SuccessiveShortestPathAlgo();
 //		System.out.println(Double.toString(googleNet.getEdge(4, 3).getCost()));
 //		ResidualNetwork n = new ResidualNetwork(googleNet);
-		Network ex = networkRepository.load("Google");
-		System.out.println(ex);
+	
 //		
 //		System.out.println(ex);
 //		Dijkstra d = new Dijkstra();
@@ -86,20 +65,33 @@ public class SandBox {
 //		ResidualNetwork exRN = new ResidualNetwork(exSS);
 //		System.out.println(d.solve(exRN, 0, 1));
 //		System.out.println(exRN);
-		ResidualNetwork sol = algo1.solve(ex);
+		
 //		System.out.println(sol);
-		for (int i = 0; i < sol.getNbVertices(); i++) {
+//		for (int i = 0; i < sol.getNbVertices(); i++) {
 //			System.out.println(sol.getVertexDemand(i));
-			for (Edge edge: sol.getOutEdges(i)) {
+//			for (Edge edge: sol.getOutEdges(i)) {
 //				System.out.println(edge);
 //				edge.updateReducedCost(bellman.getDist().get(edge.getSource()) - bellman.getDist().get(edge.getDestination()));
 //				System.out.println(edge+"\n");
-				if(sol.getFlow(edge) != 0 && sol.isInOriginalNet(edge))
-					System.out.println(edge+ " flow: "+sol.getFlow(edge));
-			}
+//				if(sol.getFlow(edge) != 0 && sol.isInOriginalNet(edge))
+//					System.out.println(edge+ " flow: "+sol.getFlow(edge));
+//			}
+//		}
+		NetworkFileRepository solRep = new NetworkFileRepository();
+
+		for (int i=1;i<=22;i++){
+			Network net = networkRepository.load("A"+i);
+			ResidualNetwork sol2 = cplex.solve(net);
+			ResidualNetwork sol = algo1.solve(net);
+			solRep.save("A" + i +"SSP.sol", sol);
+			solRep.save("A" + i +"CplexSol", sol2);
+			System.out.println("SSP" + i +" : " + net.getSolutionCost(sol) + "\n");
+			System.out.println("Cplex" + i +" : " + net.getSolutionCost(sol2) + "\n");
 		}
-		SolutionFileRepository solRep = new SolutionFileRepository();
-		solRep.save("googlebyme.sol", sol);
+
+
+
+
 		System.out.println("done");
 //		System.out.println(bellman.getDist());
 //		System.out.println(bellman.solve(algo1.addSinkAndSource(ex), 0));
