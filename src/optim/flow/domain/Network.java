@@ -16,6 +16,7 @@ public class Network {
 
 	public Network(int nbVertices, int nbEdges, double maxCapacity, double maxCost, double maxDemand, double pSource,
 			double pSink) {
+		
 		if (nbVertices <= 0 || nbEdges <= 0 || maxCapacity <= 0 || maxCost <= 0 || maxDemand <= 0) {
 			throw new IllegalArgumentException("Network parameters must be positive.\n");
 		}
@@ -299,7 +300,7 @@ public class Network {
 	public double getSolutionCost(ResidualNetwork solution) {
 		double cost = 0;
 
-		for (int source = 0; source < solution.getNbVertices(); ++source) {
+		for (int source = 0; source < solution.getNbVertices(); source++) {
 			for (Edge edge : this.getOutEdges(source)) {
 				cost += solution.getFlow(edge) * edge.getCost();
 			}

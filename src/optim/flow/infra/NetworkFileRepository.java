@@ -36,12 +36,14 @@ public class NetworkFileRepository implements Repository<Network> {
         str += "p min " + network.getNbVertices() + " " + network.getNbEdges() + "\n";
 
         for (int vertex = 0; vertex < network.getNbVertices(); ++vertex) {
-            str += "n 0 " + network.getVertexDemand(vertex) + "\n";
+            if (network.getVertexDemand(vertex)!=0){
+                str += "n " + (vertex) + " " + network.getVertexDemand(vertex) + "\n";
+            }
         }
 
         for (int source = 0; source < network.getNbVertices(); ++source) {
             for (Edge edge : network.getOutEdges(source)) {
-                str += "a " + source + " " + edge.getDestination() + " 0 " + edge.getCapacity() + " " + edge.getCost()
+                str += "a " + (source) + " " + (edge.getDestination()) + " 0 " + edge.getCapacity() + " " + edge.getCost()
                         + "\n";
             }
         }
@@ -83,7 +85,7 @@ public class NetworkFileRepository implements Repository<Network> {
                     nbEdges = Integer.parseInt(words.get(3));
 
                     adjacencyList = new ArrayList<List<Edge>>();
-                    for (int vertex = 0; vertex < nbVertices; ++vertex) {
+                    for (int vertex = 0; vertex < nbVertices; vertex++) {
                         adjacencyList.add(new ArrayList<Edge>());
                     }
                     verticesDemand = new double[nbVertices];
@@ -115,7 +117,7 @@ public class NetworkFileRepository implements Repository<Network> {
             }
 
             reader.close();
-
+            System.out.printf("ta mere en slip " + adjacencyList.size() + "\n");
             network = new Network(adjacencyList, verticesDemand);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
