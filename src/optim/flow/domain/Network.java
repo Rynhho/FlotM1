@@ -65,7 +65,6 @@ public class Network {
 
 			for (Edge edge : adjacencyList.get(source)) {
 				this.adjacencyList.get(source).add(edge);
-//				this.adjacencyList.get(edge.getDestination()).add(edge.getOppositeEdge());
 			}
 		}
 
@@ -92,6 +91,36 @@ public class Network {
 		this.maxDemand = maxDemand;
 	}
 
+	public Network(Network network, boolean residual) {
+		this.nbVertices = network.nbVertices;
+		this.nbEdges = network.nbEdges;
+
+		this.maxCapacity = network.maxCapacity;
+		this.maxCost = network.maxCost;
+		this.maxDemand = network.maxDemand;
+
+		this.verticesDemands = new double[this.nbVertices];
+
+		// This kind of copy is enough as Edges are Value Objects
+		this.adjacencyList = new ArrayList<>();
+		for (int source = 0; source < this.nbVertices; ++source) {
+			this.adjacencyList.add(new ArrayList<>());
+		}
+		for (int source = 0; source < this.nbVertices; ++source) {
+			this.verticesDemands[source] = network.verticesDemands[source];
+			
+			for (Edge edge : network.adjacencyList.get(source)) {
+				this.adjacencyList.get(source).add(edge);
+				this.adjacencyList.get(edge.getDestination()).add(edge.getOppositeEdge());
+			}
+		}
+//		for (int source = 0; source < this.nbVertices; ++source) {	
+//			System.out.println(source);
+//			for (Edge edge : this.adjacencyList.get(source)) {
+//				System.out.println(edge);
+//			}
+//		}
+	}
 	public Network(Network network) {
 		this.nbVertices = network.nbVertices;
 		this.nbEdges = network.nbEdges;
@@ -239,7 +268,7 @@ public class Network {
 				}
 			}
 		}
-
+	
 		if (shouldReturn) {
 			return false;
 		}
@@ -258,6 +287,15 @@ public class Network {
 		return true;
 	}
 
+	public void displayEdges() {
+		for (int i = 0; i < this.getNbVertices(); i++) {
+			for (Edge edge: this.getOutEdges(i)) {
+				if(edge.isResidual() == false)
+					System.out.println(edge+ " flow: "+edge.getFlow());
+			}
+		}
+	}
+	
 	public double getSolutionCost(ResidualNetwork solution) {
 		double cost = 0;
 
