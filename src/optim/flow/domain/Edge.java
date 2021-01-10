@@ -51,11 +51,18 @@ public class Edge {
 	public double getFlow() {
 		return this.flow;
 	}
+	
+	public double getResidualCapacity() {
+		return this.getCapacity() - this.getFlow();
+	}
 	public void addFlow(double toAdd) {
 		this.flow += toAdd;
 		this.oppositeEdge.flow -= toAdd;
 		if(this.flow < 0 || this.oppositeEdge.flow < 0) {
-			System.out.println(this);
+			if(this.flow<0)
+				System.out.println(this + "flow: "+this.getFlow()+ " is residual? "+ this.isResidual());
+			else
+				System.out.println(this.getOppositeEdge() + "flow: "+this.getOppositeEdge().getFlow()+ " is residual? "+ this.isResidual());
 			throw new IllegalArgumentException("Flow must be not negative.\n");
 		}
 	}
