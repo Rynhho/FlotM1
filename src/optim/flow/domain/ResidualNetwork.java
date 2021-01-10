@@ -101,6 +101,10 @@ public class ResidualNetwork extends Network {
 		for (int i = 0; i < this.getNbVertices(); i++) {
 			double flowRemaing = -this.getVertexDemand(i);
 			for(Edge edge:this.getInEdges(i) ){
+				if(edge.getFlow()>edge.getCapacity()) {					
+					System.out.println("flow of edge ("+edge.getSource()+","+edge.getDestination()+") = "+edge.getFlow()+" > capacity = "+edge.getCapacity());
+					isFeasible = false;
+				}
 				if(!edge.isResidual())
 					flowRemaing+=edge.getFlow();
 			}
@@ -109,11 +113,16 @@ public class ResidualNetwork extends Network {
 					flowRemaing-=edge.getFlow();
 			}
 			if(flowRemaing!=0) {
-//				System.out.println(flowRemaing +" remaining in vertex "+i+" should be 0.");
-				return false;
+				System.out.println(flowRemaing +" remaining in vertex "+i+" should be 0.");
+				isFeasible = false;
 			}
 		}
 		return isFeasible;
+	}
+	
+	public double getNodeImbalance(int vertex) {
+		double flowRemaing = -this.getVertexDemand(vertex)+this.verticesFlowIn[vertex]-this.verticesFlowOut[vertex];
+		return flowRemaing;	
 	}
 	
 	public void addFlow(Edge edge, double flow) {
