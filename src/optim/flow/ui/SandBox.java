@@ -79,17 +79,18 @@ public class SandBox {
 //			}
 //		}
 //		NetworkFileRepository solRep = new NetworkFileRepository();
-
-		Network net = networkRepository.load("A3");
-		CplexAlgorithm cplex = new CplexAlgorithm();
-		SuccessiveShortestPathAlgo SSP = new SuccessiveShortestPathAlgo();
-		//ResidualNetwork sol = cplex.solve(net);
-		ResidualNetwork sol2 = SSP.solve(net);
-		//System.out.println("solution valid : " + net.isSolutionValid(sol) + " \n");
-		//System.out.println("solution cost : " + net.getSolutionCost(sol) + " \n");
-		System.out.println("solution valid : " + net.isSolutionValid(sol2) + " \n");
-		System.out.println("solution cost : " + net.getSolutionCost(sol2) + " \n");
-
+		for (int i=1;i<23;i++){
+			Network net = networkRepository.load("A"+i);
+			CplexAlgorithm cplex = new CplexAlgorithm();
+			SuccessiveShortestPathAlgo SSP = new SuccessiveShortestPathAlgo();
+			ResidualNetwork sol = cplex.solve(net);
+			ResidualNetwork sol2 = SSP.solve(net);
+			System.out.println("solution Feasible for A" + i + " : " + sol.isFeasible() + " \n");
+			System.out.println("solution cost for A" + i + " : " + sol.getCost() + " \n");
+			
+			//System.out.println("solution valid : " + net.isSolutionValid(sol2) + " \n");
+			//System.out.println("solution cost : " + net.getSolutionCost(sol2) + " \n");
+		}
 
 
 		System.out.println("done");
