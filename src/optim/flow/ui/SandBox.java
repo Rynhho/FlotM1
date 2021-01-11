@@ -39,12 +39,13 @@ public class SandBox {
 
 		// Network handNetwork = new Network(adjacenceList, verticesDemand);
 
-		Algorithm cplex = new CplexAlgorithm();
+//		Algorithm cplex = new CplexAlgorithm();
 		
 		Repository<Network> networkRepository = new NetworkFileRepository();
 //		Network googleNet = networkRepository.load("Google");
 //		System.out.println(googleNet);
 		SuccessiveShortestPathAlgo algo1 = new SuccessiveShortestPathAlgo();
+		Repository<ResidualNetwork> solRep = new SolutionFileRepository();
 //		System.out.println(Double.toString(googleNet.getEdge(4, 3).getCost()));
 //		ResidualNetwork n = new ResidualNetwork(googleNet);
 	
@@ -77,18 +78,20 @@ public class SandBox {
 //					System.out.println(edge+ " flow: "+sol.getFlow(edge));
 //			}
 //		}
-		NetworkFileRepository solRep = new NetworkFileRepository();
+//		NetworkFileRepository solRep = new NetworkFileRepository();
 
 		for (int i=1;i<=22;i++){
 			Network net = networkRepository.load("A"+i);
-			ResidualNetwork sol2 = cplex.solve(net);
+//			ResidualNetwork sol2 = cplex.solve(net);
 			ResidualNetwork sol = algo1.solve(net);
 			solRep.save("A" + i +"SSP.sol", sol);
-			solRep.save("A" + i +"CplexSol", sol2);
-			System.out.println("SSP" + i +" : " + net.getSolutionCost(sol) + "\n");
-			System.out.println("Cplex" + i +" : " + net.getSolutionCost(sol2) + "\n");
+//			solRep.save("A" + i +"CplexSol", sol2);
+			System.out.println("SSP" + i +" : " + sol.isFeasible() + "\n");
+			ResidualNetwork sol2 = solRep.load("A" + i +"CplexSol");
+			System.out.println(sol2.getCost());
+			
+//			System.out.println("Cplex" + i +" : " + net.getSolutionCost(sol2) + "\n");
 		}
-
 
 
 

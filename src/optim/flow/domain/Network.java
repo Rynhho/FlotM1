@@ -288,13 +288,14 @@ public class Network {
 		return true;
 	}
 
-	public void displayEdges() {
+	public void displayEdges(boolean withResidual) {
 		for (int i = 0; i < this.getNbVertices(); i++) {
 			for (Edge edge: this.getOutEdges(i)) {
-				if(edge.isResidual() == false)
+				if(withResidual || edge.isResidual() == false)
 					System.out.println(edge+ " flow: "+edge.getFlow());
 			}
 		}
+		System.out.println();
 	}
 	
 	public double getSolutionCost(ResidualNetwork solution) {
