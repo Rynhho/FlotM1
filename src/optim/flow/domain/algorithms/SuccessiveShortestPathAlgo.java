@@ -24,7 +24,6 @@ public class SuccessiveShortestPathAlgo implements Algorithm{
     }
     
     public ResidualNetwork solve(Network network){
-    	this.originalNet = network;
     	this.solution = new ResidualNetwork(addSinkAndSource(network));
 //    	for (int i = 0; i < this.solution.getNbVertices(); i++) {
 ////    		System.out.println(i+" demands "+this.originalNet.getVertexDemand(i));

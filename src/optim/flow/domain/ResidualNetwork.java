@@ -37,32 +37,7 @@ public class ResidualNetwork extends Network {
 		this.verticesFlowOut = new double[this.nbVertices];
 
 		this.solutionCost = 0;
-	}
-
-	public ResidualNetwork(Network network, double[][] flowMatrix) {
-		
-		this(network);
-
-		if (flowMatrix.length != this.nbVertices) {
-			throw new IllegalArgumentException("Network and flow matrix don't have the same number of vertices.\n");
-		}
-		// for (int source = 0; source < this.nbVertices; ++source) {
-		// 	this.adjacencyList.get(source).forEach(edge -> {
-		// 		addFlow(edge, flowMatrix[edge.getSource()][edge.getDestination()]);
-		// 	});
-		// }
-		// dans ce nouvel opus de : "les iterator, cette belle invension", "supprimer et rajouter des elements de la liste que tu parcour, c'est pas une bonne idee :)"
-
-		for (int source = 0; source < this.nbVertices; source++) {
-			for (int dst = 0; dst < this.nbVertices; dst++) {
-				for (int edge=0 ; edge < adjacencyList.get(source).size(); edge++){
-					if (adjacencyList.get(source).get(edge).getDestination()==dst){
-						addFlow(adjacencyList.get(source).get(edge), flowMatrix[source][dst]);
-					}
-				}
-			}
-		}
-		//comme on crée et suprime des aretes avec addFlow, les indices se melangent ce qui gene le parcour :) donc 3 boucles for pour 3 x + de fun
+		updateFlowInOut();
 	}
 	
 	public Edge getOppositeEdge(Edge edge) {
@@ -94,6 +69,23 @@ public class ResidualNetwork extends Network {
 			}
 		}
 		return cost;
+	}
+	
+	public void updateFlowInOut() {
+		for (int i = 0; i < this.getNbVertices(); i++) {
+			double flow = 0;
+			for(Edge edge:this.getInEdges(i) ){
+				if(!edge.isResidual())
+					flow+=edge.getFlow();
+			}
+			this.verticesFlowIn[i] = flow;
+			flow = 0;
+			for(Edge edge:this.getOutEdges(i)) {
+				if(!edge.isResidual())
+					flow-=edge.getFlow();
+			}
+			this.verticesFlowOut[i] = flow;
+		}
 	}
 	
 	public boolean isFeasible() {
