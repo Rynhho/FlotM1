@@ -17,7 +17,6 @@ public class SuccessiveShortestPathAlgo implements Algorithm{
 				if(edge.getResidualCapacity()>0) {
 					edge.updateReducedCost( pi.get(edge.getSource()) - pi.get(edge.getDestination()));
 					this.solution.getOppositeEdge(edge).updateReducedCost(-this.solution.getOppositeEdge(edge).getReducedCost());
-//					System.out.println(edge);
 				}
 			}
     	}
@@ -30,7 +29,7 @@ public class SuccessiveShortestPathAlgo implements Algorithm{
     	int dijkstraCount = 1;
         List<Edge> shortestPath = dijkstra.solve(this.solution, 0, 1);
         long timeSpentInDijkstra = System.currentTimeMillis();
-        this.pi = dijkstra.getPi();
+        this.pi = dijkstra.getDistanceFromSource();
         timeSpentInDijkstra = System.currentTimeMillis() - timeSpentInDijkstra;
     	this.reduceCost();
         while(!shortestPath.isEmpty()) {
@@ -43,7 +42,7 @@ public class SuccessiveShortestPathAlgo implements Algorithm{
         	shortestPath = dijkstra.solve(this.solution, 0, 1);
         	timeSpentInDijkstra += System.currentTimeMillis()-tmp;
         	dijkstraCount ++;
-        	this.pi = dijkstra.getPi();
+        	this.pi = dijkstra.getDistanceFromSource();
         	this.reduceCost();
         }
         System.out.println("dijkstra used: "+dijkstraCount+ " time spent in Dijkstra: "+timeSpentInDijkstra);
@@ -107,51 +106,5 @@ public class SuccessiveShortestPathAlgo implements Algorithm{
     	return net;
     }
 	
-//	public ResidualNetwork removeSinkAndSource(ResidualNetwork network) {
-//		int n = network.getNbVertices(); 
-//		List<List<Edge>> Edges = new ArrayList<List<Edge>>(); 
-//		double[] verticesDemands = new double[n-2];
-//		for (int i = 2; i < n; i++) {
-//			Edges.add(new ArrayList<Edge>());
-//
-//			verticesDemands[i-2] = network.getVertexDemand(i);
-//			for(Edge edge:network.getOutEdges(i)) {
-//				if (edge.getSource()>=2 && edge.getDestination()>=2){
-//					Edges.get(i-2).add(new Edge(edge.getSource()-2, edge.getDestination()-2, edge.getCapacity(), edge.getCost(), edge.getReducedCost()));
-//				}
-//			}
-//		}
-//		return new ResidualNetwork(new Network(Edges,verticesDemands));
-//	}
 
-
-
-//    private Network getRemainingGraph(Network network) {
-//		List<List<Edge>> remainingEdges = new ArrayList<List<Edge>>();
-//		double[] verticesDemands = new double[network.getNbVertices()];
-//		for(int i=0; i<network.getNbVertices(); ++i) {
-//			remainingEdges.add(new ArrayList<Edge>());
-//			for(Edge edge: network.getOutEdges(i)) {
-//				if(this.solution.getFlow(edge) != network.getEdges(i, edge.getDestination()).get(0).getCapacity()) {
-//					remainingEdges.get(i).add(edge);
-//				}
-//			}
-//		}
-//		
-//		return new Network(remainingEdges, verticesDemands);
-//	}
-
-
-//    private void updateList(Network network){
-//        this.providerSetE = new ArrayList<>();
-//        this.demanderSetD = new ArrayList<>();
-//        for(int vertex = 0; vertex < network.getNbVertices(); ++vertex){
-//            double imbalance = network.getVertexDemand(vertex) - this.solution.getVertexFlowIn(vertex) + this.solution.getVertexFlowOut(vertex);
-//            if(imbalance < 0){
-//                this.providerSetE.add(vertex);
-//            }else if(imbalance > 0){
-//                this.demanderSetD.add(vertex);
-//            }
-//        }
-//    }
 }
