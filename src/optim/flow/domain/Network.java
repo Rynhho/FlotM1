@@ -68,9 +68,19 @@ public class Network {
 				this.adjacencyList.get(source).add(edge);
 			}
 		}
-
-		double maxCapacity = this.adjacencyList.get(0).get(0).getCapacity();
-		double maxCost = this.adjacencyList.get(0).get(0).getCost();
+		Edge firstEdge = null;
+		for (int i = 0; i < this.adjacencyList.size(); i++) {
+			if(!this.adjacencyList.get(i).isEmpty()) {
+				firstEdge = this.adjacencyList.get(i).get(0);
+				break;
+			}
+			
+			
+		}
+		if(firstEdge == null)
+			throw new IllegalArgumentException("adjacencyList is empty.");
+		double maxCapacity = firstEdge.getCapacity();
+		double maxCost = firstEdge.getCost();
 		double maxDemand = this.verticesDemands[0];
 
 		int nbEdges = 0;
@@ -91,7 +101,50 @@ public class Network {
 		this.maxCost = maxCost;
 		this.maxDemand = maxDemand;
 	}
-
+//  combine edge with same source, destination and cost. Doesnt work 
+	public Network reduceNetwork() {
+		List<List<Edge>> adjacencyList = new ArrayList<List<Edge>>();
+		for (int i = 0; i < this.nbVertices; i++) {
+			adjacencyList.add(new ArrayList<Edge>());
+		}
+		for (int i = 0; i < this.nbVertices; i++) {
+			for(int j = 0; j < this.nbVertices; j++) {
+				List<Edge> edges = this.getEdges(i, j);
+				List<Edge> edgesToAdd = new ArrayList<Edge>();
+				for(int k=0; k < edges.size(); k++) {
+					double capacity = 0;
+					boolean alreadyDone = false;
+					for(Edge edge:edgesToAdd) {
+						if(edge.getCost() == edges.get(k).getCost()) {
+							alreadyDone = true;
+//							break;
+						}
+					}
+					if(!alreadyDone) {
+						List<Edge> edgesWithSameCost = getEdgesWithCost(edges, edges.get(k).getCost());
+						for(Edge edge:edgesWithSameCost) {
+							capacity += edge.getCapacity();
+						}
+						Edge edge = new Edge(edges.get(k).getSource(), edges.get(k).getDestination(), capacity, edges.get(k).getCost());
+						edgesToAdd.add(edge);
+						adjacencyList.get(k).addAll(edgesToAdd);
+					}
+				}
+				
+			}
+		}
+		return new Network(adjacencyList, this.verticesDemands);
+	}
+	
+	private List<Edge> getEdgesWithCost(List<Edge> edges, double cost) {
+		List<Edge> toReturn = new ArrayList<Edge>();
+		for(Edge edge:edges) {
+			if(edge.getCost() == cost)
+				toReturn.add(edge);
+		}
+		return toReturn;
+	}
+	
 	public Network(Network network, boolean residual) {
 		this.nbVertices = network.nbVertices;
 		this.nbEdges = network.nbEdges;
