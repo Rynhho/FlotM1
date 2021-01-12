@@ -37,7 +37,7 @@ public class CplexAlgorithm implements Algorithm{
 			for (int i = 0; i < n; i++) {
                 for (int j = 0;j < net.getOutEdges(i).size(); j++){
                     //System.out.println(i + " and " + j +" on " + n + "\n");
-                    obj.addTerm(net.getEdges(i, net.getOutEdges(i).get(j).getDestination()).get(0).getCost(), X[i][j]);
+                    obj.addTerm(net.getOutEdges(i).get(j).getCost(), X[i][j]);
                 }
             }
             cplex.addMinimize(obj);
@@ -49,7 +49,7 @@ public class CplexAlgorithm implements Algorithm{
 				for (int j=0; j<net.getOutEdges(i).size(); j++) {
                     IloLinearNumExpr ct = cplex.linearNumExpr();
                     ct.addTerm(1.0, X[i][j]);
-                    cplex.addLe(ct, net.getEdges(i, net.getOutEdges(i).get(j).getDestination() ).get(0).getCapacity());
+                    cplex.addLe(ct, net.getOutEdges(i).get(j).getCapacity());
                 }
             }
             
@@ -81,24 +81,26 @@ public class CplexAlgorithm implements Algorithm{
 
             cplex.setParam(IloCplex.IntParam.TimeLimit, 600);
 
+            ResidualNetwork sol = new ResidualNetwork(net);
+
+
+
             //solve and create a Solution
             if (cplex.solve()) {
                 
-                for (int i=0;i<n;i++){
-                    //System.out.println("i = "+ i);
-                    flowMatrix[i] = new double [n];
-                    for (int j=0;j<n;j++){
-                        flowMatrix[i][j]=0;
-                    }
-                    for (int j=0;j<net.getOutEdges(i).size();j++){
-                        flowMatrix[i][net.getOutEdges(i).get(j).getDestination()]=cplex.getValue(X[i][j]);
-                    }
+                
+            
+
+            for (int i=0;i<n;i++){
+                //System.out.println("i = "+ i);
+                for (int j=0; j<net.getOutEdges(i).size();j++){
+                    sol.addFlow(net.getOutEdges(i).get(j), cplex.getValue(X[i][j]));
                 }
+            }
                 
 			}else {
 				System.out.println("error, cannot find solution\n");
             }
-            ResidualNetwork sol = new ResidualNetwork(net, flowMatrix);
 			cplex.end();
 
             return sol;

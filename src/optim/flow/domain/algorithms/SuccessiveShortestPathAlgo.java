@@ -9,7 +9,8 @@ import optim.flow.domain.ResidualNetwork;
 
 public class SuccessiveShortestPathAlgo implements Algorithm{
     private List<Double> pi;
-    private ResidualNetwork solution;
+	private ResidualNetwork solution;
+	private Network originalNet;
 
     private void reduceCost() {
     	for(int i=0; i<solution.getNbVertices(); i++) {
