@@ -48,6 +48,10 @@ public class Edge {
 		return this.oppositeEdge;
 	}
 	
+	public void setReducedCost(double reducedCost) {
+		this.reducedCost = reducedCost;
+	}
+	
 	public double getFlow() {
 		return this.flow;
 	}
@@ -80,7 +84,7 @@ public class Edge {
 	}
 	
 	public void updateReducedCostScaling(double toAdd) {
-		this.reducedCost = this.cost + toAdd;
+		this.reducedCost = this.reducedCost + toAdd;
 	}
 	
 	public int getSource() {
