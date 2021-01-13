@@ -14,84 +14,85 @@ public class capacityScaling implements Algorithm {
     private double U; // U is an upper bound on the largest supply/demand and largest capacity in the network
     private List<Integer> ProviderS;
     private List<Integer> DemanderT;
+    private Dijkstra dijkstra;
     
     @Override
 	public ResidualNetwork solve(Network network) {
     	this.solution = new ResidualNetwork(network);
     	initialize();
-    	long timeSpendInGeneration=0;
     	int dijkstraCount = 0;
-		Dijkstra dijkstra = new Dijkstra();
+		
 		while(delta>=1) {
 //			System.out.println(delta);
-			//begin delta scaling phase
-			for (int i = 0; i < this.solution.getNbVertices(); i++) {
-				for(Edge edge:this.solution.getOutEdges(i)) {
-					if(edge.getResidualCapacity() >= delta && edge.getReducedCost()<0) {
-						this.solution.addFlow(edge, edge.getResidualCapacity());
-						//update x and the imbalance e
-					}
-				}
-			}
-			
-			updateProviderDemanderSets();
+			saturateNegativeCostEdges();
+			initializeProviderDemanderSets();
 			
 			while(!this.ProviderS.isEmpty() && ! this.DemanderT.isEmpty()) {
-				int k = this.ProviderS.get(0);
-				int i = this.DemanderT.get(0);
-				Network networkDelta = generateDeltaGraph();
-				if(networkDelta == null)
-					break;
-				dijkstraCount++;
-				long time = System.currentTimeMillis();
-//				System.out.println("avant");
-				List<Edge> PathKtoI = 
-						dijkstra.solveWithDelta(networkDelta, k,i, delta);
-//				System.out.println("apres");
-				if(PathKtoI.isEmpty())
-					break;
-					timeSpendInGeneration += System.currentTimeMillis() - time;
+				
 //					List<Double> distances = dijkstra.getDistanceFromSource();
 //					System.out.println(distances);
 //					for (int j = 0; j < this.pi.size(); j++) {
-//						this.pi.set(j, distances.get(j));
+//						this.pi.set(j, this.pi.get(j) - distances.get(j));
 //					}
 ////					System.out.println("distance "+distances);
 ////					networkDelta.displayEdges(true);
 ////					System.out.println(pi);
 //					reduceCost();
-				for(Edge edge:PathKtoI) {	
-					solution.addFlow(edge, delta);
-				}
+				
+				// if no path is available from k to i, we check for every i in T, and if no path exists, we remove k from S
+				dijkstraCount++;
+				addDeltaFlowAlong(getValidPath());
 				updateProviderDemanderSets();
-//				if(distances.get(i) == Double.MAX_VALUE)
-//					break;
 			}
-//			System.out.println(delta+" dijkstra used yet: "+dijkstraCount);
 			this.delta = this.delta/2;
 			
 		}
-		System.out.println("dijkstra used: "+dijkstraCount+" time spent in Dijkstra: "+timeSpendInGeneration);
+		System.out.println("dijkstra used: " + dijkstraCount);
 //		System.out.println("time spent generating : "+timeSpendInGeneration); 3030 279 DIJK 2972
-		
 		
 		return this.solution;
 	}
     
+    private void saturateNegativeCostEdges() {
+    	for (int i = 0; i < this.solution.getNbVertices(); i++) {
+			for(Edge edge:this.solution.getOutEdges(i)) {
+				if(edge.getResidualCapacity() >= delta && edge.getReducedCost()<0) {
+					this.solution.addFlow(edge, edge.getResidualCapacity());
+					//update x and the imbalance e
+				}
+			}
+		}
+    }
     
+    private void addDeltaFlowAlong(List<Edge> Path) {
+    	for(Edge edge:Path) {	
+			solution.addFlow(edge, delta);
+		}
+    }
     
+    private List<Edge> getValidPath(){
+    	int k = this.ProviderS.get(0);
+		int i = this.DemanderT.get(0);
+		
+		Network networkDelta = generateDeltaGraph();
+		if(networkDelta == null)
+			return new ArrayList<Edge>();
+    	List<Edge> validPath = dijkstra.solveWithDelta(networkDelta, k,i, delta);
+		if(validPath.isEmpty()) {
+			boolean noAvailablePathFromK = true;
+			for (int j = 1; j < this.DemanderT.size(); j++) {
+				validPath = dijkstra.getShortestPathEdgeTo(j);
+				if(!validPath.isEmpty()) {
+					noAvailablePathFromK = false;
+					break;
+				}
+			}
+			if(noAvailablePathFromK)
+				this.ProviderS.remove(k);
+		}
+		return validPath;
+    }
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
     public Network generateDeltaGraph() {
     	boolean isEmpty = true;
     	double[] verticesDemands = new double[this.solution.getNbVertices()];
@@ -122,7 +123,7 @@ public class capacityScaling implements Algorithm {
     	}
     }
     
-    private void updateProviderDemanderSets() {
+    private void initializeProviderDemanderSets() {
     	this.ProviderS = new ArrayList<Integer>();
     	this.DemanderT = new ArrayList<Integer>();
     	for (int i = 0; i < this.solution.getNbVertices(); i++) {
@@ -134,14 +135,29 @@ public class capacityScaling implements Algorithm {
     	}
     }
     
-	private void initialize() {
-//		U = Double.max(this.solution.getMaxDemand(), this.solution.getMaxCapacity());
-		U = this.solution.getMaxCapacity();
+    private void updateProviderDemanderSets() {
+    	for(int i = this.ProviderS.size()-1; i>=0; --i) {
+    		if(this.solution.getNodeImbalance(this.ProviderS.get(i)) < delta)
+    			this.ProviderS.remove(i);
+    	}
+    	for(int i = this.DemanderT.size()-1; i>=0; --i) {
+    		if(this.solution.getNodeImbalance(this.DemanderT.get(i)) > -delta)
+    			this.DemanderT.remove(i);
+    	}    		
+    }
+    
+	private void initialize() { 
+		U = Double.max(this.solution.getMaxDemand(), this.solution.getMaxCapacity());
+//		U = this.solution.getMaxCapacity();
 		delta = Math.pow(2, Math.floor(Math.log(U)/Math.log(2)));
+		this.dijkstra = new Dijkstra();
 		this.pi = new ArrayList<Double>();
 		for (int i = 0; i < solution.getNbVertices(); i++) {
     		this.pi.add(0.);
 		}
+//		initReducedCostResidual();
+		reduceCost();
+//		solution.displayEdges(true);
 	}
 	
 	public Network addSinkAndSource(Network network) {
@@ -184,6 +200,16 @@ public class capacityScaling implements Algorithm {
 			}
 		}
     	this.solution = new ResidualNetwork(new Network(adjacencyList, verticesDemands)); 
+    }
+	
+    private void initReducedCostResidual() {
+    	for (int i = 1; i < this.solution.getNbVertices(); i++) {
+			for(Edge edge:this.solution.getOutEdges(i)) {
+				if(edge.isResidual()) {
+					edge.setReducedCost(-edge.getOppositeEdge().getCost());
+				}
+			}
+		}
     }
 
 }
