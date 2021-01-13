@@ -11,36 +11,42 @@ public class Network {
 	protected final double maxCost;
 	protected final double maxDemand;
 
-	protected final List<List<Edge>> adjacencyList;
+	protected final List<List<Edge>> adjacencyList; // out edges
+	protected final List<List<Edge>> reverseAdjacencyList; // in edges
+	protected final List<List<List<Edge>>> fromToList; // in edges
 	protected final double[] verticesDemands;
+	
 
-	public Network(int nbVertices, int nbEdges, double maxCapacity, double maxCost, double maxDemand, double pSource,
-			double pSink) {
-		
-		if (nbVertices <= 0 || nbEdges <= 0 || maxCapacity <= 0 || maxCost <= 0 || maxDemand <= 0) {
-			throw new IllegalArgumentException("Network parameters must be positive.\n");
-		}
-
-		if (nbEdges > 2 * nbVertices) {
-			throw new IllegalArgumentException("Condition 1 (nbEdges <= 2 * nbVertices) is not satisfied.\n");
-		}
-
-		this.nbVertices = nbVertices;
-		this.nbEdges = nbEdges;
-
-		this.maxCapacity = maxCapacity;
-		this.maxCost = maxCost;
-		this.maxDemand = maxDemand;
-
-		this.adjacencyList = new ArrayList<List<Edge>>(nbVertices);
-		for (int i = 0; i < nbVertices; ++i) {
-			this.adjacencyList.add(null);
-		}
-
-		this.verticesDemands = new double[nbVertices];
-
-		generateRandomData();
-	}
+	// deprecated, need to complete reverse adjacencylist in generate random data
+//	public Network(int nbVertices, int nbEdges, double maxCapacity, double maxCost, double maxDemand, double pSource,
+//			double pSink) {
+//		
+//		if (nbVertices <= 0 || nbEdges <= 0 || maxCapacity <= 0 || maxCost <= 0 || maxDemand <= 0) {
+//			throw new IllegalArgumentException("Network parameters must be positive.\n");
+//		}
+//
+//		if (nbEdges > 2 * nbVertices) {
+//			throw new IllegalArgumentException("Condition 1 (nbEdges <= 2 * nbVertices) is not satisfied.\n");
+//		}
+//
+//		this.nbVertices = nbVertices;
+//		this.nbEdges = nbEdges;
+//
+//		this.maxCapacity = maxCapacity;
+//		this.maxCost = maxCost;
+//		this.maxDemand = maxDemand;
+//
+//		this.adjacencyList = new ArrayList<List<Edge>>(nbVertices);
+//		this.reverseAdjacencyList = new ArrayList<List<Edge>>(nbVertices);
+//		for (int i = 0; i < nbVertices; ++i) {
+//			this.adjacencyList.add(null);
+//			this.reverseAdjacencyList.add(null);
+//		}
+//
+//		this.verticesDemands = new double[nbVertices];
+//
+//		generateRandomData();
+//	}
 
 	public Network(List<List<Edge>> adjacencyList, double[] verticesDemands) {
 		if (adjacencyList == null || verticesDemands == null) {
@@ -57,22 +63,30 @@ public class Network {
 		// This kind of copy is enough as Edges are Value Objects
 		this.verticesDemands = new double[this.nbVertices];
 		this.adjacencyList = new ArrayList<>();
+		this.fromToList = new ArrayList<>();
 		for (int source = 0; source < this.nbVertices; ++source) {
 			this.adjacencyList.add(new ArrayList<>());
+			this.fromToList.add(new ArrayList<List<Edge>>());
+			for (int i = 0; i < this.nbVertices; ++i) {
+				this.fromToList.get(source).add(new ArrayList<Edge>());
+			}
 		}
 		for (int source = 0; source < this.nbVertices; ++source) {
 			
 			this.verticesDemands[source] = verticesDemands[source];
 
 			for (Edge edge : adjacencyList.get(source)) {
+				this.fromToList.get(source).get(edge.getDestination()).add(edge);
 				this.adjacencyList.get(source).add(edge);
 			}
 		}
+		this.reverseAdjacencyList = new ArrayList<List<Edge>>(nbVertices);
 		Edge firstEdge = null;
-		for (int i = 0; i < this.adjacencyList.size(); i++) {
+		for (int i = 0; i < this.adjacencyList.size(); ++i) {
+			this.reverseAdjacencyList.add(new ArrayList<Edge>());
 			if(!this.adjacencyList.get(i).isEmpty()) {
 				firstEdge = this.adjacencyList.get(i).get(0);
-				break;
+//				break;
 			}
 			
 			
@@ -88,6 +102,7 @@ public class Network {
 			maxDemand = Math.max(maxDemand, this.verticesDemands[source]);
 
 			for (Edge edge : this.adjacencyList.get(source)) {
+				this.reverseAdjacencyList.get(edge.getDestination()).add(edge);
 				++nbEdges;
 
 				maxCapacity = Math.max(maxCapacity, edge.getCapacity());
@@ -104,10 +119,10 @@ public class Network {
 //  combine edge with same source, destination and cost. Doesnt work 
 	public Network reduceNetwork() {
 		List<List<Edge>> adjacencyList = new ArrayList<List<Edge>>();
-		for (int i = 0; i < this.nbVertices; i++) {
+		for (int i = 0; i < this.nbVertices; ++i) {
 			adjacencyList.add(new ArrayList<Edge>());
 		}
-		for (int i = 0; i < this.nbVertices; i++) {
+		for (int i = 0; i < this.nbVertices; ++i) {
 			for(int j = 0; j < this.nbVertices; j++) {
 				List<Edge> edges = this.getEdges(i, j);
 				List<Edge> edgesToAdd = new ArrayList<Edge>();
@@ -157,8 +172,15 @@ public class Network {
 
 		// This kind of copy is enough as Edges are Value Objects
 		this.adjacencyList = new ArrayList<>();
+		this.reverseAdjacencyList = new ArrayList<List<Edge>>(nbVertices);
+		this.fromToList = new ArrayList<List<List<Edge>>>();
 		for (int source = 0; source < this.nbVertices; ++source) {
 			this.adjacencyList.add(new ArrayList<>());
+			this.reverseAdjacencyList.add(new ArrayList<Edge>());
+			this.fromToList.add(new ArrayList<List<Edge>>());
+			for (int i = 0; i < this.nbVertices; ++i) {
+				this.fromToList.get(source).add(new ArrayList<Edge>());				
+			}
 		}
 		for (int source = 0; source < this.nbVertices; ++source) {
 			this.verticesDemands[source] = network.verticesDemands[source];
@@ -166,6 +188,12 @@ public class Network {
 			for (Edge edge : network.adjacencyList.get(source)) {
 				this.adjacencyList.get(source).add(edge);
 				this.adjacencyList.get(edge.getDestination()).add(edge.getOppositeEdge());
+				
+				this.reverseAdjacencyList.get(edge.getDestination()).add(edge);
+				this.reverseAdjacencyList.get(source).add(edge.getOppositeEdge());
+				
+				this.fromToList.get(source).get(edge.getDestination()).add(edge);
+				this.fromToList.get(edge.getDestination()).get(source).add(edge.getOppositeEdge());
 			}
 		}
 //		for (int source = 0; source < this.nbVertices; ++source) {	
@@ -187,12 +215,24 @@ public class Network {
 
 		// This kind of copy is enough as Edges are Value Objects
 		this.adjacencyList = new ArrayList<>();
+		this.reverseAdjacencyList = new ArrayList<List<Edge>>();
+		this.fromToList = new ArrayList<List<List<Edge>>>();
+		for (int source = 0; source < this.nbVertices; ++source) {
+			this.adjacencyList.add(new ArrayList<Edge>());
+			this.reverseAdjacencyList.add(new ArrayList<Edge>());
+			this.fromToList.add(new ArrayList<List<Edge>>());
+			for (int i = 0; i < this.nbVertices; ++i) {
+				this.fromToList.get(source).add(new ArrayList<Edge>());
+			}
+		}
 		for (int source = 0; source < this.nbVertices; ++source) {
 			this.verticesDemands[source] = network.verticesDemands[source];
 			
 			this.adjacencyList.add(new ArrayList<>());
 			for (Edge edge : network.adjacencyList.get(source)) {
+				this.fromToList.get(source).get(edge.getDestination()).add(edge);
 				this.adjacencyList.get(source).add(edge);
+				this.reverseAdjacencyList.get(edge.getDestination()).add(edge);
 			}
 		}
 	}
@@ -228,33 +268,26 @@ public class Network {
 	}
 
 	public List<Edge> getEdges(int source, int destination) {
-		final List<Edge> edges = new ArrayList<>();
-
-		this.adjacencyList.get(source).parallelStream().forEach(edge -> {
-			if (edge.getDestination() == destination) {
-				synchronized (edges) {
-					edges.add(edge);
-				}
-			}
-		});
-
-		return edges;
+		return this.fromToList.get(source).get(destination);
+//		final List<Edge> edges = new ArrayList<>();
+//
+////		this.adjacencyList.get(source).parallelStream().forEach(edge -> {
+////			if (edge.getDestination() == destination) {
+////				synchronized (edges) {
+////					edges.add(edge);
+////				}
+////			}
+////		});
+//		for(Edge edge: this.adjacencyList.get(source)) {
+//			if (edge.getDestination() == destination)
+//				edges.add(edge);
+//		}
+//
+//		return edges;
 	}
 
 	public List<Edge> getInEdges(int destination) {
-		final List<Edge> inEdges = new ArrayList<>();
-
-		for (int source = 0; source < this.adjacencyList.size(); ++source) {
-			this.adjacencyList.get(source).parallelStream().forEach(edge -> {
-				if (edge.getDestination() == destination) {
-					synchronized (inEdges) {
-						inEdges.add(edge);
-					}
-				}
-			});
-		}
-
-		return inEdges;
+		return this.reverseAdjacencyList.get(destination);
 	}
 
 	public List<Edge> getOutEdges(int source) {
@@ -278,13 +311,13 @@ public class Network {
 	// */
 	// private void setRandomData() {
 	// /* Demand vector */
-	// for (int i = 0; i < this.nbVertices; i++) {
+	// for (int i = 0; i < this.nbVertices; ++i) {
 	// this.verticesDemands[i] = Math.random() * 2 * this.maxDemand -
 	// this.maxDemand;
 	// }
 
 	// /* Capacity and cost matrices */
-	// for (int i = 0; i < nbEdges; i++) {
+	// for (int i = 0; i < nbEdges; ++i) {
 	// int[] Coordinates = getEmptyCapacityMatrixCell();
 
 	// this.capacityMatrix[Coordinates[0]][Coordinates[1]] = Math.random() *
@@ -342,7 +375,7 @@ public class Network {
 	}
 
 	public void displayEdges(boolean withResidual) {
-		for (int i = 0; i < this.getNbVertices(); i++) {
+		for (int i = 0; i < this.getNbVertices(); ++i) {
 			for (Edge edge: this.getOutEdges(i)) {
 				if(withResidual || edge.isResidual() == false)
 					System.out.println(edge+ " flow: "+edge.getFlow());
@@ -410,7 +443,7 @@ public class Network {
 
 		str += "\nDemand vector:\n";
 		str += "[";
-		for (int i = 0; i < this.nbVertices; i++) {
+		for (int i = 0; i < this.nbVertices; ++i) {
 			str += String.format("%.2f", this.verticesDemands[i]) + ", ";
 		}
 		str = str.substring(0, str.length() - 2) + "]\n";
