@@ -10,7 +10,6 @@ import optim.flow.domain.ResidualNetwork;
 public class SuccessiveShortestPathAlgo implements Algorithm{
     private List<Double> pi;
 	private ResidualNetwork solution;
-	private Network originalNet;
 
     private void reduceCost() {
     	for(int i=0; i<solution.getNbVertices(); i++) {
@@ -36,10 +35,12 @@ public class SuccessiveShortestPathAlgo implements Algorithm{
     	reduceCost();
     	Dijkstra dijkstra = new Dijkstra();
     	int dijkstraCount = 1;
+    	
+    	long timeSpentInDijkstra = System.currentTimeMillis();
         List<Edge> shortestPath = dijkstra.solve(this.solution, 0, 1);
-        long timeSpentInDijkstra = System.currentTimeMillis();
-        this.pi = dijkstra.getDistanceFromSource();
         timeSpentInDijkstra = System.currentTimeMillis() - timeSpentInDijkstra;
+        
+        this.pi = dijkstra.getDistanceFromSource();
     	this.reduceCost();
         while(!shortestPath.isEmpty()) {
         	double delta = getDelta(shortestPath);
@@ -54,6 +55,7 @@ public class SuccessiveShortestPathAlgo implements Algorithm{
         	this.pi = dijkstra.getDistanceFromSource();
         	this.reduceCost();
         }
+        System.out.println("dijkstra count: "+dijkstraCount);
         removeSourceAndSink();
 		return this.solution;
     }
@@ -70,7 +72,7 @@ public class SuccessiveShortestPathAlgo implements Algorithm{
 				}
 			}
 		}
-    	this.solution = new ResidualNetwork(new Network(adjacencyList, verticesDemands)); 
+    	this.solution = new ResidualNetwork(new Network(adjacencyList, verticesDemands));
     }
     
     public double getDelta(List<Edge> path) {
