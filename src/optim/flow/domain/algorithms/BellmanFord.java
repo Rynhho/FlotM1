@@ -60,9 +60,12 @@ public class BellmanFord {
 	}
 
 	private void relaxe(Edge edge) {
-		if (this.dist.get(edge.getDestination()) > this.dist.get(edge.getSource()) + edge.getCost()) {
-			this.dist.set(edge.getDestination(), this.dist.get(edge.getSource()) + edge.getCost());
-			this.predecessor.set(edge.getDestination(), edge.getSource()); 
+		int destination = edge.getDestination();
+		int source = edge.getSource();
+		double distSource = this.dist.get(source);
+		if (this.dist.get(destination) > distSource + edge.getCost()) {
+			this.dist.set(edge.getDestination(), distSource + edge.getCost());
+			this.predecessor.set(destination, source); 
 		}
 	}
 }
