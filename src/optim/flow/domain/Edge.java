@@ -66,7 +66,7 @@ public class Edge {
 			if(this.flow<0)
 				System.out.println(this + "flow: "+this.getFlow()+ " is residual? "+ this.isResidual());
 			else
-				System.out.println("opposite edge "+this.getOppositeEdge() + "flow: "+this.getOppositeEdge().getFlow()+ " is residual? "+ this.isResidual());
+			System.out.println("opposite edge "+this.getOppositeEdge() + "flow: "+this.getOppositeEdge().getFlow()+ " is residual? "+ this.isResidual());
 			throw new IllegalArgumentException("Flow must be not negative.\n");
 		}
 	}
@@ -81,10 +81,6 @@ public class Edge {
 	
 	public void updateReducedCost(double toAdd) {
 		this.reducedCost += toAdd;
-	}
-	
-	public void updateReducedCostScaling(double toAdd) {
-		this.reducedCost = this.reducedCost + toAdd;
 	}
 	
 	public int getSource() {
