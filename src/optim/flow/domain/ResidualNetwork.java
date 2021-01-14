@@ -100,7 +100,7 @@ public class ResidualNetwork extends Network {
 				if(!edge.isResidual())
 					flowRemaing-=edge.getFlow();
 			}
-			if(flowRemaing < 0) {
+			if(flowRemaing != 0) {
 				System.out.println(flowRemaing +" remaining in vertex "+i+" should be 0.");
 				isFeasible = false;
 			}
