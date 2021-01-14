@@ -8,14 +8,14 @@ import optim.flow.domain.Network;
 import optim.flow.domain.ResidualNetwork;
 
 public class SuccessiveShortestPathAlgo implements Algorithm{
-    private List<Double> pi;
+    private double[] pi;
 	private ResidualNetwork solution;
 
     private void reduceCost() {
     	for(int i=0; i<solution.getNbVertices(); i++) {
 			for(Edge edge: solution.getOutEdges(i)) {
 				if(edge.getResidualCapacity()>0) {
-					edge.updateReducedCost( pi.get(edge.getSource()) - pi.get(edge.getDestination()));
+					edge.updateReducedCost( pi[edge.getSource()] - pi[edge.getDestination()]);
 					this.solution.getOppositeEdge(edge).updateReducedCost(-this.solution.getOppositeEdge(edge).getReducedCost());
 				}
 			}
