@@ -13,54 +13,53 @@ import optim.flow.domain.Network;
 import optim.flow.domain.ResidualNetwork;
 
 public class Dijkstra {
-	Network network;
-	List<Double> dist;
-	List<Integer> predecessor;
-	List<Integer> VerticesTemporarlyLabeled;
-	double[] distances;
-	int start;
-	int end;
+	private Network network;
+	private List<Integer> VerticesTemporarlyLabeled;
+	private Integer[] predecessor;
+	private double[] distances;
+	private double delta = 0;
+	private int start;
+	private int end;
 
 	public void initialize(Network network, int start, int end) {
 		this.network = network;
 		this.start = start;
 		this.end = end;
 		
-		this.dist = new ArrayList<Double>();
-		this.predecessor = new ArrayList<Integer>();
+		this.predecessor = new Integer[network.getNbVertices()];
+		this.distances = new double[network.getNbVertices()];
 		
-		//initialize the dist and tthe predecessor array
 		for (int i = 0; i < network.getNbVertices(); ++i) {
-			this.dist.add(Double.MAX_VALUE);
-			this.predecessor.add(-1);
+			this.distances[i] = Double.MAX_VALUE;
+			this.predecessor[i] = -1;
 		}
-		this.dist.set(this.start, 0.0);
+		this.distances[this.start] = 0.0;
 	}
 
 
 	private int findMin(List<Integer> VerticesAvailable) {
-		double min = this.dist.get(VerticesAvailable.get(0));
+		double min = this.distances[VerticesAvailable.get(0)];
 		int closestVertex = VerticesAvailable.get(0);
 		
 		for(int vertex : VerticesAvailable) {
-			if(this.dist.get(vertex) < min) {
-				min = this.dist.get(vertex);
+			if(this.distances[vertex] < min) {
+				min = this.distances[vertex];
 				closestVertex = vertex;
 			}
 		}
 		return closestVertex;
 	}
 	
-	public List<Double> getDistanceFromSource(){
+	public double[] getDistanceFromSource(){
 		// note that distances of temporarly labeled vertices are set to the distance of the end vertex.
-		return this.dist;
+		return this.distances;
 	}
 
 	private void updateDist(int v1, int v2) {
 		Edge lightestNonFullEdge = null;
 		
 		for(Edge edge:this.network.getEdges(v1, v2)) {
-			if(edge.getResidualCapacity() > 0) {
+			if(edge.getResidualCapacity() > this.delta) {
 				if( lightestNonFullEdge == null)
 					lightestNonFullEdge = edge;
 				else if(edge.getReducedCost() < lightestNonFullEdge.getReducedCost())
@@ -68,10 +67,10 @@ public class Dijkstra {
 			}
 		}
 		
-		if (this.dist.get(v2) > this.dist.get(v1) + lightestNonFullEdge.getReducedCost()) {
+		if (this.distances[v2] > this.distances[v1] + lightestNonFullEdge.getReducedCost()) {
 			
-			this.dist.set(v2, this.dist.get(v1) + lightestNonFullEdge.getReducedCost());
-			this.predecessor.set(v2, v1);
+			this.distances[v2] = this.distances[v1] + lightestNonFullEdge.getReducedCost();
+			this.predecessor[v2] = v1;
 		}
 	}
 
@@ -79,35 +78,22 @@ public class Dijkstra {
 	private List<Edge> getShortestPathEdge() {
 		List<Edge> shortestPath = new ArrayList<Edge>();
 		
-		if(this.predecessor.isEmpty())
-			throw new IllegalArgumentException("empty shortest path in Dijkstra\n");
-		
 		int edgeDestination = this.end;
-		int cap = network.getNbVertices();
-		while (this.predecessor.get(edgeDestination) != -1) {
-			List<Edge> edges = network.getEdges(this.predecessor.get(edgeDestination), edgeDestination);
+		while (this.predecessor[edgeDestination] != -1) {
+			List<Edge> edges = network.getEdges(this.predecessor[edgeDestination], edgeDestination);
 			Edge lightestNonFullEdge = null;
 			
 			for(Edge edge:edges) {
 				
-				if(edge.getResidualCapacity() > 0 && lightestNonFullEdge == null) {
+				if(edge.getResidualCapacity() > this.delta && lightestNonFullEdge == null) {
 					lightestNonFullEdge = edge;
 				}
-				else if(edge.getResidualCapacity() > 0 && edge.getCost() < lightestNonFullEdge.getCost())
+				else if(edge.getResidualCapacity() > this.delta && edge.getReducedCost() < lightestNonFullEdge.getReducedCost())
 					lightestNonFullEdge = edge;
 			}
 			
 			shortestPath.add(lightestNonFullEdge);
-			edgeDestination = this.predecessor.get(edgeDestination);
-			cap -=1;
-			if(cap == 0) {
-//				System.out.println(predecessor);
-//				network.displayEdges(true);
-				System.out.println();
-				System.out.println("start: "+start+" end: "+end);
-				System.out.println(predecessor.get(start));
-				throw new IllegalArgumentException("Dijkstra problem with shortest path: "+this.predecessor);
-			}
+			edgeDestination = this.predecessor[edgeDestination];
 		}
 		
 		return shortestPath;
@@ -123,18 +109,14 @@ public class Dijkstra {
 			VerticesAvailable.remove((Object) vertex);
 			
 			if(vertex == end) { // We found the shortest path to end.
-				VerticesTemporarlyLabeled = VerticesAvailable;
-				// We set distances of all temporarly labeled vertices to the distance of the end (see book, page 323)
-				for(Integer i:VerticesTemporarlyLabeled) {
-					this.dist.set(i, this.dist.get(this.end));
-				}
+				setVerticesTemporarlyLabeled(VerticesAvailable);
 				return getShortestPathEdge();
-			}
+			} 
 			
 			if (network.getOutEdges(vertex) != null) {
 				for (Edge outEdge : network.getOutEdges(vertex)) {
 					if(network.getClass().getName() == "optim.flow.domain.ResidualNetwork") {
-						if( outEdge.getResidualCapacity() >0) {		
+						if( outEdge.getResidualCapacity() > this.delta) {		
 							updateDist(vertex, outEdge.getDestination());
 						}
 					}
@@ -146,39 +128,23 @@ public class Dijkstra {
 		throw new IllegalArgumentException("Vertex "+end+"should have been covered previously.\n");
 	}
 	
-	
-	
-	// used in capacityScaling algorithm.
-	public List<Edge> solveWithDelta(Network network, int start, int end, double Delta) {
-		initialize(network, start, end);
-		List<Integer> VerticesAvailable = IntStream.rangeClosed(0, this.network.getNbVertices() - 1).boxed().collect(Collectors.toList());
-		
-		while (!VerticesAvailable.isEmpty()) {
-			int vertex = findMin(VerticesAvailable);
-			VerticesAvailable.remove((Object) vertex);
-
-			if (network.getOutEdges(vertex) != null) {
-				for (Edge outEdge : network.getOutEdges(vertex)) {
-//					if(network.getClass().getName() == "optim.flow.domain.ResidualNetwork") {
-//						if( outEdge.getResidualCapacity() >= Delta) {		
-//							updateDist(vertex, outEdge.getDestination());
-//							System.out.println("couocuo");
-//						}
-//					}
-//					else if(outEdge.getResidualCapacity() >= Delta) {
-						
-						updateDist(vertex, outEdge.getDestination());
-
-//					}
-//					else
-//						System.out.println("lala");
-						
-				}
-			}
-
+	private void setVerticesTemporarlyLabeled(List<Integer> verticesAvailable) {
+		VerticesTemporarlyLabeled = verticesAvailable;
+		// We set distances of all temporarly labeled vertices to the distance of the end (see book, page 323)
+		for(Integer i:VerticesTemporarlyLabeled) {
+			this.distances[i] = this.distances[this.end];
 		}
-		return getShortestPathEdge();
 	}
+
+
+	// used in capacityScaling algorithm.
+//	public List<Edge> solveWithDelta(Network network, int start, int end, double delta) {
+//		this.delta = delta-1;
+//		List<Edge> shortestPath = this.solve(network, start, end);
+//		this.delta = 0;
+//		return shortestPath;
+//	}
+	
 	
 	List<Edge> getShortestPathEdgeTo(int to){
 		int tmp = this.end;
@@ -187,4 +153,16 @@ public class Dijkstra {
 		this.end = tmp;
 		return PathTo;
 	}
+//  delta is a parameter such as only the edges of the graph with residual capacity > delta will be consider. initially = 0
+//	carefull: > not >=.
+	public void setDelta(double delta) {
+		this.delta = delta;
+	}
+
+//	public List<Edge> getShortestPathEdgeToDelta(int j, double delta) {
+//		this.delta = delta;
+//		List<Edge> PathTo = getShortestPathEdgeTo(j);
+//		this.delta = 1;
+//		return PathTo;
+//	}
 }
