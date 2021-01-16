@@ -26,7 +26,7 @@ public class capacityScaling implements Algorithm {
     		this.solution = new ResidualNetwork(network);
     	initialize();
     	int dijkstraCount = 0;
-		
+    	
 		while(delta>=1) {
 			saturateNegativeCostEdges();
 			initializeProviderDemanderSets();
@@ -35,7 +35,6 @@ public class capacityScaling implements Algorithm {
 				dijkstraCount++;
 				addDeltaFlowAlong(getValidPath());
 				updateProviderDemanderSets();
-				
 			}
 			this.delta = this.delta/2;
 			
@@ -49,7 +48,7 @@ public class capacityScaling implements Algorithm {
     private void updatePi() {
     	double[] distances = dijkstra.getDistanceFromSource();
     	for (int j = 0; j < this.pi.length; j++) {
-			this.pi[j] =  - distances[j];
+			this.pi[j] = this.pi[j] -distances[j];
 		}
     }
     
@@ -64,10 +63,10 @@ public class capacityScaling implements Algorithm {
     }
     
     private void addDeltaFlowAlong(List<Edge> Path) {
-    	for(Edge edge:Path) {
-    		solution.addFlow(edge, delta);
-		}
     	if(!Path.isEmpty()) {
+	    	for(Edge edge:Path) {
+	    		solution.addFlow(edge, delta);
+			}
     		updatePi();
 			reduceCost();
     	}
@@ -96,8 +95,11 @@ public class capacityScaling implements Algorithm {
     
     private void reduceCost() {
     	for(int i=0; i<solution.getNbVertices(); i++) {
-			for(Edge edge: solution.getOutEdges(i)) {
-					edge.updateReducedCost( -pi[edge.getSource()] + pi[edge.getDestination()]);
+			for(Edge edge: solution.getOutEdges(i)) {					
+					edge.updateReducedCost2( -pi[edge.getSource()] + pi[edge.getDestination()]);
+					if(edge.getReducedCost() < 0 && edge.getResidualCapacity() > delta) {
+						throw new IllegalArgumentException("residual capacity sould not be negative.");
+					}
 			}
     	}
     }
@@ -136,7 +138,6 @@ public class capacityScaling implements Algorithm {
 		}
 		this.ProviderS = new ArrayList<Integer>();
     	this.DemanderT = new ArrayList<Integer>();
-		reduceCost();
 		
 		
 	}
