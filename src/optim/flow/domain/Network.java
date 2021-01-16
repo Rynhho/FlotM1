@@ -4,17 +4,17 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class Network {
-	protected final int nbVertices;
-	protected final int nbEdges;
+	protected int nbVertices;
+	protected int nbEdges;
 
-	protected final double maxCapacity;
-	protected final double maxCost;
-	protected final double maxDemand;
+	protected double maxCapacity;
+	protected double maxCost;
+	protected double maxDemand;
 
 	protected final List<List<Edge>> adjacencyList; // out edges
 	protected final List<List<Edge>> reverseAdjacencyList; // in edges
 	protected final List<List<List<Edge>>> fromToList; // in edges
-	protected final double[] verticesDemands;
+	protected double[] verticesDemands;
 	
 
 	// deprecated, need to complete reverse adjacencylist in generate random data
@@ -71,10 +71,12 @@ public class Network {
 				this.fromToList.get(source).add(new ArrayList<Edge>());
 			}
 		}
+		double delta = 0;
 		for (int source = 0; source < this.nbVertices; ++source) {
 			
 			this.verticesDemands[source] = verticesDemands[source];
-
+			delta += verticesDemands[source];
+			
 			for (Edge edge : adjacencyList.get(source)) {
 				this.fromToList.get(source).get(edge.getDestination()).add(edge);
 				this.adjacencyList.get(source).add(edge);
@@ -115,6 +117,11 @@ public class Network {
 		this.maxCapacity = maxCapacity;
 		this.maxCost = maxCost;
 		this.maxDemand = maxDemand;
+		if (delta < 0) {
+			this.addDumpNode(false);
+		}else if(delta > 0) {
+			throw new IllegalArgumentException("Demand higher than production");
+		}
 	}
 //  combine edge with same source, destination and cost. Doesnt work 
 	public Network reduceNetwork() {
@@ -160,9 +167,21 @@ public class Network {
 		return toReturn;
 	}
 	
+	public boolean isProdEqualsDemand() {
+		double delta = 0 ;
+		for (int i = 0; i < this.nbVertices; ++i) {
+			delta += this.verticesDemands[i];			
+		}
+		return delta == 0;
+	}
+	
 	public Network(Network network, boolean residual) {
 		this.nbVertices = network.nbVertices;
-		this.nbEdges = network.nbEdges;
+		if(residual)
+			this.nbEdges = 2*network.nbEdges;
+		else
+			this.nbEdges = network.nbEdges;
+		
 
 		this.maxCapacity = network.maxCapacity;
 		this.maxCost = network.maxCost;
@@ -182,19 +201,26 @@ public class Network {
 				this.fromToList.get(source).add(new ArrayList<Edge>());				
 			}
 		}
+		double delta = 0;
 		for (int source = 0; source < this.nbVertices; ++source) {
 			this.verticesDemands[source] = network.verticesDemands[source];
+			delta += this.verticesDemands[source];
 			
 			for (Edge edge : network.adjacencyList.get(source)) {
 				this.adjacencyList.get(source).add(edge);
-				this.adjacencyList.get(edge.getDestination()).add(edge.getOppositeEdge());
-				
-				this.reverseAdjacencyList.get(edge.getDestination()).add(edge);
-				this.reverseAdjacencyList.get(source).add(edge.getOppositeEdge());
-				
+				this.reverseAdjacencyList.get(edge.getDestination()).add(edge);				
 				this.fromToList.get(source).get(edge.getDestination()).add(edge);
-				this.fromToList.get(edge.getDestination()).get(source).add(edge.getOppositeEdge());
+				if(residual) {
+					this.adjacencyList.get(edge.getDestination()).add(edge.getOppositeEdge());
+					this.reverseAdjacencyList.get(source).add(edge.getOppositeEdge());
+					this.fromToList.get(edge.getDestination()).get(source).add(edge.getOppositeEdge());
+				}
 			}
+		}
+		if (delta < 0) {
+			this.addDumpNode(residual);
+		}else if(delta > 0) {
+			throw new IllegalArgumentException("Demand higher than production");
 		}
 //		for (int source = 0; source < this.nbVertices; ++source) {	
 //			System.out.println(source);
@@ -203,38 +229,11 @@ public class Network {
 //			}
 //		}
 	}
+	public void setVerticesDemands(double[] verticesDemands) {
+		this.verticesDemands = verticesDemands;
+	}
 	public Network(Network network) {
-		this.nbVertices = network.nbVertices;
-		this.nbEdges = network.nbEdges;
-
-		this.maxCapacity = network.maxCapacity;
-		this.maxCost = network.maxCost;
-		this.maxDemand = network.maxDemand;
-
-		this.verticesDemands = new double[this.nbVertices];
-
-		// This kind of copy is enough as Edges are Value Objects
-		this.adjacencyList = new ArrayList<>();
-		this.reverseAdjacencyList = new ArrayList<List<Edge>>();
-		this.fromToList = new ArrayList<List<List<Edge>>>();
-		for (int source = 0; source < this.nbVertices; ++source) {
-			this.adjacencyList.add(new ArrayList<Edge>());
-			this.reverseAdjacencyList.add(new ArrayList<Edge>());
-			this.fromToList.add(new ArrayList<List<Edge>>());
-			for (int i = 0; i < this.nbVertices; ++i) {
-				this.fromToList.get(source).add(new ArrayList<Edge>());
-			}
-		}
-		for (int source = 0; source < this.nbVertices; ++source) {
-			this.verticesDemands[source] = network.verticesDemands[source];
-			
-			this.adjacencyList.add(new ArrayList<>());
-			for (Edge edge : network.adjacencyList.get(source)) {
-				this.fromToList.get(source).get(edge.getDestination()).add(edge);
-				this.adjacencyList.get(source).add(edge);
-				this.reverseAdjacencyList.get(edge.getDestination()).add(edge);
-			}
-		}
+		this(network, false);
 	}
 
 	public int getNbVertices() {
@@ -285,7 +284,55 @@ public class Network {
 //
 //		return edges;
 	}
+	
+	public void reinitFlow(){
+			for (int source = 0; source < this.nbVertices; ++source) {	
+				for (Edge edge : this.adjacencyList.get(0)) {
+					edge.addFlow(-edge.getFlow());
+				}
+			}
+		}
 
+	public void addDumpNode(boolean withResidualArcs) {
+		System.out.println("		***dump node added***");
+		this.nbVertices ++;
+		this.adjacencyList.add(new ArrayList<Edge>());
+		this.reverseAdjacencyList.add(new ArrayList<Edge>());
+		this.fromToList.add(new ArrayList<List<Edge>>());
+		
+		double delta = 0;
+		double[] copy = this.verticesDemands.clone();
+		
+		this.verticesDemands = new double[this.nbVertices];
+		for (int i = 0; i < copy.length; i++) {
+			this.fromToList.get(i).add(new ArrayList<Edge>());
+			this.fromToList.get(this.nbVertices-1).add(new ArrayList<Edge>());
+			delta -= copy[i];
+			this.verticesDemands[i] = copy[i];
+			if(this.verticesDemands[i] < 0) {
+				
+				Edge newEdge = new Edge(i, this.nbVertices-1, -this.verticesDemands[i], 0);
+				
+				this.reverseAdjacencyList.get(this.nbVertices-1).add(newEdge);
+				this.adjacencyList.get(i).add(newEdge);
+				this.fromToList.get(i).get(nbVertices-1).add(newEdge);
+				if(withResidualArcs) {
+					this.reverseAdjacencyList.get(i).add(newEdge.getOppositeEdge());
+					this.adjacencyList.get(nbVertices-1).add(newEdge.getOppositeEdge());
+					this.fromToList.get(nbVertices-1).get(i).add(newEdge.getOppositeEdge());
+				}
+				
+				this.nbEdges +=1;
+				this.maxCapacity = Math.max(this.maxCapacity, newEdge.getCapacity());
+				
+			}
+		}
+		this.fromToList.get(nbVertices-1).add(new ArrayList<Edge>());
+		this.verticesDemands[this.verticesDemands.length-1] = delta;
+		this.maxDemand = Math.max(delta, this.maxDemand);
+
+	}
+	
 	public List<Edge> getInEdges(int destination) {
 		return this.reverseAdjacencyList.get(destination);
 	}
