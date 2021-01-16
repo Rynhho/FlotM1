@@ -83,6 +83,10 @@ public class Edge {
 		this.reducedCost += toAdd;
 	}
 	
+	public void updateReducedCost2(double toAdd) {
+		this.reducedCost = this.getCost() + toAdd;
+	}
+	
 	public int getSource() {
 		return this.source;
 	}
