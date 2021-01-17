@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.PriorityQueue;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -14,7 +16,8 @@ import optim.flow.domain.ResidualNetwork;
 
 public class Dijkstra {
 	private Network network;
-	private List<Integer> VerticesTemporarlyLabeled;
+//	private List<Integer> VerticesTemporarlyLabeled;
+	PriorityQueue<Integer> VerticesTL;
 	private Integer[] predecessor;
 	private double[] distances;
 	private double delta = 0;
@@ -26,28 +29,40 @@ public class Dijkstra {
 		this.start = start;
 		this.end = end;
 		
+		this.VerticesTL = new PriorityQueue<Integer>(network.getNbVertices(), new Comparator<Integer>() {
+
+			@Override
+			public int compare(Integer arg0, Integer arg1) {
+				return Double.compare(distances[arg0], distances[arg1]);
+			}
+			
+		});
+//				IntStream.rangeClosed(0, network.getNbVertices() - 1).boxed().collect(Collectors.toList()));
 		this.predecessor = new Integer[network.getNbVertices()];
 		this.distances = new double[network.getNbVertices()];
 		
 		for (int i = 0; i < network.getNbVertices(); ++i) {
 			this.distances[i] = Double.MAX_VALUE;
 			this.predecessor[i] = -1;
+			if(i == this.start)
+				this.distances[this.start] = 0.0;
 		}
-		this.distances[this.start] = 0.0;
+		this.VerticesTL.add(this.start);
 	}
 
 
-	private int findMin(List<Integer> VerticesAvailable) {
-		double min = this.distances[VerticesAvailable.get(0)];
-		int closestVertex = VerticesAvailable.get(0);
-		
-		for(int vertex : VerticesAvailable) {
-			if(this.distances[vertex] < min) {
-				min = this.distances[vertex];
-				closestVertex = vertex;
-			}
-		}
-		return closestVertex;
+	private int findMin() {//List<Integer> VerticesAvailable) {
+		return this.VerticesTL.poll();
+//		double min = this.distances[VerticesAvailable.get(0)];
+//		int closestVertex = VerticesAvailable.get(0);
+//		
+//		for(int vertex : VerticesAvailable) {
+//			if(this.distances[vertex] < min) {
+//				min = this.distances[vertex];
+//				closestVertex = vertex;
+//			}
+//		}
+//		return closestVertex;
 	}
 	
 	public double[] getDistanceFromSource(){
@@ -71,6 +86,8 @@ public class Dijkstra {
 			
 			this.distances[v2] = this.distances[v1] + lightestNonFullEdge.getReducedCost();
 			this.predecessor[v2] = v1;
+			this.VerticesTL.remove(v2);			
+			this.VerticesTL.add(v2);
 		}
 	}
 
@@ -101,15 +118,13 @@ public class Dijkstra {
 
 	public List<Edge> solve(Network network, int start, int end) {
 		initialize(network, start, end);
-		List<Integer> VerticesAvailable = IntStream.rangeClosed(0, network.getNbVertices() - 1).boxed().collect(Collectors.toList());
-		
+//		List<Integer> VerticesAvailable = IntStream.rangeClosed(0, network.getNbVertices() - 1).boxed().collect(Collectors.toList());
+		PriorityQueue<Integer> VerticesAvailable = this.VerticesTL;
 		while (!VerticesAvailable.isEmpty()) {
-			
-			int vertex = findMin(VerticesAvailable);
+			int vertex = findMin();
 			VerticesAvailable.remove((Object) vertex);
-			
 			if(vertex == end) { // We found the shortest path to end.
-				setVerticesTemporarlyLabeled(VerticesAvailable);
+				setVerticesTemporarlyLabeled();//VerticesAvailable);
 				return getShortestPathEdge();
 			} 
 			
@@ -125,15 +140,22 @@ public class Dijkstra {
 				}
 			}
 		}
-		throw new IllegalArgumentException("Vertex "+end+"should have been covered previously.\n");
+		setVerticesTemporarlyLabeled();
+		return getShortestPathEdge();
+//		throw new IllegalArgumentException("Vertex "+end+"should have been covered previously.\n");
 	}
 	
-	private void setVerticesTemporarlyLabeled(List<Integer> verticesAvailable) {
-		VerticesTemporarlyLabeled = verticesAvailable;
+	private void setVerticesTemporarlyLabeled() {//List<Integer> verticesAvailable) {
 		// We set distances of all temporarly labeled vertices to the distance of the end (see book, page 323)
-		for(Integer i:VerticesTemporarlyLabeled) {
-			this.distances[i] = this.distances[this.end];
+//		double[] verticesTempLabeled = IntStream.rangeClosed(0, network.getNbVertices() - 1).boxed().collect();
+		for (int i = 0; i < network.getNbVertices(); i++) {
+			if(this.distances[i] > this.distances[this.end])
+				this.distances[i] = this.distances[this.end];
 		}
+//		
+//		for(Integer i:verticesAvailable) {
+//			this.distances[i] = this.distances[this.end];
+//		}
 	}
 
 
