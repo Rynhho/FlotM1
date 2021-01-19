@@ -126,9 +126,9 @@ public class SandBox {
 					"1.40049729897E11\n" + 
 					"1.40672231305E11";
 //			System.out.println(sol.getCost()+" "+sol.isFeasible());
-			boolean runSSP = false;
-			boolean runCS = false;
-			boolean runCoS = true;
+			boolean runSSP = true;
+			boolean runCS = true;
+			boolean runCoS = false;
 			long totalTime = System.currentTimeMillis();
 			String[] examples = {"example", "example2", "Google"};
 			String result = "";
