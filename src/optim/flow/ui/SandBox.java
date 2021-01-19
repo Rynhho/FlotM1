@@ -46,6 +46,8 @@ public class SandBox {
 //		System.out.println(googleNet);
 		capacityScaling CS = new capacityScaling(); 
 		SuccessiveShortestPathAlgo SSP = new SuccessiveShortestPathAlgo();
+
+		CostScaling CoS = new CostScaling();
 //		return;
 //				SuccessiveShortestPathAlgo();
 		Repository<ResidualNetwork> solRep = new SolutionFileRepository();
@@ -124,8 +126,9 @@ public class SandBox {
 					"1.40049729897E11\n" + 
 					"1.40672231305E11";
 //			System.out.println(sol.getCost()+" "+sol.isFeasible());
-			boolean runSSP = true;
+			boolean runSSP = false;
 			boolean runCS = false;
+			boolean runCoS = true;
 			long totalTime = System.currentTimeMillis();
 			String[] examples = {"example", "example2", "Google"};
 			String result = "";
@@ -138,7 +141,7 @@ public class SandBox {
 //						"Z"+i;
 				System.out.println(toTest);
 				Network net = networkRepository.load(toTest);
-				Double costSSP = 0.; Double costCS = 0.;
+				Double costSSP = 0.; Double costCS = 0.; Double costCoS = 0.;
 //				net = (net.reduceNetwork());
 //				.displayEdges(false);
 //				System.out.println("end");
@@ -167,6 +170,16 @@ public class SandBox {
 					System.out.println(solSSP.getCost()+" "+solSSP.isFeasible());
 					result += ""+solSSP.getCost()+"\n";
 					costSSP = solSSP.getCost();
+				}
+				if(runCoS) {
+					
+					System.out.println("\nsolution found by cost scaling");
+					long timeStartCoS = System.currentTimeMillis();
+					ResidualNetwork solCoS = CoS.solve(net);
+					System.out.println("time taken by CoS:"+(System.currentTimeMillis()-timeStartCoS));
+		//			solCoS.displayEdges();
+					System.out.println(solCoS.getCost()+" "+solCoS.isFeasible());
+					costCoS = solCoS.getCost();
 				}
 				if(runCS && runSSP) {			
 					if(costSSP - costCS != 0) {
