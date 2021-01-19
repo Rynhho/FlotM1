@@ -8,7 +8,7 @@ import optim.flow.domain.Network;
 import optim.flow.domain.ResidualNetwork;
 
 public class capacityScaling implements Algorithm {
-	private List<Double> pi;
+	private double[] pi;
     private ResidualNetwork solution;
     private double[] originalDemands;
     private double delta;
@@ -26,7 +26,7 @@ public class capacityScaling implements Algorithm {
     		this.solution = new ResidualNetwork(network);
     	initialize();
     	int dijkstraCount = 0;
-		
+    	
 		while(delta>=1) {
 			saturateNegativeCostEdges();
 			initializeProviderDemanderSets();
@@ -35,25 +35,21 @@ public class capacityScaling implements Algorithm {
 				dijkstraCount++;
 				addDeltaFlowAlong(getValidPath());
 				updateProviderDemanderSets();
-				
 			}
 			this.delta = this.delta/2;
 			
 		}
 		System.out.println("dijkstra used: " + dijkstraCount);
-//		System.out.println("time spent generating : "+timeSpendInGeneration); 3030 279 DIJK 2972
 		if(withSink)
 			removeSourceAndSink();
 		return this.solution;
 	}
     
     private void updatePi() {
-    	List<Double> distances = dijkstra.getDistanceFromSource();
-    	for (int j = 0; j < this.pi.size(); j++) {
-			this.pi.set(j, - distances.get(j));
+    	double[] distances = dijkstra.getDistanceFromSource();
+    	for (int j = 0; j < this.pi.length; j++) {
+			this.pi[j] = this.pi[j] -distances[j];
 		}
-//    	System.out.println(dijkstra.start +" "+dijkstra.end);
-//    	System.out.println(pi);
     }
     
     private void saturateNegativeCostEdges() {
@@ -67,10 +63,10 @@ public class capacityScaling implements Algorithm {
     }
     
     private void addDeltaFlowAlong(List<Edge> Path) {
-    	for(Edge edge:Path) {	
-			solution.addFlow(edge, delta);
-		}
     	if(!Path.isEmpty()) {
+	    	for(Edge edge:Path) {
+	    		solution.addFlow(edge, delta);
+			}
     		updatePi();
 			reduceCost();
     	}
@@ -80,10 +76,8 @@ public class capacityScaling implements Algorithm {
     	int k = this.ProviderS.get(0);
 		int i = this.DemanderT.get(0);
 		
-		Network networkDelta = generateDeltaGraph();
-		if(networkDelta == null)
-			return new ArrayList<Edge>();
-    	List<Edge> validPath = dijkstra.solve(networkDelta, k,i);
+		dijkstra.setDelta(this.delta - 1);
+    	List<Edge> validPath = dijkstra.solve(solution, k,i);
 		if(validPath.isEmpty()) {
 			boolean noAvailablePathFromK = true;
 			for (int j = 1; j < this.DemanderT.size(); j++) {
@@ -99,36 +93,20 @@ public class capacityScaling implements Algorithm {
 		return validPath;
     }
     
-    public Network generateDeltaGraph() {
-    	boolean isEmpty = true;
-    	double[] verticesDemands = new double[this.solution.getNbVertices()];
-    	List<List<Edge>> adjacencyList = new ArrayList<>();
-    	for(int i=0; i<solution.getNbVertices(); i++) {
-//    		verticesDemands[i] = this.solution.getVertexDemand(i);
-    		adjacencyList.add(new ArrayList<Edge>());
-			for(Edge edge: solution.getOutEdges(i)) {
-				if(edge.getResidualCapacity() >= delta) {
-					isEmpty = false;
-					adjacencyList.get(i).add(edge);
-				}
-			}
-    	}
-    	if(isEmpty)
-    		return null;
-    	return new Network(adjacencyList, verticesDemands);
-    }
-    
     private void reduceCost() {
     	for(int i=0; i<solution.getNbVertices(); i++) {
-			for(Edge edge: solution.getOutEdges(i)) {
-					edge.updateReducedCostScaling( -pi.get(edge.getSource()) + pi.get(edge.getDestination()));
+			for(Edge edge: solution.getOutEdges(i)) {					
+					edge.updateReducedCost2( -pi[edge.getSource()] + pi[edge.getDestination()]);
+					if(edge.getReducedCost() < 0 && edge.getResidualCapacity() > delta) {
+						throw new IllegalArgumentException("residual capacity sould not be negative.");
+					}
 			}
     	}
     }
     
     private void initializeProviderDemanderSets() {
-    	this.ProviderS = new ArrayList<Integer>();
-    	this.DemanderT = new ArrayList<Integer>();
+    	this.ProviderS.clear();
+    	this.DemanderT.clear();
     	for (int i = 0; i < this.solution.getNbVertices(); i++) {
     		double imbalance = this.solution.getNodeImbalance(i);
     		if(imbalance >= delta)
@@ -152,14 +130,14 @@ public class capacityScaling implements Algorithm {
 	private void initialize() { 
 		// i think we should put min instead of max
 		U = Double.max(this.solution.getMaxDemand(), this.solution.getMaxCapacity());
-//		U = this.solution.getMaxCapacity();
 		delta = Math.pow(2, Math.floor(Math.log(U)/Math.log(2)));
 		this.dijkstra = new Dijkstra();
-		this.pi = new ArrayList<Double>();
+		this.pi = new double[solution.getNbVertices()]; 
 		for (int i = 0; i < solution.getNbVertices(); i++) {
-    		this.pi.add(0.);
+    		this.pi[i] = 0;
 		}
-		reduceCost();
+		this.ProviderS = new ArrayList<Integer>();
+    	this.DemanderT = new ArrayList<Integer>();
 		
 		
 	}
