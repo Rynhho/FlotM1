@@ -10,6 +10,7 @@ import optim.flow.domain.ResidualNetwork;
 public class SuccessiveShortestPath implements Algorithm{
     private double[] pi;
 	private ResidualNetwork solution;
+	private double[] originalDemand;
 
     private void reduceCost() {
     	for(int i=0; i<solution.getNbVertices(); i++) {
@@ -25,6 +26,9 @@ public class SuccessiveShortestPath implements Algorithm{
     public ResidualNetwork solve(Network network){
     	this.solution = new ResidualNetwork(addSinkAndSource(network));
     	initReducedCostResidualTo0();
+//    	for (int i = 0; i < solution.getNbVertices(); i++) {
+//			System.out.print(solution.getVertexDemand(i)+" ");
+//		}
 //    	for (int i = 0; i < this.solution.getNbVertices(); i++) {
 ////    		System.out.println(i+" demands "+this.originalNet.getVertexDemand(i));
 //        	for (Edge edge: this.solution.getOutEdges(i)) {
@@ -33,6 +37,7 @@ public class SuccessiveShortestPath implements Algorithm{
 //        				System.out.println(edge+ " flow: "+this.solution.getFlow(edge));
 //        	}
 //        }
+    	
     	reduceCost();
     	Dijkstra dijkstra = new Dijkstra();
     	int dijkstraCount = 1;
@@ -40,9 +45,10 @@ public class SuccessiveShortestPath implements Algorithm{
     	long timeSpentInDijkstra = System.currentTimeMillis();
         List<Edge> shortestPath = dijkstra.solve(this.solution, 0, 1);
         timeSpentInDijkstra = System.currentTimeMillis() - timeSpentInDijkstra;
-        
+//        this.solution.displayEdges(false);
         this.pi = dijkstra.getDistanceFromSource();
     	this.reduceCost();
+//    	this.solution.displayEdges(false);
         while(!shortestPath.isEmpty()) {
         	double delta = getDelta(shortestPath);
         	if(delta<=0)break;
@@ -51,9 +57,14 @@ public class SuccessiveShortestPath implements Algorithm{
         	}
         	long tmp = System.currentTimeMillis();
         	shortestPath = dijkstra.solve(this.solution, 0, 1);
+//        	for (int i = 0; i < solution.getNbVertices(); i++) {
+//    			System.out.print(this.pi[i]+" ");
+//    		}System.out.println("\n");
+//    		this.solution.displayEdges(false);
         	timeSpentInDijkstra += System.currentTimeMillis()-tmp;
         	dijkstraCount ++;
         	this.pi = dijkstra.getDistanceFromSource();
+//        	System.out.println(shortestPath);
         	this.reduceCost();
         }
         System.out.println("dijkstra count: "+dijkstraCount);
@@ -62,10 +73,8 @@ public class SuccessiveShortestPath implements Algorithm{
     }
     
     private void removeSourceAndSink() {
-    	double[] verticesDemands = new double[this.solution.getNbVertices()-2];
     	List<List<Edge>> adjacencyList = new ArrayList<>();
     	for (int i = 2; i < this.solution.getNbVertices(); i++) {
-    		verticesDemands[i-2] = this.solution.getVertexDemand(i);
     		adjacencyList.add(new ArrayList<Edge>());
 			for(Edge edge:this.solution.getOutEdges(i)) {
 				if(!edge.isResidual() && !(edge.getDestination()<2)) {					
@@ -73,7 +82,7 @@ public class SuccessiveShortestPath implements Algorithm{
 				}
 			}
 		}
-    	this.solution = new ResidualNetwork(new Network(adjacencyList, verticesDemands));
+    	this.solution = new ResidualNetwork(new Network(adjacencyList, this.originalDemand));
     }
     
     public double getDelta(List<Edge> path) {
@@ -84,7 +93,6 @@ public class SuccessiveShortestPath implements Algorithm{
 	      	delta = Math.min(delta, path.get(j).getCapacity() - path.get(j).getFlow());
 	      	// capMax += " "+ (path.get(j).getCapacity()- path.get(j).getFlow());
 	      }
-	    // System.out.println(capMax+"\ndelta = "+delta);
 //	    System.out.println("delta = "+ delta);
     	return delta;
     	
@@ -93,25 +101,36 @@ public class SuccessiveShortestPath implements Algorithm{
     public Network addSinkAndSource(Network network) {
     	// new 0 is the source, new 1 is the destination 
     	List<List<Edge>> Edges = new ArrayList<List<Edge>>();
+    	this.originalDemand = new double[network.getNbVertices()];
     	Edges.add(new ArrayList<Edge>());
     	Edges.add(new ArrayList<Edge>());
     	double[] verticesDemands = new double[network.getNbVertices()+2];
+    	double prod = 0;
+    	double demand = 0;
     	for (int i = 0; i < network.getNbVertices(); i++) {
     		Edges.add(new ArrayList<Edge>());
-    		
-    		verticesDemands[i+2] = network.getVertexDemand(i);
+    		this.originalDemand[i] = network.getVertexDemand(i);
+    		verticesDemands[i+2] = 0;
 			if(network.getVertexDemand(i) < 0) {
+				prod +=network.getVertexDemand(i);
 				Edges.get(0).add(new Edge(0, i+2, -network.getVertexDemand(i), 0));
 			}else if(network.getVertexDemand(i) > 0) {
+				demand += network.getVertexDemand(i);
 				Edges.get(i+2).add(new Edge(i+2, 1, network.getVertexDemand(i), 0));
 			}
 			for(Edge edge:network.getOutEdges(i)) {
 				Edges.get(i+2).add(new Edge(edge.getSource()+2, edge.getDestination()+2, edge.getCapacity(), edge.getCost(), edge.getReducedCost()));
 			}
 			
+			
 		}
+    	verticesDemands[0] = prod;
+    	verticesDemands[1] = demand;
+    	return initPi( new Network(Edges, verticesDemands));
+    }
+    
+    private Network initPi(Network net) {
     	BellmanFord bf = new BellmanFord();
-    	Network net =new Network(Edges, verticesDemands);
     	bf.solve(net, 0);
     	this.pi = bf.getDist();
     	return net;

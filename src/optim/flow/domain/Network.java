@@ -111,7 +111,6 @@ public class Network {
 				maxCost = Math.max(maxCost, edge.getCost());
 			}
 		}
-
 		this.nbEdges = nbEdges;
 
 		this.maxCapacity = maxCapacity;
@@ -128,35 +127,50 @@ public class Network {
 		List<List<Edge>> adjacencyList = new ArrayList<List<Edge>>();
 		for (int i = 0; i < this.nbVertices; ++i) {
 			adjacencyList.add(new ArrayList<Edge>());
-		}
-		for (int i = 0; i < this.nbVertices; ++i) {
-			for(int j = 0; j < this.nbVertices; j++) {
+			for (int j = 0; j < this.nbVertices; j++) {
 				List<Edge> edges = this.getEdges(i, j);
-				List<Edge> edgesToAdd = new ArrayList<Edge>();
-				for(int k=0; k < edges.size(); k++) {
-					double capacity = 0;
-					boolean alreadyDone = false;
-					for(Edge edge:edgesToAdd) {
-						if(edge.getCost() == edges.get(k).getCost()) {
-							alreadyDone = true;
-//							break;
-						}
+				while(!edges.isEmpty()) {					
+					List<Edge> edgesWithSameCost = getEdgesWithCost(edges, edges.get(0).getCost());
+					edges.removeAll(edgesWithSameCost);
+					double totalCapacity = 0;
+					for(Edge edge: edgesWithSameCost) {
+						totalCapacity += edge.getCapacity();
 					}
-					if(!alreadyDone) {
-						List<Edge> edgesWithSameCost = getEdgesWithCost(edges, edges.get(k).getCost());
-						for(Edge edge:edgesWithSameCost) {
-							capacity += edge.getCapacity();
-						}
-						Edge edge = new Edge(edges.get(k).getSource(), edges.get(k).getDestination(), capacity, edges.get(k).getCost());
-						edgesToAdd.add(edge);
-						adjacencyList.get(k).addAll(edgesToAdd);
-					}
+					adjacencyList.get(i).add(new Edge(i, j, totalCapacity, edgesWithSameCost.get(0).getCost()));
 				}
 				
 			}
 		}
+		
 		return new Network(adjacencyList, this.verticesDemands);
 	}
+	
+//	for (int i = 0; i < this.nbVertices; ++i) {
+//		for(int j = 0; j < this.nbVertices; j++) {
+//			List<Edge> edges = this.getEdges(i, j);
+//			List<Edge> edgesToAdd = new ArrayList<Edge>();
+//			for(int k=edges.size()-1; k >=0 ; --k) {
+//				Edge edgeConsidered = edges.get(k);
+//				edges.remove(edgeConsidered);
+//				edgesToAdd.add(edgeConsidered);
+//				for(Edge edge:edges) {
+//					if(edge.getCost() == edgeConsidered.getCost()) {
+//						
+//					}
+//				}
+//				if(!alreadyDone) {
+//					List<Edge> edgesWithSameCost = getEdgesWithCost(edges, edges.get(k).getCost());
+//					for(Edge edge:edgesWithSameCost) {
+//						capacity += edge.getCapacity();
+//					}
+//					Edge edge = new Edge(edges.get(k).getSource(), edges.get(k).getDestination(), capacity, edges.get(k).getCost());
+//					edgesToAdd.add(edge);
+//					adjacencyList.get(k).addAll(edgesToAdd);
+//				}
+//			}
+//			
+//		}
+//	}
 	
 	private List<Edge> getEdgesWithCost(List<Edge> edges, double cost) {
 		List<Edge> toReturn = new ArrayList<Edge>();
@@ -207,14 +221,7 @@ public class Network {
 			delta += this.verticesDemands[source];
 			
 			for (Edge edge : network.adjacencyList.get(source)) {
-				this.adjacencyList.get(source).add(edge);
-				this.reverseAdjacencyList.get(edge.getDestination()).add(edge);				
-				this.fromToList.get(source).get(edge.getDestination()).add(edge);
-				if(residual) {
-					this.adjacencyList.get(edge.getDestination()).add(edge.getOppositeEdge());
-					this.reverseAdjacencyList.get(source).add(edge.getOppositeEdge());
-					this.fromToList.get(edge.getDestination()).get(source).add(edge.getOppositeEdge());
-				}
+				addEdge(edge, residual);
 			}
 		}
 		if (delta < 0) {
@@ -292,6 +299,16 @@ public class Network {
 				}
 			}
 		}
+	
+	public void addEdge(Edge edge, boolean withOppositeEdge) {
+		this.nbEdges ++;
+		this.adjacencyList.get(edge.getSource()).add(edge);
+		this.reverseAdjacencyList.get(edge.getDestination()).add(edge);				
+		this.fromToList.get(edge.getSource()).get(edge.getDestination()).add(edge);
+		if(withOppositeEdge) {
+			addEdge(edge.getOppositeEdge(), false);
+		}
+	}
 
 	public void addDumpNode(boolean withResidualArcs) {
 		System.out.println("		***dump node added***");
