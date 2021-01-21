@@ -83,7 +83,7 @@ public class SandBox {
 			long totalTime = System.currentTimeMillis();
 			String[] examples = {"example", "example2", "Google"};
 			String result = "";
-			for (int i=1;i<=22;i++){
+			for (int i=1;i<=3;i++){
 				String toTest = 
 //						"G1";
 //						examples[i-1];
@@ -136,16 +136,16 @@ public class SandBox {
 					System.out.println(solCS.getCost()+" "+solCS.isFeasible());
 					costCS = solCS.getCost();
 				}
-				if(runCoS) {
-					
-					System.out.println("\nsolution found by cost scaling");
-					long timeStartCoS = System.currentTimeMillis();
-					ResidualNetwork solCoS = CoS.solve(net);
-					System.out.println("time taken by CoS:"+(System.currentTimeMillis()-timeStartCoS));
-		//			solCoS.displayEdges();
-					System.out.println(solCoS.getCost()+" "+solCoS.isFeasible());
-					costCoS = solCoS.getCost();
-				}
+//				if(runCoS) {
+//					
+//					System.out.println("\nsolution found by cost scaling");
+//					long timeStartCoS = System.currentTimeMillis();
+//					ResidualNetwork solCoS = CoS.solve(net);
+//					System.out.println("time taken by CoS:"+(System.currentTimeMillis()-timeStartCoS));
+//		//			solCoS.displayEdges();
+//					System.out.println(solCoS.getCost()+" "+solCoS.isFeasible());
+//					costCoS = solCoS.getCost();
+//				}
 				if(runCS && runSSP) {			
 					if(costSSP - costCS != 0) {
 						System.out.println("pb with costs SSP:"+ costSSP + " CS " + costCS+" \nSSP is better ? "+ (costSSP<costCS) );
@@ -158,7 +158,6 @@ public class SandBox {
 			}		
 			System.out.println("\nTotal error: "+nbError);
 			System.out.println("\ntotal time: "+ (System.currentTimeMillis()-totalTime));
-			
 //			System.out.println();
 //			System.out.println("was expected: "+result.equals(expectedResult));
 //			if(!result.contentEquals(expectedResult)) {
