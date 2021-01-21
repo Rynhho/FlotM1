@@ -158,6 +158,7 @@ public class SandBox {
 			}		
 			System.out.println("\nTotal error: "+nbError);
 			System.out.println("\ntotal time: "+ (System.currentTimeMillis()-totalTime));
+			
 //			System.out.println();
 //			System.out.println("was expected: "+result.equals(expectedResult));
 //			if(!result.contentEquals(expectedResult)) {
