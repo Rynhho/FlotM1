@@ -5,18 +5,18 @@ import java.util.ArrayList;
 
 public class UncapacitedNetwork extends Network {
 
+    //le compilateur a trop pris de drogue donc il trouve pas les 3 listes qui sont dans Network...
+
+
     public UncapacitedNetwork(Network net){
         super();
-        n=net.getNbVertices();
-        m=net.getNbEdges();
-        this.nbEdges = m*4;
+        int n=net.getNbVertices();
+        int m=net.getNbEdges();
+        this.nbEdges = m*2;
         this.nbVertices = n+m;
+        
 
-        this.adjacencyList = new List<List<Edge>> ();
-        this.reverseAdjacencyList = new List<List<Edge>> ();
-        this.fromToList = new List<List<List<Edge>>> ();
-
-        this.verticesDemands = new Double[n+m];
+        this.verticesDemands = new double[n+m];
 
         for (int i=0;i<n+m;i++){
             if (i<n){
@@ -25,6 +25,16 @@ public class UncapacitedNetwork extends Network {
                 this.verticesDemands[i]=0;
             }
         }
+
+        for (int i=0;i<n+m;i++){
+            this.adjacencyList.add(new ArrayList<Edge>());
+            this.reverseAdjacencyList.add(new ArrayList<Edge>());
+            this.fromToList.add(new ArrayList<List<Edge>>());
+            for (int j=0;j<n+m;j++){
+                this.fromToList.get(i).add(new ArrayList<Edge>());
+            }
+        }
+
 
         int edgecounter = 0;
         for (int i =0; i<n;i++){
@@ -41,7 +51,9 @@ public class UncapacitedNetwork extends Network {
                 this.fromToList.get(edge.getDestination()).get(n+edgecounter).add(new Edge(edge.getDestination(),n+edgecounter,Integer.MAX_VALUE,0));
 
                 this.verticesDemands[n+edgecounter] = -edge.getCapacity();
-                this.verticesDemands[edge.getDestination()] += -edge.getCapacity(); 
+                this.verticesDemands[edge.getDestination()] += -edge.getCapacity();
+                
+                edgecounter++;
             }
         }
 

@@ -47,6 +47,15 @@ public class Network {
 //
 //		generateRandomData();
 //	}
+	public Network(){
+		// :) let me live fucking compiler
+		this.adjacencyList = new ArrayList<List<Edge>> ();
+        this.reverseAdjacencyList = new ArrayList<List<Edge>> ();
+        this.fromToList = new ArrayList<List<List<Edge>>> ();
+	}
+
+
+
 
 	public Network(List<List<Edge>> adjacencyList, double[] verticesDemands) {
 		if (adjacencyList == null || verticesDemands == null) {
