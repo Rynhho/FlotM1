@@ -115,7 +115,7 @@ public class Edge {
 	@Override
 	public String toString() {
 		String str = new String();
-		str += this.source + "->"+this.destination+" capacity: "+this.capacity+" cost: "+this.cost+" ("+this.reducedCost+")";
+		str += this.source + "->"+this.destination+" capacity: "+this.capacity+" ("+this.getResidualCapacity()+")"+" cost: "+this.cost+" ("+this.reducedCost+")";
 		return str;
 	}
 }

@@ -6,190 +6,157 @@ import optim.flow.infra.NetworkFileRepository;
 import optim.flow.infra.SolutionFileRepository;
 
 import java.util.List;
+import java.util.PriorityQueue;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Comparator;
 
 public class SandBox {
 	public static void main(String[] args) {
+//  		 double[] verticesDemand = {7, 8 , 2, 42, 1, 23, 9};
+//  		 HeapTree hp = new HeapTree(verticesDemand);
+//  		 System.out.println("ll");
+////  		hp.updateDist(5, 0);
+//  		hp.updateDist(2, -1);
+////  		hp.updateDist(6, 3);
+//  		System.out.println(hp.poll());
+//  		hp.updateDist(2, -2);
+//  		System.out.println(hp.poll());
+//  		hp.updateDist(0, 3);
+//  		System.out.println(hp.poll());
+//  		hp.updateDist(5, -2);
+//  		hp.updateDist(5, -3);
+//  		hp.updateDist(5, -4);
+//  		
+//  		System.out.println(hp);
+//  		System.out.println(hp.poll());
+//  		System.out.println(hp.poll());
+//  		System.out.println(hp);
+//  		System.out.println(hp.poll());
+//  		System.out.println(hp.poll());
+//  		System.out.println(hp.poll());
 
-		// double[][] capacityMatrix = { { 10, 12, 9, 0, 0 }, { 0, 0, 6, 0, 0 }, { 0, 0,
-		// 0, 15, 0 }, { 0, 0, 0, 0, 9 },
-		// { 0, 0, 0, 0, 0 } };
-		// double[][] costMatrix = { { -1, 0, 1, -10, 10 }, { 10, 10, -25, -10, -10 }, {
-		// 0, 0, 0, 5, 0 },
-		// { -10, -10, -1, 1, 3 }, { 0, 0, 0, 0, 0 } };
-  		// double[] verticesDemand = {7, 8 };
-
-		// double[][] optimal = { { 10, 1, 9, 0, 0 }, { 0, 0, 6, 0, 0 }, { 0, 0, 0, 15,
-		// 0 }, { 0, 0, 0, 0, 8 },
-		// { 0, 0, 0, 0, 0 } };
-		// double optimalCost = 20;
-
-		// List<List<Edge>> adjacenceList = new ArrayList<List<Edge>>();
-		// for (int i = 0; i < 2; i++) {
-		//	 adjacenceList.add(new ArrayList<Edge>());
-		// }
-		// adjacenceList.get(0).add(new Edge(0,1,0,0));
-		// for (int j = 0; j < 5; j++) {
-		// if (capacityMatrix[i][j] != 0) {
-		// adjacenceList.get(i).add(new Edge(j, capacityMatrix[i][j], costMatrix[i][j]
-		// ));
-		// }
-		// }
-		// }
-
-		// Network handNetwork = new Network(adjacenceList, verticesDemand);
-
-		Algorithm cplex = new CplexAlgorithm();
-		
+				
 		Repository<Network> networkRepository = new NetworkFileRepository();
 //		Network googleNet = networkRepository.load("Google");
 //		System.out.println(googleNet);
-		capacityScaling CS = new capacityScaling(); 
-		SuccessiveShortestPathAlgo SSP = new SuccessiveShortestPathAlgo();
+		Algorithm cplex = new CplexAlgorithm();
+		SuccessiveShortestPath SSP = new SuccessiveShortestPath();
+		capacityScaling CS = new capacityScaling();
+		EnhancedCapacityScaling ECS = new EnhancedCapacityScaling();
 
-		CostScaling CoS = new CostScaling();
-//		return;
-//				SuccessiveShortestPathAlgo();
+//				SuccessiveShortestPath();
 		Repository<ResidualNetwork> solRep = new SolutionFileRepository();
 //		System.out.println(Double.toString(googleNet.getEdge(4, 3).getCost()));
 //		ResidualNetwork n = new ResidualNetwork(googleNet);
-	
-//		
-//		System.out.println(ex);
-//		Dijkstra d = new Dijkstra();
-//		BellmanFord bellman = new BellmanFord();
-//		System.out.println(CS.addSinkAndSource(ex));
-//		bellman.solve(CS.addSinkAndSource(ex), 0);
-//		Network exSS = CS.addSinkAndSource(ex);
-//		for (int i = 0; i < exSS.getNbVertices(); i++) {
-//			for (Edge edge: exSS.getOutEdges(i)) {
-////				System.out.println(edge);
-//				edge.updateReducedCost(bellman.getDist().get(edge.getSource()) - bellman.getDist().get(edge.getDestination()));
-////				System.out.println(edge+"\n");
-//			}
-//		}
-//		ResidualNetwork exRN = new ResidualNetwork(exSS);
-//		System.out.println(d.solve(exRN, 0, 1));
-//		System.out.println(exRN);
-		
-//		System.out.println(sol);
-//		for (int i = 0; i < sol.getNbVertices(); i++) {
-//			System.out.println(sol.getVertexDemand(i));
-//			for (Edge edge: sol.getOutEdges(i)) {
-//				System.out.println(edge);
-//				edge.updateReducedCost(bellman.getDist().get(edge.getSource()) - bellman.getDist().get(edge.getDestination()));
-//				System.out.println(edge+"\n");
-//				if(sol.getFlow(edge) != 0 && sol.isInOriginalNet(edge))
-//					System.out.println(edge+ " flow: "+sol.getFlow(edge));
-//			}
-//		}
-//		NetworkFileRepository solRep = new NetworkFileRepository();
-		
+//	Z1
+//
+//	solution found by successive shortest path
+//	dijkstra count: 12
+//	time taken by SSP:1324
+//	1.2736645399E10 true
+//	Z2
+//
+//	solution found by successive shortest path
+//	dijkstra count: 49
+//	time taken by SSP:7477
+//	1.834984597E9 true
+//	Z3
+//
+//	solution found by successive shortest path
+//	dijkstra count: 786
+//	time taken by SSP:118 731
+//	2.956122454E9 true
+//
+//	Total error: 0
+//
+//	total time: 127823
+//	done
 		boolean test = true;
 		if(test) {
-			
-//			for (int i=1;i<=22;i++){
-//				Network net = networkRepository.load("A"+i);
-//				ResidualNetwork sol = CS.solve(net);
-//				solRep.save("A" + i +"SSP.sol", sol);
-//				System.out.println("SSP" + i +" : " + sol.getCost() + " "+sol.isFeasible()+ "\n");
-//	//			ResidualNetwork sol2 = solRep.load("A" + i +"CplexSol");
-//	//			System.out.println(sol2.getCost());
-//				
-//	//			System.out.println("Cplex" + i +" : " + net.getSolutionCost(sol2) + "\n");
-//			}
-//	
-//			Network net = networkRepository.load("Google");
-//			ResidualNetwork sol = CS.solve(net);
-//			sol.displayEdges();
-			String expectedResult = 
-					"1.3999986E9\n" + 
-					"5.7752234177E10\n" + 
-					"1.10803271214E11\n" + 
-					"1.56789569406E11\n" + 
-					"1.64661111914E11\n" + 
-					"4.30427916578E11\n" + 
-					"4.26441403222E11\n" + 
-					"5.09793469861E11\n" + 
-					"2.68388402126E11\n" + 
-					"3.09955345884E11\n" + 
-					"4.0323221232E11\n" + 
-					"2.09872787154E11\n" + 
-					"1.1805477067E11\n" + 
-					"1.67052688488E11\n" + 
-					"1.75177496328E11\n" + 
-					"3.57754256381E11\n" + 
-					"2.81924142006E11\n" + 
-					"5.8962995982E10\n" + 
-					"2.85381545026E11\n" + 
-					"1.48493862907E11\n" + 
-					"1.40049729897E11\n" + 
-					"1.40672231305E11";
-//			System.out.println(sol.getCost()+" "+sol.isFeasible());
 			boolean runSSP = true;
-			boolean runCS = true;
-			boolean runCoS = false;
+			boolean runCS = false;
+			boolean runECS = false;
+			int nbError = 0;
 			long totalTime = System.currentTimeMillis();
 			String[] examples = {"example", "example2", "Google"};
 			String result = "";
 			for (int i=1;i<=3;i++){
 				String toTest = 
-						examples[i-1];
+//						"G1";
+//						examples[i-1];
 //						"A"+i;
 //						"B"+i;
-//						"X"+i; //7.98017639E8
-//						"Z"+i;
-				System.out.println(toTest);
-				Network net = networkRepository.load(toTest);
-				Double costSSP = 0.; Double costCS = 0.; Double costCoS = 0.;
-//				net = (net.reduceNetwork());
-//				.displayEdges(false);
-//				System.out.println("end");
-//				net.displayEdges(false);
-//				System.out.println("network edges\n");
-//				net.displayEdges();
+//						"X"+i; //7.98017639E8, 6.0615313E7, 2.3434351E8
+						"Z"+i; //1.2736645399E10, 1.834984597E9, 2.956122454E9
+				System.out.println(toTest);				
+				Double costSSP = 0.; Double costCS = 0.;
 				
-//				ResidualNetwork sol2 = cplex.solve(net);
-//				solRep.save("A" + i +"CplexSol", sol2);
-				if(runCS) {
-					
-					System.out.println("\nsolution found by capacity scaling");
-					long timeStartCS = System.currentTimeMillis();
-					ResidualNetwork solCS = CS.solve(net);
-					System.out.println("time taken by CS:"+(System.currentTimeMillis()-timeStartCS));
-		//			solCS.displayEdges();
-					System.out.println(solCS.getCost()+" "+solCS.isFeasible());
-					costCS = solCS.getCost();
+//				Network netw = networkRepository.load(toTest);
+//				netw.displayEdges(true);
+//				long tim = System.currentTimeMillis();
+//				Network lala = netw.reduceNetwork();
+//				System.out.println("it took "+ (System.currentTimeMillis()-tim));
+//				System.out.println(netw.getNbEdges() - lala.getNbEdges() + " removed");
+				
+				if(runECS) {
+					System.out.println("\nsolution found by successive enhanced capacity scaling");
+					Network net = networkRepository.load(toTest);
+					System.out.println("loaded.");
+					long timeStartECS= System.currentTimeMillis();
+					ResidualNetwork solECS = ECS.solve(net);
+					System.out.println("time taken by SSP:"+(System.currentTimeMillis()-timeStartECS));
+					//			solSSP.displayEdges();
+					System.out.println(solECS.getCost()+" "+solECS.isFeasible());
+					costSSP = solECS.getCost();
 				}
 				if(runSSP) {					
 					System.out.println("\nsolution found by successive shortest path");
+					Network net = networkRepository.load(toTest);
+					System.out.println("loaded.");
 					long timeStartSSP = System.currentTimeMillis();
-					ResidualNetwork solSSP = SSP.solve(networkRepository.load(toTest));
+					ResidualNetwork solSSP = SSP.solve(net);
 					System.out.println("time taken by SSP:"+(System.currentTimeMillis()-timeStartSSP));
-		//			solSSP.displayEdges();
+//								solSSP.displayEdges(false);
 					System.out.println(solSSP.getCost()+" "+solSSP.isFeasible());
 					result += ""+solSSP.getCost()+"\n";
 					costSSP = solSSP.getCost();
+
 				}
-				if(runCoS) {
-					
-					System.out.println("\nsolution found by cost scaling");
-					long timeStartCoS = System.currentTimeMillis();
-					ResidualNetwork solCoS = CoS.solve(net);
-					System.out.println("time taken by CoS:"+(System.currentTimeMillis()-timeStartCoS));
-		//			solCoS.displayEdges();
-					System.out.println(solCoS.getCost()+" "+solCoS.isFeasible());
-					costCoS = solCoS.getCost();
+				if(runCS) {
+					System.out.println("\nsolution found by capacity scaling");
+					Network net = networkRepository.load(toTest);
+					System.out.println("loaded.");
+					long timeStartCS = System.currentTimeMillis();
+					ResidualNetwork solCS = CS.solve(net);
+					System.out.println("time taken by CS:"+(System.currentTimeMillis()-timeStartCS));
+//					solCS.displayEdges(false);
+					System.out.println(solCS.getCost()+" "+solCS.isFeasible());
+					costCS = solCS.getCost();
 				}
+//				if(runCoS) {
+//					
+//					System.out.println("\nsolution found by cost scaling");
+//					long timeStartCoS = System.currentTimeMillis();
+//					ResidualNetwork solCoS = CoS.solve(net);
+//					System.out.println("time taken by CoS:"+(System.currentTimeMillis()-timeStartCoS));
+//		//			solCoS.displayEdges();
+//					System.out.println(solCoS.getCost()+" "+solCoS.isFeasible());
+//					costCoS = solCoS.getCost();
+//				}
 				if(runCS && runSSP) {			
 					if(costSSP - costCS != 0) {
 						System.out.println("pb with costs SSP:"+ costSSP + " CS " + costCS+" \nSSP is better ? "+ (costSSP<costCS) );
-						System.out.println();
+						System.out.println("\n");
+						nbError++;
 //						return;
 					}
 				}
 //				net.displayEdges(false);
-			}			
+			}		
+			System.out.println("\nTotal error: "+nbError);
 			System.out.println("\ntotal time: "+ (System.currentTimeMillis()-totalTime));
 //			System.out.println();
 //			System.out.println("was expected: "+result.equals(expectedResult));
@@ -238,5 +205,22 @@ public class SandBox {
 		
 //		System.out.println("lala");
 //		CS.getFullGraph(googleNet);
+	}
+	
+	public String setDemandsEqualToProduction(Network net) {
+		
+		double[] verticesDemands = new double[net.getNbVertices()];
+		SuccessiveShortestPath SSP = new SuccessiveShortestPath();
+		ResidualNetwork solSSP = SSP.solve(net);
+		for (int j = 0; j < net.getNbVertices(); j++) {
+			if(net.getVertexDemand(j)>=0)
+				verticesDemands[j] = net.getVertexDemand(j);
+			else
+				verticesDemands[j] = Math.max(net.getVertexDemand(j), solSSP.getVertexFlowOut(j));
+//			System.out.println(net.getVertexDemand(j)+ " "+verticesDemands[j]);
+		}
+		net.setVerticesDemands(verticesDemands);
+		return ((NetworkFileRepository)new NetworkFileRepository()).getVertexProdDemand(net);
+//		save(toTest, net);
 	}
 }

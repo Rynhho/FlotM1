@@ -10,6 +10,7 @@ import optim.flow.domain.ResidualNetwork;
 public class capacityScaling implements Algorithm {
 	private double[] pi;
     private ResidualNetwork solution;
+//    private Network deltaNetwork;
     private double[] originalDemands;
     private double delta;
     private double U; // U is an upper bound on the largest supply/demand and largest capacity in the network
@@ -26,6 +27,7 @@ public class capacityScaling implements Algorithm {
     		this.solution = new ResidualNetwork(network);
     	initialize();
     	int dijkstraCount = 0;
+//    	this.deltaNetwork = generateDeltaNetwork();
     	
 		while(delta>=1) {
 			saturateNegativeCostEdges();
@@ -37,6 +39,8 @@ public class capacityScaling implements Algorithm {
 				updateProviderDemanderSets();
 			}
 			this.delta = this.delta/2;
+//			updateDetlaNetwork();
+//			updateDetlaGraph();
 			
 		}
 		System.out.println("dijkstra used: " + dijkstraCount);
@@ -98,7 +102,7 @@ public class capacityScaling implements Algorithm {
 			for(Edge edge: solution.getOutEdges(i)) {					
 					edge.updateReducedCost2( -pi[edge.getSource()] + pi[edge.getDestination()]);
 					if(edge.getReducedCost() < 0 && edge.getResidualCapacity() > delta) {
-						throw new IllegalArgumentException("residual capacity sould not be negative.");
+						throw new IllegalArgumentException("residual capacity should not be negative.");
 					}
 			}
     	}
@@ -138,7 +142,7 @@ public class capacityScaling implements Algorithm {
 		}
 		this.ProviderS = new ArrayList<Integer>();
     	this.DemanderT = new ArrayList<Integer>();
-		
+//		this.deltaNetwork = generateDeltaNetwork();
 		
 	}
 	public Network addSinkAndSource(Network network) {
@@ -170,7 +174,6 @@ public class capacityScaling implements Algorithm {
 		}
     	return new Network(Edges, verticesDemands);
     }
-//	
 	private void removeSourceAndSink() {
     	List<List<Edge>> adjacencyList = new ArrayList<>();
     	for (int i = 2; i < this.solution.getNbVertices(); i++) {
@@ -183,5 +186,34 @@ public class capacityScaling implements Algorithm {
 		}
     	this.solution = new ResidualNetwork(new Network(adjacencyList, this.originalDemands)); 
     }
+	
+	public Network generateDeltaNetwork() {
+    	boolean isEmpty = true;
+    	double[] verticesDemands = new double[this.solution.getNbVertices()];
+    	List<List<Edge>> adjacencyList = new ArrayList<>();
+    	for(int i=0; i<solution.getNbVertices(); i++) {
+    		adjacencyList.add(new ArrayList<Edge>());
+    		for(Edge edge: solution.getOutEdges(i)) {
+				if(edge.getCapacity() >= delta && edge.getCapacity() < 2*delta) {
+					isEmpty = false;
+					adjacencyList.get(i).add(edge);
+				}
+			}
+    	}
+    	if(isEmpty)
+    		return null;
+    	return new Network(adjacencyList, verticesDemands);
+    }
+	
+	private void updateDetlaNetwork() {
+		for(int i=0; i<solution.getNbVertices(); i++) {
+			for(Edge edge: solution.getOutEdges(i)) {
+				if(edge.getCapacity() >= delta && edge.getCapacity() < 2*delta) {
+					this.solution.addEdge(edge, true);
+				}
+			}
+    	}
+	}
+	
 }
 

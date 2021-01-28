@@ -1,7 +1,9 @@
 package optim.flow.domain.algorithms;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 import optim.flow.domain.Edge;
 import optim.flow.domain.Network;
@@ -12,6 +14,7 @@ public class BellmanFord {
 	double[] dist;
 	List<Integer> predecessor;
 	int start;
+	Queue<Integer> queue = new LinkedList<Integer>();
 	
 	public void initialize(Network network, int start) {
 		this.network = network;
@@ -36,17 +39,17 @@ public class BellmanFord {
 			this.predecessor.add(-1);
 		}
 		this.dist[this.start] = 0.0;
+		this.queue.offer(this.start);
 	}
 	
 	public boolean solve(Network network, int start) {
 		initialize(network, start);
 		initializeLists();
 		
-		for (int i = 0; i < network.getNbVertices(); i++) {
-			for (int j = 0; j < network.getNbVertices(); j++) {
-				for(Edge edge:network.getOutEdges(j)) {
-					relaxe(edge);
-				}
+		while(!this.queue.isEmpty()) {
+			for(Edge edge:this.network.getOutEdges(this.queue.poll())) {
+				relaxe(edge);
+				
 			}
 		}
 		
@@ -66,6 +69,7 @@ public class BellmanFord {
 		if (this.dist[destination] > distSource + edge.getCost()) {
 			this.dist[edge.getDestination()] = distSource + edge.getCost();
 			this.predecessor.set(destination, source); 
+			this.queue.offer(edge.getDestination());
 		}
 	}
 }
