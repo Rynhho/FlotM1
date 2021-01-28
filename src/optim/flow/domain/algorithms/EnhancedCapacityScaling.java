@@ -1,4 +1,4 @@
-package optim.flow.domain.algorithms;
+ package optim.flow.domain.algorithms;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,9 +10,11 @@ import optim.flow.domain.ResidualNetwork;
 
 public class EnhancedCapacityScaling implements Algorithm {
 	private double[] pi;
-    private ResidualNetwork solution;
+	private ResidualNetwork solution;
+	private int[] referentChef;
 //    private double[] originalDemands;
-    HashMap<Edge, Boolean> isAbundant;
+	HashMap<Edge, Boolean> isAbundant;
+	List<List<Edge>> abundantAdjacencyList;
     private double[] imbalanceE;
     private double delta;
     
@@ -29,6 +31,21 @@ public class EnhancedCapacityScaling implements Algorithm {
 			for(Edge edge:this.solution.getOutEdges(maxImbalanceIndex)) {
 				if(edge.getFlow() >= 8*this.solution.getNbVertices()) {	
 					this.isAbundant.replace(edge, true);
+					
+					d=edge.getDestination();
+					s=edge.getSource();
+
+					this.abundantAdjacencyList.get(s).add(edge);
+
+					if (referentChef[d]!=referentChef[s]){
+						if (d>s){
+							referentChef[d]=s;
+							mergeAlong(getAbundantPath(s,d));
+						}else{
+							referentChef[s]=d;
+							mergeAlong(getAbundantPath(d,s));
+						}
+					}
 				}
 //				update abundantComponents and reinstate the imbalance property?
 			}
@@ -58,12 +75,16 @@ public class EnhancedCapacityScaling implements Algorithm {
 	
 	public void initialize(Network network) {
 		this.isAbundant = new HashMap<Edge, Boolean>();
+		this.abundantAdjacencyList = new List<List<Edge>>();
 		this.solution = new ResidualNetwork(network);
 		this.dijkstra = new Dijkstra();
 		this.delta = 0;
 		this.pi = new double[solution.getNbVertices()];
 		this.imbalanceE = new double[solution.getNbVertices()];
+		this.referentChef = new int[solution.getNbVertices()];
 		for (int i = 0; i < solution.getNbVertices(); i++) {
+			this.abundantAdjacencyList.add(new List<Edge>());
+			this.referentChef[i]=i;
     		this.pi[i] = 0;
     		this.imbalanceE[i] = this.solution.getNodeImbalance(i);
     		this.delta = Math.max(Math.abs(this.imbalanceE[i]), delta);
@@ -136,5 +157,18 @@ public class EnhancedCapacityScaling implements Algorithm {
 					edge.updateReducedCost( -pi[edge.getSource()] + pi[edge.getDestination()]);
 			}
     	}
-    }
+	}
+	
+	private List<Edge> getAbundantPath(int referent,int subaltern){
+		
+		ResidualNetwork abundantNetwork = new ResidualNetwork(new Network(abundantAdjacencyList,imbalanceE));
+		dijkstra.setDelta(0);
+		if (imbalanceE[subaltern]>0){
+			List<Edge> Path = dijkstra.solve(abundantNetwork, subaltern, referent);
+		}else{
+			
+		}
+
+		return new List<Edge>();
+	}
 }

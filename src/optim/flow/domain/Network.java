@@ -252,6 +252,10 @@ public class Network {
 		return this.maxCost;
 	}
 
+	public List<List<Edge>> getAdjacencyList() {
+		return this.adjacencyList;
+	}
+
 	public double getMaxDemand() {
 		return this.maxDemand;
 	}
