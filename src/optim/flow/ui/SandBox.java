@@ -74,6 +74,8 @@ public class SandBox {
 //
 //	total time: 127823
 //	done
+		
+		
 		boolean test = true;
 		if(test) {
 			boolean runSSP = true;
@@ -163,6 +165,17 @@ public class SandBox {
 //			if(!result.contentEquals(expectedResult)) {
 //				System.out.println("expected Result:\n"+expectedResult+"\nResult:\n"+result);
 //			}
+//		}
+		NetworkFileRepository solRep = new NetworkFileRepository();
+
+		for (int i=1;i<=22;i++){
+			Network net = networkRepository.load("A"+i);
+//			ResidualNetwork sol2 = cplex.solve(net);
+			ResidualNetwork sol = algo1.solve(net);
+			solRep.save("A" + i +"SSP.sol", sol);
+			solRep.save("A" + i +"CplexSol", sol2);
+			System.out.println("SSP" + i +" : " + net.getSolutionCost(sol) + "\n");
+			System.out.println("Cplex" + i +" : " + net.getSolutionCost(sol2) + "\n");
 		}
 		System.out.println("done");
 	
@@ -222,5 +235,6 @@ public class SandBox {
 		net.setVerticesDemands(verticesDemands);
 		return ((NetworkFileRepository)new NetworkFileRepository()).getVertexProdDemand(net);
 //		save(toTest, net);
+	}
 	}
 }
