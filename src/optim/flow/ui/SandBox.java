@@ -6,41 +6,15 @@ import optim.flow.infra.NetworkFileRepository;
 import optim.flow.infra.SolutionFileRepository;
 
 import java.util.List;
+import java.util.PriorityQueue;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Comparator;
 
 public class SandBox {
 	public static void main(String[] args) {
-
-		// double[][] capacityMatrix = { { 10, 12, 9, 0, 0 }, { 0, 0, 6, 0, 0 }, { 0, 0,
-		// 0, 15, 0 }, { 0, 0, 0, 0, 9 },
-		// { 0, 0, 0, 0, 0 } };
-		// double[][] costMatrix = { { -1, 0, 1, -10, 10 }, { 10, 10, -25, -10, -10 }, {
-		// 0, 0, 0, 5, 0 },
-		// { -10, -10, -1, 1, 3 }, { 0, 0, 0, 0, 0 } };
-  		// double[] verticesDemand = {7, 8 };
-
-		// double[][] optimal = { { 10, 1, 9, 0, 0 }, { 0, 0, 6, 0, 0 }, { 0, 0, 0, 15,
-		// 0 }, { 0, 0, 0, 0, 8 },
-		// { 0, 0, 0, 0, 0 } };
-		// double optimalCost = 20;
-
-		// List<List<Edge>> adjacenceList = new ArrayList<List<Edge>>();
-		// for (int i = 0; i < 2; i++) {
-		//	 adjacenceList.add(new ArrayList<Edge>());
-		// }
-		// adjacenceList.get(0).add(new Edge(0,1,0,0));
-		// for (int j = 0; j < 5; j++) {
-		// if (capacityMatrix[i][j] != 0) {
-		// adjacenceList.get(i).add(new Edge(j, capacityMatrix[i][j], costMatrix[i][j]
-		// ));
-		// }
-		// }
-		// }
-
-		// Network handNetwork = new Network(adjacenceList, verticesDemand);
-
-		Algorithm cplex = new CplexAlgorithm();
-		
 		Repository<Network> networkRepository = new NetworkFileRepository();
 //		Network googleNet = networkRepository.load("Google");
 //		System.out.println(googleNet);
@@ -213,7 +187,18 @@ public class SandBox {
 //		Solution sol = algo1.solve(googleNet);
 		// System.out.println(googleNet.getEdge(2, 4).getCost());
 		
-//		System.out.println("lala");
-//		algo1.getFullGraph(googleNet);
+// 		double[] verticesDemands = new double[net.getNbVertices()];
+// 		SuccessiveShortestPath SSP = new SuccessiveShortestPath();
+// 		ResidualNetwork solSSP = SSP.solve(net);
+// 		for (int j = 0; j < net.getNbVertices(); j++) {
+// 			if(net.getVertexDemand(j)>=0)
+// 				verticesDemands[j] = net.getVertexDemand(j);
+// 			else
+// 				verticesDemands[j] = Math.max(net.getVertexDemand(j), solSSP.getVertexFlowOut(j));
+// //			System.out.println(net.getVertexDemand(j)+ " "+verticesDemands[j]);
+// 		}
+// 		net.setVerticesDemands(verticesDemands);
+// 		return ((NetworkFileRepository)new NetworkFileRepository()).getVertexProdDemand(net);
+// //		save(toTest, net);
 	}
 }

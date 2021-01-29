@@ -127,7 +127,7 @@ public class CostScaling implements Algorithm {
     	BellmanFord bf = new BellmanFord();
     	Network net =new Network(Edges, verticesDemands);
     	bf.solve(net, 0);
-//    	this.pi = bf.getDist();
+    	this.pi = bf.getDist();
     	return net;
     }
 

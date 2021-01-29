@@ -56,6 +56,16 @@ public class NetworkFileRepository implements Repository<Network> {
             e.printStackTrace();
         }
     }
+    
+    public String getVertexProdDemand(Network network){
+    	String str = "";
+    	for (int vertex = 0; vertex < network.getNbVertices(); ++vertex) {
+            if (network.getVertexDemand(vertex)!=0){
+                str += "n " + (vertex) + " " + network.getVertexDemand(vertex) + "\n";
+            }
+        }
+    	return str;
+    }
 
     @Override
     public Network load(String ID) {
@@ -117,7 +127,6 @@ public class NetworkFileRepository implements Repository<Network> {
             }
 
             reader.close();
-            System.out.printf("ta mere en slip " + adjacencyList.size() + "\n");
             network = new Network(adjacencyList, verticesDemand);
         } catch (FileNotFoundException e) {
             e.printStackTrace();

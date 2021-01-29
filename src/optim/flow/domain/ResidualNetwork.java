@@ -7,7 +7,7 @@ public class ResidualNetwork extends Network {
 	private final Network network;
 	private final int nbEdges;
 
-	private final Map<Edge, Edge> oppositeEdgesMap;
+//	private final Map<Edge, Edge> oppositeEdgesMap;
 
 	private final double[] verticesFlowIn;
 	private final double[] verticesFlowOut;
@@ -15,107 +15,106 @@ public class ResidualNetwork extends Network {
 	private int solutionCost;
 
 	public ResidualNetwork(Network network) {
-		
-		super(network);
-		
+		super(network, true);
 		this.network = network;
 		this.nbEdges = 2 * network.nbEdges;
 
-		this.oppositeEdgesMap = new HashMap<Edge, Edge>();
+//		this.oppositeEdgesMap = new HashMap<Edge, Edge>();
 
-		for (int source = 0; source < network.nbVertices; ++source) {
-			final int s = source;
-			network.getOutEdges(source).stream().forEach(edge -> {
-				Edge oppositeEdge = new Edge(edge.getDestination(), s, 0, 0, 0, true);
-
-				this.adjacencyList.get(edge.getDestination()).add(oppositeEdge);
-
-				this.oppositeEdgesMap.put(edge, oppositeEdge);
-				this.oppositeEdgesMap.put(oppositeEdge, edge);
-				
-			});
-		}
+//		for (int source = 0; source < network.nbVertices; ++source) {
+//			final int s = source;
+//			network.getOutEdges(source).stream().forEach(edge -> {
+//				Edge oppositeEdge = new Edge(edge.getDestination(), s, 0, 0, 0, true);
+//
+//				this.adjacencyList.get(edge.getDestination()).add(oppositeEdge);
+//
+//				this.oppositeEdgesMap.put(edge, oppositeEdge);
+//				this.oppositeEdgesMap.put(oppositeEdge, edge);
+//			});
+//		}
 
 		this.verticesFlowIn = new double[this.nbVertices];
 		this.verticesFlowOut = new double[this.nbVertices];
 
 		this.solutionCost = 0;
-	}
-
-	public ResidualNetwork(Network network, double[][] flowMatrix) {
-		
-		this(network);
-
-		if (flowMatrix.length != this.nbVertices) {
-			throw new IllegalArgumentException("Network and flow matrix don't have the same number of vertices.\n");
-		}
-		// for (int source = 0; source < this.nbVertices; ++source) {
-		// 	this.adjacencyList.get(source).forEach(edge -> {
-		// 		addFlow(edge, flowMatrix[edge.getSource()][edge.getDestination()]);
-		// 	});
-		// }
-		// dans ce nouvel opus de : "les iterator, cette belle invension", "supprimer et rajouter des elements de la liste que tu parcour, c'est pas une bonne idee :)"
-
-		for (int source = 0; source < this.nbVertices; source++) {
-			for (int dst = 0; dst < this.nbVertices; dst++) {
-				for (int edge=0 ; edge < adjacencyList.get(source).size(); edge++){
-					if (adjacencyList.get(source).get(edge).getDestination()==dst){
-						addFlow(adjacencyList.get(source).get(edge), flowMatrix[source][dst]);
-					}
-				}
-			}
-		}
-		//comme on crée et suprime des aretes avec addFlow, les indices se melangent ce qui gene le parcour :) donc 3 boucles for pour 3 x + de fun
+		updateFlowInOut();
 	}
 	
 	public Edge getOppositeEdge(Edge edge) {
-		return this.oppositeEdgesMap.get(edge);
+		return edge.getOppositeEdge();
 	}
 	
 	public boolean isInOriginalNet(Edge edge) {
-		return this.network.hasEdgeBetween(edge.getSource(), edge.getDestination());
+		return !edge.isResidual();
 	}
 
 	public double getFlow(Edge edge) {
-//		if (this.network.hasEdgeBetween(edge.getSource(), edge.getDestination())) {
-//			throw new IllegalArgumentException(
-//					"ResidualNetwork::getFlow: edge parameter must be present in the principal network.\n");
-//		}
-
-		// Principal network's edge's capacity - this network's edges's capacity
-		// may cause bug if edge is in residual (?)
-		for(Edge e:this.network.getEdges(edge.getSource(), edge.getDestination())) {
-			if(e.isResidual() == edge.isResidual()) {
-				return e.getCapacity() - edge.getCapacity();
-			}
-		}
-		return 0;
+		return edge.getFlow();
 	}
 
 	public Network getNetwork() {
 		return this.network;
 	}
 	
+	public double getCost() {
+		double cost=0;
+		for (int i = 0; i < this.getNbVertices(); i++) {
+			for (Edge edge: this.getOutEdges(i)) {
+				if(!edge.isResidual())
+						cost+= edge.getCost()*edge.getFlow();
+			}
+		}
+		return cost;
+	}
+	
+	public void updateFlowInOut() {
+		for (int i = 0; i < this.getNbVertices(); i++) {
+			double flow = 0;
+			for(Edge edge:this.getInEdges(i) ){
+				if(!edge.isResidual())
+					flow+=edge.getFlow();
+			}
+			this.verticesFlowIn[i] = flow;
+			flow = 0;
+			for(Edge edge:this.getOutEdges(i)) {
+				if(!edge.isResidual())
+					flow-=edge.getFlow();
+			}
+			this.verticesFlowOut[i] = flow;
+		}
+	}
+	
+	public boolean isFeasible() {
+		boolean isFeasible = true;
+		for (int i = 0; i < this.getNbVertices(); i++) {
+			double flowRemaing = -this.getVertexDemand(i);
+			for(Edge edge:this.getInEdges(i) ){
+				if(edge.getFlow()>edge.getCapacity()) {					
+					System.out.println("flow of edge ("+edge.getSource()+","+edge.getDestination()+") = "+edge.getFlow()+" > capacity = "+edge.getCapacity());
+					isFeasible = false;
+				}
+				if(!edge.isResidual())
+					flowRemaing+=edge.getFlow();
+			}
+			for(Edge edge:this.getOutEdges(i)) {
+				if(!edge.isResidual())
+					flowRemaing-=edge.getFlow();
+			}
+			if(flowRemaing != 0) {
+				System.out.println(flowRemaing +" remaining in vertex "+i+" should be 0.");
+				isFeasible = false;
+			}
+		}
+		return isFeasible;
+	}
+	
+	public double getNodeImbalance(int vertex) {
+		double flowRemaing = -this.getVertexDemand(vertex)+this.verticesFlowIn[vertex]-this.verticesFlowOut[vertex];
+		return flowRemaing;	
+	}
+	
 	public void addFlow(Edge edge, double flow) {
-		
-		Edge newEdge = new Edge(edge.getSource(), edge.getDestination(), edge.getCapacity() - flow, edge.getCost(), edge.getReducedCost(), edge.isResidual());
-
-		Edge oppositeEdge = oppositeEdgesMap.get(edge);
-		Edge newOppositeEdge = new Edge(oppositeEdge.getSource(), oppositeEdge.getDestination(),
-				oppositeEdge.getCapacity() + flow, oppositeEdge.getCost(), oppositeEdge.getReducedCost(), oppositeEdge.isResidual());
-
-		this.adjacencyList.get(edge.getSource()).remove(edge);
-		this.adjacencyList.get(oppositeEdge.getSource()).remove(oppositeEdge);
-
-		this.adjacencyList.get(edge.getSource()).add(newEdge);
-		this.adjacencyList.get(oppositeEdge.getSource()).add(newOppositeEdge);
-
-		this.oppositeEdgesMap.remove(edge);
-		this.oppositeEdgesMap.remove(oppositeEdge);
-
-		this.oppositeEdgesMap.put(newEdge, newOppositeEdge);
-		this.oppositeEdgesMap.put(newOppositeEdge, newEdge);
-
+		edge.addFlow(flow);
 		this.verticesFlowOut[edge.getSource()] += flow;
 		this.verticesFlowIn[edge.getDestination()] += flow;
 	}

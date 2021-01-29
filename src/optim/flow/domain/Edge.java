@@ -4,11 +4,14 @@ public class Edge {
 	private int source;
 	private int destination;
 
-	private double reducedCost;
 	private double capacity;
 	private double cost;
-	private boolean isResidual;
 
+	private double reducedCost;
+	private boolean isResidual;
+	private double flow;
+	private Edge oppositeEdge;
+	
 	public Edge(int source, int destination, double capacity, double cost) {
 		this.source = source;
 		this.destination = destination;
@@ -17,23 +20,55 @@ public class Edge {
 		this.cost = cost;
 		this.reducedCost = cost;
 		this.isResidual = false;
+		this.oppositeEdge = new Edge(destination, source, capacity, -cost, this);
 	}
+	
+	private Edge(int source, int destination, double capacity, double cost, Edge oppositeEdge) {
+		this.source = source;
+		this.destination = destination;
+
+		this.capacity = capacity;
+		this.cost = cost;
+		this.reducedCost = cost;
+		this.isResidual = true;
+		this.flow = capacity;
+		this.oppositeEdge = oppositeEdge;
+	}
+	
 	public Edge(int source, int destination, double capacity, double cost, double reducedcost) {
-		this.source = source;
-		this.destination = destination;
-
-		this.capacity = capacity;
-		this.cost = cost;
+		this(source, destination, capacity, cost);
 		this.reducedCost = reducedcost;
 	}
-	public Edge(int source, int destination, double capacity, double cost, double reducedcost, boolean isResidual) {
-		this.source = source;
-		this.destination = destination;
-
-		this.capacity = capacity;
-		this.cost = cost;
-		this.reducedCost = reducedcost;
-		this.isResidual = isResidual;
+	public Edge(int source, int destination, double capacity, double cost, double reducedcost, double flow) {
+		this(source, destination, capacity, cost, reducedcost);
+		this.addFlow(flow);
+	}
+	
+	public Edge getOppositeEdge() {
+		return this.oppositeEdge;
+	}
+	
+	public void setReducedCost(double reducedCost) {
+		this.reducedCost = reducedCost;
+	}
+	
+	public double getFlow() {
+		return this.flow;
+	}
+	
+	public double getResidualCapacity() {
+		return this.getCapacity() - this.getFlow();
+	}
+	public void addFlow(double toAdd) {
+		this.flow += toAdd;
+		this.oppositeEdge.flow -= toAdd;
+		if(this.flow < 0 || this.oppositeEdge.flow < 0) {
+			if(this.flow<0)
+				System.out.println(this + "flow: "+this.getFlow()+ " is residual? "+ this.isResidual());
+			else
+			System.out.println("opposite edge "+this.getOppositeEdge() + "flow: "+this.getOppositeEdge().getFlow()+ " is residual? "+ this.isResidual());
+			throw new IllegalArgumentException("Flow must be not negative.\n");
+		}
 	}
 	
 	public boolean isResidual() {
@@ -46,6 +81,10 @@ public class Edge {
 	
 	public void updateReducedCost(double toAdd) {
 		this.reducedCost += toAdd;
+	}
+	
+	public void updateReducedCost2(double toAdd) {
+		this.reducedCost = this.getCost() + toAdd;
 	}
 	
 	public int getSource() {
@@ -76,7 +115,7 @@ public class Edge {
 	@Override
 	public String toString() {
 		String str = new String();
-		str += this.source + "->"+this.destination+" capacity: "+this.capacity+" cost: "+this.cost+" ("+this.reducedCost+")";
+		str += this.source + "->"+this.destination+" capacity: "+this.capacity+" ("+this.getResidualCapacity()+")"+" cost: "+this.cost+" ("+this.reducedCost+")";
 		return str;
 	}
 }
