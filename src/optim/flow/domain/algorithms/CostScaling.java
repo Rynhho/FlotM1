@@ -3,15 +3,13 @@ package optim.flow.domain.algorithms;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.lang.model.util.ElementFilter;
-
 import optim.flow.domain.Edge;
 import optim.flow.domain.Network;
 import optim.flow.domain.ResidualNetwork;
 
 public class CostScaling implements Algorithm {
 
-	private List<Double> pi;
+	private double[] pi;
     private ResidualNetwork solution;
     private double eps;
 
@@ -21,7 +19,7 @@ public class CostScaling implements Algorithm {
     	for(int i=0; i<solution.getNbVertices(); i++) {
 			for(Edge edge: solution.getOutEdges(i)) {
 				if(edge.getResidualCapacity()>0) {
-					edge.updateReducedCost( this.pi.get(edge.getSource()) - this.pi.get(edge.getDestination()));
+					edge.updateReducedCost( this.pi[edge.getSource()] - this.pi[edge.getDestination()]);
 					this.solution.getOppositeEdge(edge).updateReducedCost(-this.solution.getOppositeEdge(edge).getReducedCost());
 				}
 			}
@@ -30,21 +28,31 @@ public class CostScaling implements Algorithm {
 
 
     public ResidualNetwork solve(Network network) {
-        this.solution = new ResidualNetwork(addSinkAndSource(network));
+        this.solution = new ResidualNetwork(network);
         initReducedCostResidualTo0();
 
-        this.pi = new ArrayList<Double>();
+        this.pi = new double[this.solution.getNbVertices()];
         for (int i = 0; i < this.solution.getNbVertices(); i++) {
-            this.pi.add(0.);
+            this.pi[i] = 0.;
         }
         this.eps = solution.getMaxCost();
         
         reduceCost();
+        FeasableFlowProblem feasableFlowProblem = new FeasableFlowProblem();
+        this.solution = feasableFlowProblem.solve(network);
+        
+        
+        //System.out.println(network);
+        //System.out.println(this.solution);
+        //network.displayEdges(false);
+        //this.solution.displayEdges(true);
         if (!this.solution.isFeasible()){
             System.out.println("Error Solution is not feasible!");
         }
 
-        while (this.eps >= 1/network.getNbVertices()) {
+        System.out.println("Eps= "+eps+"!");
+
+        while (this.eps >= 1.0/network.getNbVertices()) {
             improveApproximation();
             this.eps = this.eps/2;
         }
@@ -57,9 +65,13 @@ public class CostScaling implements Algorithm {
 			for(Edge edge: solution.getOutEdges(i)) {
 				if(edge.getReducedCost()>0) {
                     this.solution.addFlow(edge, -edge.getFlow());
+                    //updatePi();
+			        //reduceCost();
                 }
                 else if(edge.getReducedCost()<0) {
                     this.solution.addFlow(edge, edge.getCapacity()-edge.getFlow());
+                    //updatePi();
+			        //reduceCost();
 				}
 			}
         }
@@ -82,7 +94,8 @@ public class CostScaling implements Algorithm {
         boolean containsAdmissibleArc = false;
         
         for (Edge edge : arcs) {
-            if(-this.eps/2 <= edge.getReducedCost() && edge.getReducedCost() < 0 ){
+            if(-this.eps/2.0 <= edge.getReducedCost() && edge.getReducedCost() < 0 ){
+                System.out.println("here!");
                 containsAdmissibleArc = true;
                 double delta = Math.min(this.solution.getNodeImbalance(i), edge.getResidualCapacity());
                 this.solution.addFlow(edge, delta);
@@ -90,7 +103,8 @@ public class CostScaling implements Algorithm {
             }
         }
         if (!containsAdmissibleArc){
-            this.pi.set(i, this.pi.get(i) + this.eps);
+            this.pi[i] =  this.pi[i] + this.eps/2;
+            reduceCost();
         }
     }
 
