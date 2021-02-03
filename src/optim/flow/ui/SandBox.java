@@ -166,17 +166,17 @@ public class SandBox {
 //				System.out.println("expected Result:\n"+expectedResult+"\nResult:\n"+result);
 //			}
 //		}
-		NetworkFileRepository solRep = new NetworkFileRepository();
-
-		for (int i=1;i<=22;i++){
-			Network net = networkRepository.load("A"+i);
-//			ResidualNetwork sol2 = cplex.solve(net);
-			ResidualNetwork sol = algo1.solve(net);
-			solRep.save("A" + i +"SSP.sol", sol);
-			solRep.save("A" + i +"CplexSol", sol2);
-			System.out.println("SSP" + i +" : " + net.getSolutionCost(sol) + "\n");
-			System.out.println("Cplex" + i +" : " + net.getSolutionCost(sol2) + "\n");
-		}
+//		NetworkFileRepository solRep = new NetworkFileRepository();
+//
+//		for (int i=1;i<=22;i++){
+//			Network net = networkRepository.load("A"+i);
+////			ResidualNetwork sol2 = cplex.solve(net);
+//			ResidualNetwork sol = algo1.solve(net);
+//			solRep.save("A" + i +"SSP.sol", sol);
+//			solRep.save("A" + i +"CplexSol", sol2);
+//			System.out.println("SSP" + i +" : " + net.getSolutionCost(sol) + "\n");
+//			System.out.println("Cplex" + i +" : " + net.getSolutionCost(sol2) + "\n");
+//		}
 		System.out.println("done");
 	
 //		System.out.println(bellman.getDist());
@@ -220,6 +220,7 @@ public class SandBox {
 //		CS.getFullGraph(googleNet);
 	}
 	
+	}
 	public String setDemandsEqualToProduction(Network net) {
 		
 		double[] verticesDemands = new double[net.getNbVertices()];
@@ -235,6 +236,5 @@ public class SandBox {
 		net.setVerticesDemands(verticesDemands);
 		return ((NetworkFileRepository)new NetworkFileRepository()).getVertexProdDemand(net);
 //		save(toTest, net);
-	}
 	}
 }

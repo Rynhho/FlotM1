@@ -11,9 +11,6 @@ import java.util.stream.IntStream;
 import optim.flow.domain.Edge;
 import optim.flow.domain.Network;
 import optim.flow.domain.ResidualNetwork;
-import optim.flow.ui.HeapNode;
-import optim.flow.ui.HeapTree;
-
 public class Dijkstra {
 	private Network network;
 	private List<Integer> VerticesAvailable;
@@ -161,20 +158,6 @@ public class Dijkstra {
 			this.distances[i] = this.distances[this.end];
 		}
 	}
-		private void setVerticesTemporarlyLabeled(HeapNode node) {
-		if(node == null)
-			return;
-		this.distances[node.getValue()] = this.distances[this.end];
-		for(HeapNode son:node.getSons()) {
-			if(son == node || this.distances[node.getValue()] != this.distances[this.end])
-				throw new IllegalArgumentException("son == node boloss");
-//				System.out.println("pb");
-			else
-				setVerticesTemporarlyLabeled(son);
-		}
-		
-	}
-
 
 	// used in capacityScaling algorithm.
 //	public List<Edge> solveWithDelta(Network network, int start, int end, double delta) {
