@@ -37,41 +37,42 @@ public class EnhancedCapacityScaling implements Algorithm {
 			if(this.imbalanceE[maxImbalanceIndex] <= this.delta/(8*this.solution.getNbVertices()))
 				this.delta = imbalanceE[maxImbalanceIndex];			
 			for(Edge edge:this.solution.getOutEdges(maxImbalanceIndex)) {
-				if(edge.getFlow() >= 8*this.solution.getNbVertices()) {	
-					this.isAbundant.replace(edge, true);
-					
-					d=edge.getDestination();
-                    s=edge.getSource();
-                    rd=referentChef[d];
-                    rs=referentChef[s];
+				if(edge.getFlow() >= 8*this.solution.getNbVertices()) {
+					if(this.isAbundant(edge)==false){
+						this.isAbundant.replace(edge, true);
+						
+						d=edge.getDestination();
+						s=edge.getSource();
+						rd=referentChef[d];
+						rs=referentChef[s];
 
-					this.abundantAdjacencyList.get(s).add(edge);
+						this.abundantAdjacencyList.get(s).add(edge);
 
-					if (rd!=rs){
-						if (rd>rs){
-							for (int i=0;i<network.getNbVertices();i++){
-                                if (referentChef[i]==rd){
-                                    referentChef[i]=rs;
-                                    pathToReferentChef.get(i).add(edge);
-                                    for (int c=0;c<pathToReferentChef.get(s).size();c++){
-                                        pathToReferentChef.get(i).add(pathToReferentChef.get(s).get(c));
-                                    }
-                                }
-                            }
-							moveImbalence(rd);
-						}else{
-							if (referentChef[i]==rs){
-                                referentChef[i]=rd;
-                                pathToReferentChef.get(i).add(edge);
-                                for (int c=0;c<pathToReferentChef.get(d).size();c++){
-                                    pathToReferentChef.get(i).add(pathToReferentChef.get(d).get(c));
-                                }
-                            }
-							moveImbalence(rs);
+						if (rd!=rs){
+							if (rd>rs){
+								for (int i=0;i<network.getNbVertices();i++){
+									if (referentChef[i]==rd){
+										referentChef[i]=rs;
+										pathToReferentChef.get(i).add(edge);
+										for (int c=0;c<pathToReferentChef.get(s).size();c++){
+											pathToReferentChef.get(i).add(pathToReferentChef.get(s).get(c));
+										}
+									}
+								}
+								moveImbalence(rd);
+							}else{
+								if (referentChef[i]==rs){
+									referentChef[i]=rd;
+									pathToReferentChef.get(i).add(edge);
+									for (int c=0;c<pathToReferentChef.get(d).size();c++){
+										pathToReferentChef.get(i).add(pathToReferentChef.get(d).get(c));
+									}
+								}
+								moveImbalence(rs);
+							}
 						}
 					}
 				}
-//				update abundantComponents and reinstate the imbalance property?
 			}
 			while(getMaxImbalanceIndex() >= (this.solution.getNbVertices()-1)*this.delta/this.solution.getNbVertices()) {
 				addDeltaFlowAlong(getValidPath());
@@ -82,10 +83,6 @@ public class EnhancedCapacityScaling implements Algorithm {
 		return this.solution;
 	}
 	
-	private List<Edge> getNonAbundantEdgesFrom(int from) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 	private int getMaxImbalanceIndex() {
 		int max = 0;
@@ -196,5 +193,23 @@ public class EnhancedCapacityScaling implements Algorithm {
 		}
 
 		return new List<Edge>();
+	}
+
+	private void moveImbalence(int s){
+		double flow = solution.getNodeImbalance(s);
+		int actualNode=s;
+		for (int i=0;i<pathToReferentChef.get(s).size();i++){
+			if (pathToReferentChef.get(s).get(i).getDestination()==actualNode){
+				solution.addFlow(pathToReferentChef.get(s).get(i), -flow);
+				actualNode=pathToReferentChef.get(s).get(i).getSource();
+			}else{
+				solution.addFlow(pathToReferentChef.get(s).get(i), flow);
+				actualNode=pathToReferentChef.get(s).get(i).getDestination();
+			}
+		}
+		if (actualNode!=referentChef[s]){
+			System.out.printf("error in moveImbalence flow in ECS form" + s + " to " + referentChef[s] + "\n");
+			trow(new ArithmeticException());
+		}
 	}
 }
