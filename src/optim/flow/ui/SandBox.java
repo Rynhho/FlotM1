@@ -10,6 +10,8 @@ import java.util.PriorityQueue;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 
@@ -42,7 +44,7 @@ public class SandBox {
 		Repository<Network> networkRepository = new NetworkFileRepository();
 //		Network googleNet = networkRepository.load("Google");
 //		System.out.println(googleNet);
-		Algorithm cplex = new CplexAlgorithm();
+		Algorithm CPLEX = new CplexAlgorithm();
 		SuccessiveShortestPath SSP = new SuccessiveShortestPath();
 		capacityScaling CS = new capacityScaling();
 		EnhancedCapacityScaling ECS = new EnhancedCapacityScaling();
@@ -78,12 +80,14 @@ public class SandBox {
 		
 		boolean test = true;
 		if(test) {
-			boolean runSSP = true;
+			boolean runSSP = false;
 			boolean runCS = false;
 			boolean runECS = false;
+			boolean runAll = true;
 			int nbError = 0;
 			long totalTime = System.currentTimeMillis();
 			String[] examples = {"example", "example2", "Google"};
+			String[] Instances = {"A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "A10", "A11", "A12", "A13", "A14", "A15", "A16", "A17", "A18", "A19", "A20", "A21", "A22", "B1", "B2", "B3", "B4", "X1", "X2", "X3", "Z1", "Z2", "Z3"};
 			String result = "";
 			for (int i=1;i<=3;i++){
 				String toTest = 
@@ -93,7 +97,7 @@ public class SandBox {
 //						"B"+i;
 //						"X"+i; //7.98017639E8, 6.0615313E7, 2.3434351E8
 						"Z"+i; //1.2736645399E10, 1.834984597E9, 2.956122454E9
-				System.out.println(toTest);				
+				//System.out.println(toTest);				
 				Double costSSP = 0.; Double costCS = 0.;
 				
 //				Network netw = networkRepository.load(toTest);
@@ -103,6 +107,47 @@ public class SandBox {
 //				System.out.println("it took "+ (System.currentTimeMillis()-tim));
 //				System.out.println(netw.getNbEdges() - lala.getNbEdges() + " removed");
 				
+				if(runAll){
+					String str = "";
+					str = str + "instance"+"\t"+"nb vert"+"\t"+"nb edge"+"\t"+
+					"timeSSP"+"\t"+"SSPCost"+"\t"+"SSPDijCount"+"\t"+
+					"timeCS"+"\t"+"CSCost"+"\t"+"CSDijCount"+"\n"+"\n";
+
+					for (String instance : Instances) {
+						Network net = networkRepository.load(instance);
+
+						String dataNet = instance+"\t"+net.getNbVertices()+"\t"+net.getNbEdges()+"\t";
+						System.out.print(dataNet);
+
+						long timeStartSSP= System.currentTimeMillis();
+						ResidualNetwork solSSP = SSP.solve(net);
+						long timeSSP = System.currentTimeMillis()-timeStartSSP;
+
+						String dataSSP = timeSSP+"\t"+solSSP.getCost()+"\t"+SSP.getDijkstraCount()+"\t";
+						System.out.print(dataSSP);
+
+						long timeStartCS= System.currentTimeMillis();
+						ResidualNetwork solCS = CS.solve(net);
+						long timeCS = System.currentTimeMillis()-timeStartCS;
+
+						String dataCS = timeCS+"\t"+solCS.getCost()+"\t"+CS.getDijkstraCount()+"\n";
+						System.out.print(dataCS);
+
+						// long timeStartCPLEX= System.currentTimeMillis();
+						// ResidualNetwork solCPLEX = CPLEX.solve(net);
+						// long timeCPLEX = System.currentTimeMillis()-timeStartCPLEX;
+						
+						str = str + dataNet+dataSSP+dataCS;
+
+					}
+					try {
+						FileWriter fileWriter = new FileWriter("result.txt");
+						fileWriter.write(str);
+						fileWriter.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
 				if(runECS) {
 					System.out.println("\nsolution found by successive enhanced capacity scaling");
 					Network net = networkRepository.load(toTest);

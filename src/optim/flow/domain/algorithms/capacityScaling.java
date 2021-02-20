@@ -17,6 +17,8 @@ public class capacityScaling implements Algorithm {
     private List<Integer> ProviderS;
     private List<Integer> DemanderT;
     private Dijkstra dijkstra;
+
+	private int dijkstraCount;
     
     @Override
 	public ResidualNetwork solve(Network network) {
@@ -43,10 +45,14 @@ public class capacityScaling implements Algorithm {
 //			updateDetlaGraph();
 			
 		}
-		System.out.println("dijkstra used: " + dijkstraCount);
+		this.dijkstraCount = dijkstraCount;
 		if(withSink)
 			removeSourceAndSink();
 		return this.solution;
+	}
+
+	public int getDijkstraCount(){
+		return dijkstraCount;
 	}
     
     private void updatePi() {

@@ -11,6 +11,7 @@ public class SuccessiveShortestPath implements Algorithm{
     private double[] pi;
 	private ResidualNetwork solution;
 	private double[] originalDemand;
+	private int dijkstraCount;
 
     private void reduceCost() {
     	for(int i=0; i<solution.getNbVertices(); i++) {
@@ -67,10 +68,14 @@ public class SuccessiveShortestPath implements Algorithm{
 //        	System.out.println(shortestPath);
         	this.reduceCost();
         }
-        System.out.println("dijkstra count: "+dijkstraCount);
+        this.dijkstraCount = dijkstraCount;
         removeSourceAndSink();
 		return this.solution;
     }
+
+	public int getDijkstraCount(){
+		return this.dijkstraCount;
+	}
     
     private void removeSourceAndSink() {
     	List<List<Edge>> adjacencyList = new ArrayList<>();
