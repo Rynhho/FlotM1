@@ -108,10 +108,12 @@ public class SandBox {
 //				System.out.println(netw.getNbEdges() - lala.getNbEdges() + " removed");
 				
 				if(runAll){
-					String str = "";
-					str = str + "instance"+"\t"+"nb vert"+"\t"+"nb edge"+"\t"+
+					String str = "instance"+"\t"+"nb vert"+"\t"+"nb edge"+"\t"+
 					"timeSSP"+"\t"+"SSPCost"+"\t"+"SSPDijCount"+"\t"+
-					"timeCS"+"\t"+"CSCost"+"\t"+"CSDijCount"+"\n"+"\n";
+					"timeCS"+"\t"+"CSCost"+"\t"+"CSDijCount"+"\t"+
+					"timeCPLEX"+"\t"+"CPLEXCost"+"\t"+"CPLEXDijCount"+"\n"+"\n";
+					
+					System.out.print(str);
 
 					for (String instance : Instances) {
 						Network net = networkRepository.load(instance);
@@ -130,14 +132,17 @@ public class SandBox {
 						ResidualNetwork solCS = CS.solve(net);
 						long timeCS = System.currentTimeMillis()-timeStartCS;
 
-						String dataCS = timeCS+"\t"+solCS.getCost()+"\t"+CS.getDijkstraCount()+"\n";
+						String dataCS = timeCS+"\t"+solCS.getCost()+"\t"+CS.getDijkstraCount()+"\t";
 						System.out.print(dataCS);
 
-						// long timeStartCPLEX= System.currentTimeMillis();
-						// ResidualNetwork solCPLEX = CPLEX.solve(net);
-						// long timeCPLEX = System.currentTimeMillis()-timeStartCPLEX;
+						long timeStartCPLEX= System.currentTimeMillis();
+						ResidualNetwork solCPLEX = CPLEX.solve(net);
+						long timeCPLEX = System.currentTimeMillis()-timeStartCPLEX;
 						
-						str = str + dataNet+dataSSP+dataCS;
+						String dataCPLEX = timeCPLEX+"\t"+solCPLEX.getCost()+"\t0\n";
+						System.out.print(dataCPLEX);
+						
+						str = str + dataNet+dataSSP+dataCS+dataCPLEX;
 
 					}
 					try {

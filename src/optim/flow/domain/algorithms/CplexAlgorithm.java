@@ -17,7 +17,7 @@ public class CplexAlgorithm implements Algorithm{
 
             IloCplex cplex = new IloCplex();
             int n = net.getNbVertices();
-            double[][] flowMatrix = new double[n][];
+            //double[][] flowMatrix = new double[n][];
             IloNumVar[][] X = new IloNumVar[n][];
             for (int i=0;i<n;i++){
                 X[i] = cplex.numVarArray(net.getOutEdges(i).size(),0.0,Integer.MAX_VALUE);
@@ -102,6 +102,7 @@ public class CplexAlgorithm implements Algorithm{
 				System.out.println("error, cannot find solution\n");
             }
 			cplex.end();
+			cplex.close();
 
             return sol;
         }
